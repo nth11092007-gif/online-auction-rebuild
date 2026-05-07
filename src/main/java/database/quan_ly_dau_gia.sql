@@ -80,7 +80,7 @@ CREATE TABLE `items` (
 INSERT INTO `items` (`item_id`,`avatar`, `item_type`, `owner`, `starting_price`, `description`, `artist_name`, `release_date`, `warranty`, `brand`, `mileage`, `vehicle_id_plate`) VALUES
 (1, NULL, 'Arts', 'seller_minh', 1500, 'Bức tranh sơn dầu phong cảnh mùa thu cổ điển.', 'Danh họa Trần Anh', '2023-05-20', NULL, NULL, NULL, NULL),
 (2, NULL, 'Electronics', 'seller_minh', 800, 'Laptop MacBook Air M2 2022, máy mới 99%.', NULL, NULL, 12, 'Apple', NULL, NULL),
-(3, NULL 'Vehicles', 'admin01', 25000, 'Xe điện Tesla Model 3 màu trắng, chạy êm.', NULL, NULL, NULL, 'Tesla', 5000, '30A-12345');
+(3, NULL, 'Vehicles', 'admin01', 25000, 'Xe điện Tesla Model 3 màu trắng, chạy êm.', NULL, NULL, NULL, 'Tesla', 5000, '30A-12345');
 
 -- --------------------------------------------------------
 
