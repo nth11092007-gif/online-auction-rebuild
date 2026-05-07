@@ -110,7 +110,7 @@ public class LoginController {
     }
 
     @FXML
-    void onhandleUp(ActionEvent event) throws IOException {
+    void onhandleUp(ActionEvent event) {
         try{
             Parent root = FXMLLoader.load(getClass().getResource("Register.fxml"));
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
