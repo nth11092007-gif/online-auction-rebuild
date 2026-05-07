@@ -60,7 +60,7 @@ CREATE TABLE `bids` (
 
 CREATE TABLE `items` (
   `item_id` int(11) NOT NULL,
-  /*`avatar` MEDIUMBLOB DEFAULT NULL,*/
+  `avatar` MEDIUMBLOB DEFAULT NULL,
   `item_type` varchar(50) DEFAULT NULL,
   `owner` varchar(100) DEFAULT NULL,
   `starting_price` double DEFAULT NULL,

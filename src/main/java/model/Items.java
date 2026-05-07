@@ -25,16 +25,16 @@ public abstract class Items {
         this.startingPrice = startingPrice;
         this.description = description;
         try {
-            this.avatar = ImageIO.read(new File("main/resource/BaseItem.png"));
+            this.avatar = ImageIO.read(new File("src\\main\\resources\\Images\\BaseItem.png"));
         } catch (IOException e) {
             logger.error("Không tìm thấy ảnh nguồn");
         }
     }
 
     public void setItemID(int itemID) { this.itemID = itemID; }
-    public void setAvatar(File picture) {
+    public void setAvatar(String filePath) {
         try {
-            BufferedImage newImage = ImageIO.read(picture);
+            BufferedImage newImage = ImageIO.read(new File(filePath));
         } catch (IOException e) {
             logger.error("Ảnh không hợp lệ!");
         }
