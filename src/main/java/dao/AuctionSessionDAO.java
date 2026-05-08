@@ -2,6 +2,7 @@ package dao;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import model.AuctionSession;
@@ -19,8 +20,14 @@ public interface AuctionSessionDAO {
     AuctionSession getSessionById(Connection conn, String sessionId) throws SQLException;
     AuctionSession getSessionById(String sessionId); // Bản gọi lẹ dùng cho UI
     // LẤY THÔNG TIN MỌI PHIÊN ĐẤU GIÁ
+    List<AuctionSession> getAllSessions(Connection conn) throws SQLException;
     List<AuctionSession> getAllSessions();
 
+    List<AuctionSession> getSessionsStartBefore(Connection conn, LocalDateTime time, AuctionSession.Status status) throws SQLException;
+    List<AuctionSession> getSessionsStartBefore(LocalDateTime time, AuctionSession.Status status);
+
+    List<AuctionSession> getSessionsEndBefore(Connection conn, LocalDateTime time, AuctionSession.Status status) throws SQLException;
+    List<AuctionSession> getSessionsEndBefore(LocalDateTime time, AuctionSession.Status status);
     // =========================================================================
     // 3. CẬP NHẬT TRẠNG THÁI PHIÊN (Ví dụ: Chuyển từ OPEN sang CLOSED)
     // =========================================================================

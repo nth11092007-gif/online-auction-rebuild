@@ -18,21 +18,20 @@ public class AuctionSession {
     private LocalDateTime endTime;
     public enum Status { PENDING, OPEN, CLOSED, CANCELLED }; // một nhóm các hằng số
     public Status status;
-    public AuctionSession(User seller, Items item, double startingPrice, double incrementStep, int openDays){
+    public AuctionSession(User seller, Items item, double startingPrice, double incrementStep, LocalDateTime startTime){
         this.seller = seller;
         this.item = item;
         this.sessionID = IDGenerator.generateSessionId(); // sinh UUID duy nhất cho mỗi phiên đấu giá
         this.startingPrice = startingPrice;
         this.incrementStep = incrementStep;
-        this.startTime = LocalDateTime.now();
-        this.endTime = startTime.plusDays(openDays);
+        this.startTime = startTime;
         this.status = Status.PENDING;
         if (this.seller != null) {
             this.seller.addCreatedSessions(this); // thêm phiên đấu giá vào lịch sử của người bán
         }
     }
     public AuctionSession(User seller, Items item, double startingPrice){
-        this(seller, item, startingPrice, 0.1, 3);
+        this(seller, item, startingPrice, 0.1, LocalDateTime.now());
     }
     // Bổ sung Setter
     public void setCurrentPrice(double price) { this.currentPrice = price; }
