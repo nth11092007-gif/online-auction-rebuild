@@ -32,6 +32,7 @@ public abstract class Items {
     }
 
     public void setItemID(int itemID) { this.itemID = itemID; }
+    public void setAvatar(BufferedImage avatar) {this.avatar = avatar;}
     public void setAvatar(String filePath) {
         try {
             BufferedImage newImage = ImageIO.read(new File(filePath));

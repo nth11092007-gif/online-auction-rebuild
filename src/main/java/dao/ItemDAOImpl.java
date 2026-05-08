@@ -2,6 +2,12 @@ package dao;
 
 import model.*;
 import utils.DBConnection;
+
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.sql.*;
 
 public class ItemDAOImpl implements ItemDAO {
@@ -18,7 +24,15 @@ public class ItemDAOImpl implements ItemDAO {
             ps.setString(2, item.getOwner());
             ps.setDouble(3, item.getStartingPrice());
             ps.setString(4, item.getDescription());
-            ps.setBlob(11, (Blob) item.getAvatar());
+            BufferedImage avatar = item.getAvatar();
+            if (avatar != null) {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                javax.imageio.ImageIO.write(avatar, "png", baos);
+                byte[] imageBytes = baos.toByteArray();
+                ps.setBytes(11, imageBytes);
+            } else {
+                ps.setNull(11, java.sql.Types.BLOB);
+            }
 
             if (item instanceof Arts) {
                 Arts art = (Arts) item;
@@ -61,9 +75,10 @@ public class ItemDAOImpl implements ItemDAO {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
-
     @Override
     public Items getItemById(int id) {
         String sql = "SELECT * FROM items WHERE item_id = ?";
@@ -78,26 +93,67 @@ public class ItemDAOImpl implements ItemDAO {
                     double startingPrice = rs.getDouble("starting_price");
                     String desc = rs.getString("description");
 
-                    // Trực tiếp return đối tượng hoàn chỉnh qua Constructor
+                    Items item = null;
+
+                    // 1. Khởi tạo đối tượng theo Type
                     if ("Arts".equals(type)) {
-                        return new Arts(id, owner, startingPrice, desc,
+                        java.sql.Date sqlDate = rs.getDate("release_date");
+                        item = new Arts(id, owner, startingPrice, desc,
                                 rs.getString("artist_name"),
-                                rs.getDate("release_date").toLocalDate());
-                    } else if ("Electronics".equals(type)) {
-                        return new Electronics(id, owner, startingPrice, desc,
+                                sqlDate != null ? sqlDate.toLocalDate() : null);
+                    }
+                    else if ("Electronics".equals(type)) {
+                        item = new Electronics(id, owner, startingPrice, desc,
                                 rs.getInt("warranty"),
                                 rs.getString("brand"));
-                    } else if ("Vehicles".equals(type)) {
-                        return new Vehicles(id, owner, startingPrice, desc,
+                    }
+                    else if ("Vehicles".equals(type)) {
+                        item = new Vehicles(id, owner, startingPrice, desc,
                                 rs.getString("brand"),
                                 rs.getInt("mileage"),
                                 rs.getString("vehicle_id_plate"));
                     }
+
+                    // 2. Xử lý kiểu dữ liệu Blob (Avatar)
+                    if (item != null) {
+                        Blob blob = rs.getBlob("avatar");
+                        if (blob != null) {
+                            try (java.io.InputStream is = blob.getBinaryStream()) {
+                                BufferedImage bi = javax.imageio.ImageIO.read(is);
+                                item.setAvatar(bi); // Sử dụng setter đã thêm ở bước 1
+                            } catch (java.io.IOException e) {
+                                System.err.println("Lỗi chuyển đổi ảnh từ database: " + e.getMessage());
+                            }
+                        }
+                    }
+
+                    return item;
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return null;
+    }
+
+    @Override
+    public void setAvatar(int itemId, File file) {
+        String sql = "UPDATE items SET avatar = ? WHERE item_id = ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             FileInputStream fis = new FileInputStream(file)) {
+
+            // Chuyển đổi File thành luồng nhị phân để lưu vào BLOB
+            ps.setBinaryStream(1, fis, (int) file.length());
+            ps.setInt(2, itemId);
+
+            int rowsUpdated = ps.executeUpdate();
+            if (rowsUpdated > 0) {
+                System.out.println("Cập nhật ảnh đại diện thành công cho Item ID: " + itemId);
+            }
+        } catch (SQLException | IOException e) {
+            e.printStackTrace();
+        }
     }
 }
