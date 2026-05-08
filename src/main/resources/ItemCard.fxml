@@ -42,7 +42,7 @@
                     </children>
                 </HBox>
 
-                <Label fx:id="descLabel" lineSpacing="3.0" text="Mô tả" textFill="#4b5563" wrapText="true">
+                <Label fx:id="lblDescribe" lineSpacing="3.0" text="Mô tả" textFill="#4b5563" wrapText="true">
                     <font>
                         <Font size="15.0" />
                     </font>
