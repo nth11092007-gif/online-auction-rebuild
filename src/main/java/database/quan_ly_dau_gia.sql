@@ -11,7 +11,6 @@ SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
 
-
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
@@ -28,14 +27,14 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `auction_sessions` (
-  `session_id` varchar(50) NOT NULL,
-  `owner_id` int(11) DEFAULT NULL,
-  `item_id` int(11) DEFAULT NULL,
-  `starting_price` double DEFAULT NULL,
-  `step_price` double DEFAULT NULL,
-  `duration_days` int(11) DEFAULT NULL,
-  `status` varchar(20) DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+    `session_id` varchar(50) NOT NULL,
+    `owner_id` int(11) DEFAULT NULL,
+    `item_id` int(11) DEFAULT NULL,
+    `starting_price` double DEFAULT NULL,
+    `step_price` double DEFAULT NULL,
+    `duration_days` int(11) DEFAULT NULL,
+    `status` varchar(20) DEFAULT NULL,
+    `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -45,11 +44,11 @@ CREATE TABLE `auction_sessions` (
 --
 
 CREATE TABLE `bids` (
-  `id` int(11) NOT NULL,
-  `session_id` varchar(50) DEFAULT NULL,
-  `user_id` int(11) DEFAULT NULL,
-  `amount` double DEFAULT NULL,
-  `bid_time` datetime DEFAULT NULL
+     `id` int(11) NOT NULL,
+     `session_id` varchar(50) DEFAULT NULL,
+     `user_id` int(11) DEFAULT NULL,
+     `amount` double DEFAULT NULL,
+     `bid_time` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -59,30 +58,33 @@ CREATE TABLE `bids` (
 --
 
 CREATE TABLE `items` (
-  `item_id` int(11) NOT NULL,
-  `avatar` MEDIUMBLOB DEFAULT NULL,
-  `item_type` varchar(50) DEFAULT NULL,
-  `owner` varchar(100) DEFAULT NULL,
-  `starting_price` double DEFAULT NULL,
-  `description` text DEFAULT NULL,
-  `artist_name` varchar(100) DEFAULT NULL,
-  `release_date` date DEFAULT NULL,
-  `warranty` int(11) DEFAULT NULL,
-  `brand` varchar(100) DEFAULT NULL,
-  `mileage` int(11) DEFAULT NULL,
-  `vehicle_id_plate` varchar(20) DEFAULT NULL
+       `item_id` int(11) NOT NULL,
+       `avatar` MEDIUMBLOB DEFAULT NULL,
+       `item_type` varchar(50) DEFAULT NULL,
+       `owner` varchar(100) DEFAULT NULL,
+       `starting_price` double DEFAULT NULL,
+       `description` text DEFAULT NULL,
+       `artist_name` varchar(100) DEFAULT NULL,
+       `release_date` date DEFAULT NULL,
+       `warranty` int(11) DEFAULT NULL,
+       `brand` varchar(100) DEFAULT NULL,
+       `mileage` int(11) DEFAULT NULL,
+       `vehicle_id_plate` varchar(20) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `items`
 --
 
-INSERT INTO `items` (`item_id`,`avatar`, `item_type`, `owner`, `starting_price`, `description`, `artist_name`, `release_date`, `warranty`, `brand`, `mileage`, `vehicle_id_plate`) VALUES
-(1, NULL, 'Arts', 'seller_minh', 1500, 'Bức tranh sơn dầu phong cảnh mùa thu cổ điển.', 'Danh họa Trần Anh', '2023-05-20', NULL, NULL, NULL, NULL),
-(2, NULL, 'Electronics', 'seller_minh', 800, 'Laptop MacBook Air M2 2022, máy mới 99%.', NULL, NULL, 12, 'Apple', NULL, NULL),
-(3, NULL, 'Vehicles', 'admin01', 25000, 'Xe điện Tesla Model 3 màu trắng, chạy êm.', NULL, NULL, NULL, 'Tesla', 5000, '30A-12345');
+INSERT INTO `items` (`item_id`, `avatar`, `item_type`, `owner`, `starting_price`, `description`, `artist_name`, `release_date`, `warranty`, `brand`, `mileage`, `vehicle_id_plate`)
+VALUES
+    (1, NULL, 'Arts', 'seller_minh', 1500, 'Bức tranh sơn dầu phong cảnh mùa thu cổ điển.', 'Danh họa Trần Anh', '2023-05-20', NULL, NULL, NULL, NULL),
+    (2, NULL, 'Electronics', 'seller_minh', 800, 'Laptop MacBook Air M2 2022, máy mới 99%.', NULL, NULL, 12, 'Apple', NULL, NULL),
+    (3, NULL, 'Vehicles', 'admin01', 25000, 'Xe điện Tesla Model 3 màu trắng, chạy êm.', NULL, NULL, NULL, 'Tesla', 5000, '30A-12345');
 
 -- --------------------------------------------------------
+
+-- (phần còn lại của users, indexes, constraints giữ nguyên)
 
 --
 -- Table structure for table `users`
