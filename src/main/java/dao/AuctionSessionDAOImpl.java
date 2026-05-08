@@ -155,4 +155,14 @@ public class AuctionSessionDAOImpl implements AuctionSessionDAO {
         }
         return false;
     }
+
+    @Override
+    public boolean updateEndTime(Connection conn, String sessionId, Timestamp newEndTime) throws SQLException {
+        String sql = "UPDATE auction_sessions SET end_time = ? WHERE session_id = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setTimestamp(1, newEndTime);
+            pstmt.setString(2, sessionId);
+            return pstmt.executeUpdate() > 0;
+        }
+    }
 }

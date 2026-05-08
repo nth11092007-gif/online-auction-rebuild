@@ -77,6 +77,8 @@ public class AuctionServer extends WebSocketServer {
 
         if (isSuccess) {
             System.out.println("✅ Đặt giá thành công!");
+            // Lấy lại thông tin phiên để có thời gian kết thúc mới (nếu bị gia hạn)
+            model.AuctionSession session = auctionService.getSessionById(request.getSessionId());
 
             // 2. Tạo JSON thông báo giá mới
             Map<String, Object> responseData = new HashMap<>();
@@ -206,6 +208,7 @@ public class AuctionServer extends WebSocketServer {
     @Override
     public void onStart() {
         this.feedServer = new AuctionFeedServer();
+        this.auctionService.setFeedServer(this.feedServer);
         System.out.println("🚀 Auction Server đã khởi động thành công trên port: " + getPort());
     }
 
