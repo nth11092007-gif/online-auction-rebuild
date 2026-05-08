@@ -57,7 +57,9 @@ public class ProfileController {
     @FXML
     void handleGoBack(ActionEvent event) {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource("Home.fxml"));
+            //Parent root = FXMLLoader.load(getClass().getResource("Home.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Home.fxml"));
+            Parent root = loader.load();
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             Scene scene = new Scene(root);
             stage.setScene(scene);

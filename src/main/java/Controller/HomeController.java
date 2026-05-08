@@ -27,7 +27,6 @@ public class HomeController {
 
     @FXML
     void filterAll(ActionEvent event) {
-        loadProducts(itemDAO.getAllItems());
     }
 
     @FXML
