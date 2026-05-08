@@ -14,6 +14,8 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.sql.JDBCType.NULL;
+
 public class ItemDAOImpl implements ItemDAO {
     private static Logger logger = LoggerFactory.getLogger(ItemDAOImpl.class);
     @Override
@@ -169,6 +171,33 @@ public class ItemDAOImpl implements ItemDAO {
             return new ArrayList<>();
         }
     }
+    private Items extractItemFromResultSet(ResultSet rs) throws SQLException {
+        int id = rs.getInt("item_id");
+        String type = rs.getString("item_type");
+        String owner = rs.getString("owner");
+        double startingPrice = rs.getDouble("starting_price");
+        String desc = rs.getString("description");
+
+        if ("Arts".equals(type)) {
+            Date sqlDate = rs.getDate("release_date");
+            return new Arts(id, owner, startingPrice, desc,
+                    rs.getString("artist_name"),
+                    sqlDate != null ? sqlDate.toLocalDate() : null);
+
+        } else if ("Electronics".equals(type)) {
+            return new Electronics(id, owner, startingPrice, desc,
+                    rs.getInt("warranty"),
+                    rs.getString("brand"));
+
+        } else if ("Vehicles".equals(type)) {
+            return new Vehicles(id, owner, startingPrice, desc,
+                    rs.getString("brand"),
+                    rs.getInt("mileage"),
+                    rs.getString("vehicle_id_plate"));
+        }
+
+        return null;
+    }
     @Override
     public List<Items> getAllItems(Connection conn) {
         String sql = "SELECT * FROM items";
@@ -181,7 +210,8 @@ public class ItemDAOImpl implements ItemDAO {
             }
             return itemList;
         } catch (SQLException e) {
-            logger.error("Loi không tìm thấy danh sách!");
+            logger.error("That shit bro!");
+            return new ArrayList<>();
         }
     }
 }

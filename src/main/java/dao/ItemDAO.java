@@ -4,6 +4,7 @@ import model.Items;
 
 import java.io.File;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 
 public interface ItemDAO {
@@ -11,7 +12,7 @@ public interface ItemDAO {
 
     Items getItemById(int id);
     void setAvatar(int id, File file);
-    List<Items> getAllItems();
-    List<Items> getAllItems(Connection conn);
+    List<Items> getAllItems() throws SQLException;
+    List<Items> getAllItems(Connection conn) throws SQLException;
 
 }

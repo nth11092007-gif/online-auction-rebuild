@@ -15,6 +15,7 @@ import javafx.stage.Stage;
 import model.Items;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.List;
 
 public class HomeController {
@@ -27,7 +28,11 @@ public class HomeController {
 
     @FXML
     void filterAll(ActionEvent event) {
-        loadProducts(itemDAO.getAllItems());
+        try {
+            loadProducts(itemDAO.getAllItems());
+        } catch (SQLException e) {
+            System.out.println("tht shit bro");
+        }
     }
 
     @FXML
@@ -78,7 +83,7 @@ public class HomeController {
         productContainer.getChildren().clear(); // Xóa các thẻ cũ
         try {
             for (Items item : items) {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("ItemCard.fxml"));
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/ItemCard.fxml"));
                 VBox card = loader.load();
 
                 ItemCardController controller = loader.getController();
@@ -93,7 +98,11 @@ public class HomeController {
     @FXML
     public void initialize() {
         // Tải toàn bộ sản phẩm lên màn hình khi vừa mở ứng dụng
-        loadProducts(itemDAO.getAllItems());
+        try {
+            loadProducts(itemDAO.getAllItems());
+        } catch (SQLException e) {
+            System.out.println("tht shit bro");
+        }
     }
 }
 //thêm phương thức getAllItems

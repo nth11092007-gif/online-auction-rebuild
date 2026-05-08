@@ -14,7 +14,7 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import model.User;
-
+import Exception.*;
 import java.io.IOException;
 
 public class RegisterController {
@@ -37,16 +37,16 @@ public class RegisterController {
     @FXML
     private TextField txtUser;
 
-    private void showAlert(String content, Alert.AlertType type){
+    private void showAlert(String content, Alert.AlertType type) {
         Alert alert = new Alert(type);
         alert.setTitle("Thông báo");
         alert.setContentText(content);
         alert.showAndWait();
     }
 
-    private void switchToHome (ActionEvent event) {
+    private void switchToHome(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("Home.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Home.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             Scene scene = new Scene(root);
@@ -59,27 +59,31 @@ public class RegisterController {
 
     @FXML
     void onhandleRegister(ActionEvent event) {
-        String username = txtUser.getText().trim();
-        String password = txtPassword.getText().trim();
-        String realname = txtRealName.getText().trim();
-        String email = txtEmail.getText().trim();
-        String phone = txtPhoneNumber.getText().trim();
+        try {
+            String username = txtUser.getText().trim();
+            String password = txtPassword.getText().trim();
+            String realname = txtRealName.getText().trim();
+            String email = txtEmail.getText().trim();
+            String phone = txtPhoneNumber.getText().trim();
 
-        //Ktra ko dc bỏ trống
-        if (username.isEmpty() || password.isEmpty() || realname.isEmpty() || email.isEmpty() || phone.isEmpty()) {
-            showAlert("vui lòng điền đầy đủ thông tin", Alert.AlertType.ERROR);
-            return;
-        }
+            //Ktra ko dc bỏ trống
+            if (username.isEmpty() || password.isEmpty() || realname.isEmpty() || email.isEmpty() || phone.isEmpty()) {
+                showAlert("vui lòng điền đầy đủ thông tin", Alert.AlertType.ERROR);
+                return;
+            }
 
-        User newUser = new User(realname, username, email, password, phone);
-        boolean succes = register.register(newUser);
+            User newUser = new User(realname, username, email, password, phone);
+            boolean succes = register.register(newUser);
 
-        //Thông báo thành công
-        if (succes) {
-            showAlert("Đăng ký thành công", Alert.AlertType.INFORMATION);
-            switchToHome(event);
-        } else {
-            showAlert("Tài khoản đã tồn tại", Alert.AlertType.ERROR);
+            //Thông báo thành công
+            if (succes) {
+                showAlert("Đăng ký thành công", Alert.AlertType.INFORMATION);
+                switchToHome(event);
+            } else {
+                showAlert("Tài khoản đã tồn tại", Alert.AlertType.ERROR);
+            }
+        } catch (PasswordStrengthCheck p) {
+            p.getMessage();
         }
     }
 }

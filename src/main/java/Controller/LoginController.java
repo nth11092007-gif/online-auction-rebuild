@@ -14,6 +14,7 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import Exception.*;
 import javafx.stage.Stage;
+import model.User;
 import org.slf4j.*;
 
 import java.io.IOException;
@@ -101,18 +102,29 @@ public class LoginController {
                 case  "Rất mạnh":
                     System.out.println("ok");
             }
-            login.login(UserName,Pass);
+            User user = login.login(UserName,Pass);
+            if (user.getRole() == User.Role.USER ) {
+                try{
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/Home.fxml"));
+                    Parent root = loader.load();
+                    Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+                    Scene scene = new Scene(root);
+                    stage.setScene(scene);
+                    stage.show();
+                } catch ( IOException e){
+                    e.printStackTrace();
+                }
+            }
+
         } catch (UserExisted u) {
             u.getMessage();
-        } catch (PasswordStrengthCheck p) {
-            p.getMessage();
         }
     }
 
     @FXML
     void onhandleUp(ActionEvent event) {
         try{
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("Register.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Register.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             Scene scene = new Scene(root);
