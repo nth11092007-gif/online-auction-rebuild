@@ -31,7 +31,6 @@ public class AuctionSystemTest {
     final private ItemDAO itemDAO = new ItemDAOImpl();
     final private AuctionSessionDAO sessionDAO = new AuctionSessionDAOImpl();
     final private BidDAO bidDAO = new BidDAOImpl();
-    final private DBConnection dbConnection = new DBConnection();
     @Test
     @DisplayName("Test luồng: Đăng nhập -> Tạo Hàng -> Mở Phiên -> Đặt giá")
     void testFullAuctionFlow() {
@@ -88,7 +87,7 @@ public class AuctionSystemTest {
         
         // Dùng actualSessionId của phiên vừa tạo, thay vì chuỗi tự gõ
         try {
-            boolean isBidSuccess = bidDAO.addBid(dbConnection.getConnection(), actualSessionId, newBid);
+            boolean isBidSuccess = bidDAO.addBid(DBConnection.getConnection(), actualSessionId, newBid);
             assertTrue(isBidSuccess, "Đặt giá phải thành công!");
             assertTrue(isBidSuccess, "❌ Lỗi: Người mua đặt giá thất bại.");
             assertEquals(5000.0, newBid.getAmount(), "Số tiền đặt giá không khớp.");

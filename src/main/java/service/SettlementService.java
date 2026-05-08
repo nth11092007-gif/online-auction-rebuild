@@ -20,10 +20,10 @@ import utils.DBConnection;
 
 public class SettlementService {
     private static final Logger logger = LoggerFactory.getLogger(SettlementService.class);
-    private AuctionSessionDAO sessionDAO = new AuctionSessionDAOImpl();
-    private BidDAO bidDAO = new BidDAOImpl();
-    private UserDAO userDAO = new UserDAOImpl();
-    private ItemDAO itemDAO = new ItemDAOImpl();
+    private final AuctionSessionDAO sessionDAO = new AuctionSessionDAOImpl();
+    private final BidDAO bidDAO = new BidDAOImpl();
+    private final UserDAO userDAO = new UserDAOImpl();
+    private final ItemDAO itemDAO = new ItemDAOImpl();
 
     /**
      * Hàm xử lý kết thúc phiên đấu giá

@@ -15,14 +15,13 @@ import utils.DBConnection;
 public class AuctionServiceIntegrationTest {
 
     private AuctionService auctionService;
-    DBConnection dbConnection = new DBConnection();
 
     @BeforeEach
     public void setUp() {
         auctionService = new AuctionService();
 
         // Làm sạch và setup lại Database trước MỖI bài test
-        try (Connection conn = dbConnection.getConnection();
+        try (Connection conn = DBConnection.getConnection();
              Statement stmt = conn.createStatement()) {
              
             // 1. Đọc và chạy toàn bộ file quan_ly_dau_gia.sql để reset bảng và data gốc
