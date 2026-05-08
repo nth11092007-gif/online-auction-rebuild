@@ -1,6 +1,8 @@
 package dao;
 
 import model.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import utils.DBConnection;
 
 import java.awt.image.BufferedImage;
@@ -9,9 +11,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ItemDAOImpl implements ItemDAO {
-
+    private static Logger logger = LoggerFactory.getLogger(ItemDAOImpl.class);
     @Override
     public void addItem(Items item) {
         String sql = "INSERT INTO items (item_type, owner, starting_price, description, " +
@@ -154,6 +158,30 @@ public class ItemDAOImpl implements ItemDAO {
             }
         } catch (SQLException | IOException e) {
             e.printStackTrace();
+        }
+    }
+    @Override
+    public List<Items> getAllItems() {
+        try (Connection conn = DBConnection.getConnection()) {
+            return getAllItems(conn);
+        } catch (SQLException e) {
+            logger.error("Lỗi khi lấy tất cả items: {}", e.getMessage(), e);
+            return new ArrayList<>();
+        }
+    }
+    @Override
+    public List<Items> getAllItems(Connection conn) {
+        String sql = "SELECT * FROM items";
+        try (Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            List<Items> itemList = new ArrayList<>();
+            while (rs.next()) {
+                itemList.add(extractItemFromResultSet(rs));
+            }
+            return itemList;
+        } catch (SQLException e) {
+            logger.error("Loi không tìm thấy danh sách!");
         }
     }
 }
