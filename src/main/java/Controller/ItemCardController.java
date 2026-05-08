@@ -1,14 +1,18 @@
 package Controller;
 
+import dao.ItemDAO;
+import dao.ItemDAOImpl;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import model.Items;
 
 public class ItemCardController{
-
+    private ItemDAO itemDAO = new ItemDAOImpl();
     @FXML
-    private Label descLabel;
+    private Label lblDescribe;
 
     @FXML
     private ImageView imgItem;
@@ -30,5 +34,10 @@ public class ItemCardController{
         lblCurrentPrice.setText("Giá hiện tại: " + item.getStartingPrice() + " VND");
         lblType.setText("Phân loại: " + item.getClass().getSimpleName());
         lblOwner.setText("Người sở hữu: " + item.getOwner());
+        lblDescribe.setText("Mô tả: " + item.getDescription());
+        if (item.getAvatar() != null) {
+            Image image = SwingFXUtils.toFXImage(item.getAvatar(), null);
+            imgItem.setImage(image);
+        }
     }
 }

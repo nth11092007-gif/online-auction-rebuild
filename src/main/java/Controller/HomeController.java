@@ -1,12 +1,24 @@
 package Controller;
 
+import dao.ItemDAO;
+import dao.ItemDAOImpl;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+import model.Items;
+
+import java.io.IOException;
+import java.util.List;
 
 public class HomeController {
-
+    private ItemDAO itemDAO = new ItemDAOImpl();
     @FXML
     private FlowPane productContainer;
 
@@ -15,7 +27,7 @@ public class HomeController {
 
     @FXML
     void filterAll(ActionEvent event) {
-
+        loadProducts(itemDAO.getAllItems());
     }
 
     @FXML
@@ -34,13 +46,54 @@ public class HomeController {
     }
 
     @FXML
-    void handleCreateSession(ActionEvent event) {
+    void GoToCreateSession(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("CreateSession.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            Scene scene = new Scene(root);
+            stage.setScene(scene);
+            stage.show();
 
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML
-    void handleProfile(ActionEvent event) {
+    void GoToProfile(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("CreateSession.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            Scene scene = new Scene(root);
+            stage.setScene(scene);
+            stage.show();
 
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
+    private void loadProducts(List<Items> items) {
+        productContainer.getChildren().clear(); // Xóa các thẻ cũ
+        try {
+            for (Items item : items) {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("ItemCard.fxml"));
+                VBox card = loader.load();
 
+                ItemCardController controller = loader.getController();
+                controller.setItemData(item); // Cho dữ liệu vào thẻ
+
+                productContainer.getChildren().add(card);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    @FXML
+    public void initialize() {
+        // Tải toàn bộ sản phẩm lên màn hình khi vừa mở ứng dụng
+        loadProducts(itemDAO.getAllItems());
+    }
 }
+//thêm phương thức getAllItems
