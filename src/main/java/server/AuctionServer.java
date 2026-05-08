@@ -2,10 +2,13 @@ package server;
 
 import java.net.InetSocketAddress;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import model.AuctionSession;
+import model.User;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
@@ -19,6 +22,7 @@ import com.google.gson.JsonParser;
 import dto.BidRequest;
 import service.AuctionService;
 import service.SettlementService;
+import service.UserService;
 
 public class AuctionServer extends WebSocketServer {
     private static final Logger logger = LoggerFactory.getLogger(AuctionServer.class);
@@ -26,6 +30,7 @@ public class AuctionServer extends WebSocketServer {
     private final SettlementService settlementService;
     private final Gson gson = new Gson();
     private final AuctionService auctionService;
+    private final UserService userService;
     private final Map<String, Set<WebSocket>> sessionSubscribers = new ConcurrentHashMap<>();
     private AuctionFeedServer feedServer;
 
@@ -33,6 +38,7 @@ public class AuctionServer extends WebSocketServer {
         super(new InetSocketAddress(port));
         this.settlementService = new SettlementService();
         this.auctionService = new AuctionService();
+        this.userService = new UserService();
     }
     /**
     * onOpen: Khi có một kết nối WebSocket mới được mở, phương thức này sẽ được gọi.
@@ -54,9 +60,7 @@ public class AuctionServer extends WebSocketServer {
     @Override
     public void onClose(WebSocket conn, int requestCode, String reason, boolean remote) {
         System.out.println("🔴 Người dùng đã ngắt kết nối: " + conn.getRemoteSocketAddress());
-        for (Set<WebSocket> subscribers : sessionSubscribers.values()) {
-            subscribers.remove(conn);
-        }
+        sessionSubscribers.values().forEach(subscribers -> subscribers.remove(conn));
     }
     /**
      * Xử lý logic đặt giá khi nhận được yêu cầu từ client.
@@ -140,9 +144,35 @@ public class AuctionServer extends WebSocketServer {
 
             // 3. Rẽ nhánh logic
             switch (type) {
+                case "GET_SESSIONS":
+                    /**
+                     * Hợp nhất từ HTTP: Lấy danh sách tất cả phiên đấu giá
+                     */
+                    List<AuctionSession> sessions = auctionService.getAllSessions();
+                    String sessionListJson = gson.toJson(sessions);
+                    webSocket.send("{\"type\": \"SESSION_LIST\", \"data\": " + sessionListJson + "}");
+                    break;
+
+                case "GET_USER":
+                    /**
+                     * Hợp nhất từ HTTP: Lấy thông tin người dùng (số dư, tên...)
+                     */
+                    int userId = jsonObject.get("userId").getAsInt();
+                    User user = userService.getUserById(userId);
+                    if (user != null) {
+                        webSocket.send("{\"type\": \"USER_INFO\", \"data\": " + gson.toJson(user) + "}");
+                    } else {
+                        webSocket.send("{\"type\": \"ERROR\", \"message\": \"User không tồn tại!\"}");
+                    }
+                    break;
                 case "JOIN":
+                    /**
+                     * Đăng ký người dùng vào một phiên để nhận tin nhắn real-time
+                     */
                     String joinSessionId = jsonObject.get("sessionId").getAsString();
                     sessionSubscribers.computeIfAbsent(joinSessionId, k -> ConcurrentHashMap.newKeySet()).add(webSocket);
+
+                    feedServer.subscribe(joinSessionId, new WebSocketObserver(webSocket));
 
                     System.out.println("👤 Người dùng " + webSocket.getRemoteSocketAddress() + " đã bắt đầu xem phiên: " + joinSessionId);
                     break;
@@ -157,7 +187,7 @@ public class AuctionServer extends WebSocketServer {
                     processSettlement(webSocket, settleSessionId);
                     break;
                 default:
-                    System.out.println("Không nhận diện được loại tin nhắn: " + type);
+                    webSocket.send("{\"type\": \"ERROR\", \"message\": \"Command Unknown\"}");
             }
 
         } catch (Exception e) {
@@ -168,7 +198,9 @@ public class AuctionServer extends WebSocketServer {
 
     @Override
     public void onError(WebSocket webSocket, Exception e) {
-        logger.error("❌ Đã xảy ra lỗi trên kết nối: " + webSocket.getRemoteSocketAddress(), e);
+        if (webSocket != null) {
+            logger.error("❌ Lỗi trên kết nối: " + webSocket.getRemoteSocketAddress(), e);
+        }
     }
 
     @Override
