@@ -1,6 +1,9 @@
 package model;
-import java.util.*;
-public class User {
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class User implements Bidder, Seller {
     protected String realName;
     protected String username;
     protected int id;
@@ -12,9 +15,12 @@ public class User {
     private double frozenBalance = 0;
     private List<AuctionSession> myCreatedAuctions;
     private List<AuctionSession> myJoinedAuctions;
-    public enum Role {USER, ADMIN};
-    public User(){};
-    public User(String realName, String username, String email, String password, String phoneNumber){
+
+    public enum Role { USER, ADMIN }
+
+    public User() {}
+
+    public User(String realName, String username, String email, String password, String phoneNumber) {
         this.role = Role.USER;
         this.realName = realName;
         this.username = username;
@@ -24,6 +30,7 @@ public class User {
         this.myCreatedAuctions = new ArrayList<>();
         this.myJoinedAuctions = new ArrayList<>();
     }
+
     // Constructor đầy đủ cho DAO khi lấy từ Database
     public User(int id, String username, String password, String realName, String email,
                 String phoneNumber, Role role, double balance, double frozenBalance) {
@@ -38,64 +45,69 @@ public class User {
         this.frozenBalance = frozenBalance;
     }
 
-    public String getRealName(){
-        return this.realName;
-    }
-    public String getUsername(){
-        return this.username;
-    }
-    public String getPassword(){
-        return this.password;
-    }
-    public String getEmail(){
-        return this.email;
-    }
-    public String getPhoneNumber(){
-        return this.phoneNumber;
-    }
-    public double getBalance(){
-        return this.balance;
-    }
-    public double getFrozenBalance(){
-        return this.frozenBalance;
-    }
-    public int getID(){
-        return this.id;
-    }
-    public Role getRole(){
-        return this.role;
-    }
-    public List<AuctionSession> getJoinedAuctionSessions(){
-        if (this.myJoinedAuctions == null) {
-            this.myJoinedAuctions = new ArrayList<>();
+    // ---------------- Các getter cơ bản (không thuộc interface) ----------------
+    public String getRealName() { return realName; }
+    public String getPassword() { return password; }
+    public String getEmail() { return email; }
+    public String getPhoneNumber() { return phoneNumber; }
+    public Role getRole() { return role; }
+
+    // ---------------- Các phương thức của Buyer ----------------
+    @Override
+    public int getID() { return id; }
+
+    @Override
+    public String getUsername() { return username; }
+
+    @Override
+    public double getBalance() { return balance; }
+
+    @Override
+    public double getFrozenBalance() { return frozenBalance; }
+
+    @Override
+    public List<AuctionSession> getJoinedAuctionSessions() {
+        if (myJoinedAuctions == null) {
+            myJoinedAuctions = new ArrayList<>();
         }
-         return this.myJoinedAuctions;
+        return myJoinedAuctions;
     }
-    public List<AuctionSession> getCreatedAuctionSessions(){
-        if (this.myCreatedAuctions == null){
-            this.myCreatedAuctions = new ArrayList<>();
+
+    @Override
+    public void addJoinedAuctionSession(AuctionSession session) {
+        if (myJoinedAuctions == null) {
+            myJoinedAuctions = new ArrayList<>();
         }
-         return this.myCreatedAuctions;
+        myJoinedAuctions.add(session);
     }
-    public void addCreatedSessions(AuctionSession session){
-        if (this.myCreatedAuctions == null) {
-            this.myCreatedAuctions = new ArrayList<>();
+
+    // ---------------- Các phương thức của Seller ----------------
+    @Override
+    public List<AuctionSession> getCreatedAuctionSessions() {
+        if (myCreatedAuctions == null) {
+            myCreatedAuctions = new ArrayList<>();
         }
-        this.myCreatedAuctions.add(session);
+        return myCreatedAuctions;
     }
-    public void addJoinedSessions(AuctionSession session){
-        if (this.myJoinedAuctions == null) {
-            this.myJoinedAuctions = new ArrayList<>();
+
+    @Override
+    public void addCreatedAuctionSession(AuctionSession session) {
+        if (myCreatedAuctions == null) {
+            myCreatedAuctions = new ArrayList<>();
         }
-        this.myJoinedAuctions.add(session);
+        myCreatedAuctions.add(session);
     }
-    public void deposit(double amount){
+
+    // ---------------- Các phương thức chỉ có ở User ----------------
+    public void deposit(double amount) {
         balance += amount;
     }
-    public void withdraw(double amount){
+
+    public void withdraw(double amount) {
         balance -= amount;
     }
-    public void setID(int id){
+
+    public void setID(int id) {
         this.id = id;
     }
 }

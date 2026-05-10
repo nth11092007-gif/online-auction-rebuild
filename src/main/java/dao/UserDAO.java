@@ -30,6 +30,8 @@ public interface UserDAO {
     User getUserByUsername(String username);
 
     User getUserByUsername(Connection conn, String username) throws SQLException;
+
+    User getUserForUpdate(Connection conn, int userId) throws SQLException; // Lấy User kèm khoá (dùng khi đang ở giữa Transaction cần đảm bảo dữ liệu không bị thay đổi bởi luồng khác)
     // =========================================================================
     // NHÓM 3: CÁC HÀM CẬP NHẬT TRẠNG THÁI / THÔNG TIN (Cần cả 2 phiên bản)
     // =========================================================================

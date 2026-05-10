@@ -28,9 +28,13 @@ public interface AuctionSessionDAO {
 
     List<AuctionSession> getSessionsEndBefore(Connection conn, LocalDateTime time, AuctionSession.Status status) throws SQLException;
     List<AuctionSession> getSessionsEndBefore(LocalDateTime time, AuctionSession.Status status);
+
+    AuctionSession getSessionForUpdate(Connection conn, String sessionId) throws SQLException; // Lấy phiên đấu giá kèm khoá (dùng khi đặt giá)
     // =========================================================================
     // 3. CẬP NHẬT TRẠNG THÁI PHIÊN (Ví dụ: Chuyển từ OPEN sang CLOSED)
     // =========================================================================
     boolean updateSessionStatusAtomic(Connection conn, String sessionId, AuctionSession.Status status) throws SQLException;
     boolean updateSessionStatusAtomic(String sessionId, AuctionSession.Status status); // Bản gọi lẹ
+
+    boolean updateCurrentPrice(Connection conn, String sessionId, double newPrice);
 }

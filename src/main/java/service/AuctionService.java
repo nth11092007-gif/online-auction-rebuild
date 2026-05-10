@@ -15,6 +15,7 @@ import dao.UserDAO;
 import dao.UserDAOImpl;
 import model.AuctionSession;
 import model.Bid;
+import model.Bidder;
 import model.User;
 import utils.DBConnection;
 
@@ -43,78 +44,80 @@ public class AuctionService {
         return userDAO.getUserById(userId);
     }
 
-    public synchronized boolean placeBid(int currentUserId, String sessionId, double bidAmount) {
-        Connection conn = null;
-        try {
-            conn = DBConnection.getConnection();
-            conn.setAutoCommit(false);
-            
-            AuctionSession session = sessionDAO.getSessionById(conn, sessionId);
-            if (session == null) {
-                logger.warn("Phiên đấu giá {} không tồn tại", sessionId);
-                return false;
-            }
+    public boolean placeBid(int currentUserId, String sessionId, double bidAmount) {
+    Connection conn = null;
+    try {
+        conn = DBConnection.getConnection();
+        conn.setAutoCommit(false);
 
-            if (session.getStatus() != AuctionSession.Status.OPEN) {
-                logger.warn("Phiên đấu giá {} chưa mở hoặc đã đóng", sessionId);
-                return false;
-            }
-
-            Bid highestBid = bidDAO.getHighestBid(conn, sessionId);
-            
-            double minValidBid;
-            if (highestBid == null) {
-                minValidBid = session.getStartingPrice();
-            } else {
-                minValidBid = highestBid.getAmount() + session.getIncrementStep();
-            }
-
-            if (bidAmount < minValidBid) {
-                logger.warn("Giá đặt {} không hợp lệ cho session {}. Phải >= {}", bidAmount, sessionId, minValidBid);
-                conn.rollback();
-                return false;
-            }
-
-            boolean isDeducted = userDAO.freezeMoneyAtomic(conn, currentUserId, bidAmount);
-            if (!isDeducted) {
-                logger.warn("Số dư không đủ để đặt giá {} cho user {} trong session {}", bidAmount, currentUserId, sessionId);
-                conn.rollback();
-                return false;
-            }
-
-            if (highestBid != null) {
-                int previousUserId = highestBid.getBidder().getID();
-                double previousAmount = highestBid.getAmount();
-                userDAO.refundMoneyAtomic(conn, previousUserId, previousAmount);
-            }
-
-            Bid newBid = new Bid(userDAO.getUserById(conn, currentUserId), bidAmount);
-            bidDAO.addBid(conn, sessionId, newBid);
-
-            conn.commit();
-            logger.info("Đặt giá thành công: user {}, session {}, amount {}", currentUserId, sessionId, bidAmount);
-            return true;
-
-        } catch (Exception e) {
-            if (conn != null) {
-                try {
-                    conn.rollback();
-                    logger.warn("Rollback transaction cho session {} do lỗi", sessionId);
-                } catch (SQLException ex) {
-                    logger.error("Lỗi khi rollback: {}", ex.getMessage(), ex);
-                }
-            }
-            logger.error("Lỗi hệ thống khi đặt giá: {}", e.getMessage(), e);
+        AuctionSession session = sessionDAO.getSessionForUpdate(conn, sessionId);
+        if (session == null) {
+            logger.warn("Phiên {} không tồn tại", sessionId);
             return false;
-        } finally {
-            if (conn != null) {
-                try {
-                    conn.setAutoCommit(true);
-                    conn.close();
-                } catch (SQLException e) {
-                    logger.error("Lỗi khi đóng kết nối: {}", e.getMessage(), e);
-                }
-            }
         }
+
+        // Lấy user (để đóng băng tiền)
+        Bidder bidder = userDAO.getUserForUpdate(conn, currentUserId);
+        if (bidder == null) {
+            logger.warn("Người dùng {} không tồn tại", currentUserId);
+            return false;
+        }
+
+        // Đóng băng tiền trước (vì cần kiểm tra số dư)
+        if (bidder.getBalance() < bidAmount) {
+            logger.warn("Số dư không đủ");
+            return false;
+        }
+        boolean deducted = userDAO.freezeMoneyAtomic(conn, currentUserId, bidAmount);
+        if (!deducted) {
+            logger.warn("Không thể đóng băng tiền");
+            conn.rollback();
+            return false;
+        }
+
+        // Tạo Bid mới
+        Bid newBid = new Bid(bidder, bidAmount); // Constructor phù hợp
+
+        // Gọi addBid trên session (session tự kiểm tra trạng thái & giá)
+        if (!session.addBid(newBid)) {
+            // Nếu không hợp lệ, hoàn tiền ngay và rollback
+            userDAO.refundMoneyAtomic(conn, currentUserId, bidAmount);
+            conn.rollback();
+            logger.warn("Bid không hợp lệ: giá={} session={}", bidAmount, sessionId);
+            return false;
+        }
+
+        // Nếu có người bị vượt, hoàn tiền cho họ (lấy highest bid trước khi add)
+        // Cần lấy highest trước khi addBid vì addBid đã thay đổi lịch sử
+        // Hoặc bạn có thể lấy highest từ DB trước khi gọi addBid:
+        Bid previousHighest = bidDAO.getHighestBid(conn, sessionId);
+        if (previousHighest != null) {
+            int prevUserId = previousHighest.getBidder().getID();
+            double prevAmount = previousHighest.getAmount();
+            userDAO.refundMoneyAtomic(conn, prevUserId, prevAmount);
+        }
+
+        // Lưu bid vào DB
+        bidDAO.addBid(conn, sessionId, newBid);
+
+        // Cập nhật session (currentPrice và có thể bid count) vào DB
+        sessionDAO.updateCurrentPrice(conn, sessionId, bidAmount); // Bạn cần thêm method này
+
+        conn.commit();
+        logger.info("Đặt giá thành công: user {}, session {}, amount {}", currentUserId, sessionId, bidAmount);
+        return true;
+
+    } catch (SQLException e) {
+        logger.error("Lỗi khi đặt giá: user {}, session {}, amount {}: {}", currentUserId, sessionId, bidAmount, e.getMessage());
+    } finally {
+        try {
+            if (conn != null) {
+                conn.close();
+            }
+        } catch (SQLException e) {
+            logger.error("Lỗi khi đóng kết nối: {}", e.getMessage(), e);
+        }
+    }
+    return false;
     }
 }

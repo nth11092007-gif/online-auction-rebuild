@@ -6,19 +6,19 @@ import java.util.ArrayList;
 import utils.IDGenerator;
 
 public class AuctionSession {
-    private User seller;
+    private Seller seller;
     private Items item;
     final private String sessionID;
     final private double startingPrice;
     final private double incrementStep;
     private double currentPrice;
-    private User highestBidder = null;
+    private Bidder highestBidder = null;
     final private ArrayList<Bid> bidHistory = new ArrayList<>();
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     public enum Status { PENDING, OPEN, CLOSED, CANCELLED }; // một nhóm các hằng số
-    public Status status;
-    public AuctionSession(User seller, Items item, double startingPrice, double incrementStep, LocalDateTime startTime){
+    private Status status;
+    public AuctionSession(Seller seller, Items item, double startingPrice, double incrementStep, LocalDateTime startTime){
         this.seller = seller;
         this.item = item;
         this.sessionID = IDGenerator.generateSessionId(); // sinh UUID duy nhất cho mỗi phiên đấu giá
@@ -27,20 +27,21 @@ public class AuctionSession {
         this.startTime = startTime;
         this.status = Status.PENDING;
         if (this.seller != null) {
-            this.seller.addCreatedSessions(this); // thêm phiên đấu giá vào lịch sử của người bán
+            this.seller.addCreatedAuctionSession(this); // thêm phiên đấu giá vào lịch sử của người bán
         }
     }
-    public AuctionSession(User seller, Items item, double startingPrice){
+    public AuctionSession(Seller seller, Items item, double startingPrice){
         this(seller, item, startingPrice, 0.1, LocalDateTime.now());
     }
     // Bổ sung Setter
     public void setCurrentPrice(double price) { this.currentPrice = price; }
-    public void setHighestBidder(User user) { this.highestBidder = user; }
+    public void setHighestBidder(Bidder bidder) { this.highestBidder = bidder; }
     public void setStartTime(LocalDateTime time) { this.startTime = time; }
     public void setEndTime(LocalDateTime time) { this.endTime = time; }
+    public void setStatus(Status status) { this.status = status; }
 
     // Bổ sung các Getter
-    public User getSeller() { return seller; }
+    public Seller getSeller() { return seller; }
     public Items getItem() { return item; }
     public double getStartingPrice() { return startingPrice; }
     public double getIncrementStep() { return incrementStep; }
@@ -74,4 +75,22 @@ public class AuctionSession {
             System.out.println("Không có ai tham gia trả giá. Vật phẩm chưa được bán!");
         }
     }
+    public boolean addBid(Bid newBid) {
+    if (newBid == null) {
+        return false;
+    }
+    if (status != Status.OPEN) {
+        System.err.println("Phiên đấu giá không còn hoạt động, không thể đặt giá");
+        return false;
+    }
+    if (newBid.getAmount() <= currentPrice + incrementStep) {
+        System.err.println("Giá đặt phải cao hơn giá hiện tại");
+        return false;
+    }
+    // Thêm bid vào lịch sử
+    bidHistory.add(newBid);
+    // Cập nhật giá hiện tại
+    this.currentPrice = newBid.getAmount();
+    return true;
+}
 }
