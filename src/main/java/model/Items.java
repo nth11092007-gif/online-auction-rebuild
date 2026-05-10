@@ -9,6 +9,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 public abstract class Items {
     //Tích hợp tự động sinh UUID hoặc lấy ID từ Database sau.
@@ -25,9 +26,17 @@ public abstract class Items {
         this.startingPrice = startingPrice;
         this.description = description;
         try {
-            this.avatar = ImageIO.read(new File("src\\main\\resources\\Images\\BaseItem.png"));
+            InputStream inputStream = getClass().getResourceAsStream("/Images/BaseItem.png");
+
+            if (inputStream == null) {
+                logger.error("Không tìm thấy ảnh tại đường dẫn chỉ định!");
+            } else {
+                BufferedImage image = ImageIO.read(inputStream);
+                logger.info("Đọc ảnh thành công!");
+                this.avatar = image;
+            }
         } catch (IOException e) {
-            logger.error("Không tìm thấy ảnh nguồn");
+            e.printStackTrace();
         }
     }
 
@@ -35,9 +44,17 @@ public abstract class Items {
     public void setAvatar(BufferedImage avatar) {this.avatar = avatar;}
     public void setAvatar(String filePath) {
         try {
-            BufferedImage newImage = ImageIO.read(new File(filePath));
+            InputStream inputStream = getClass().getResourceAsStream(filePath);
+
+            if (inputStream == null) {
+                logger.error("Không tìm thấy ảnh tại đường dẫn chỉ định!");
+            } else {
+                BufferedImage image = ImageIO.read(inputStream);
+                logger.info("Đọc ảnh thành công!");
+                this.avatar = image;
+            }
         } catch (IOException e) {
-            logger.error("Ảnh không hợp lệ!");
+            e.printStackTrace();
         }
     }
     public int getItemID() { return itemID; }

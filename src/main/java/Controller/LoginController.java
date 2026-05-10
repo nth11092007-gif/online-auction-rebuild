@@ -89,6 +89,7 @@ public class LoginController {
     void onhandleIn(ActionEvent event) throws UserExisted, PasswordStrengthCheck {
         String UserName = txtUser.getText();
         String Pass = txtPassword.getText();
+        System.out.print(UserName+"/n"+Pass);
         try {
             if (login.getUserByUserName(UserName) != null) {
                 throw new  UserExisted();

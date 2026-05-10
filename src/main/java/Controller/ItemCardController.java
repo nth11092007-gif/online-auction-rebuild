@@ -37,6 +37,9 @@ public class ItemCardController{
         lblDescribe.setText("Mô tả: " + item.getDescription());
         if (item.getAvatar() != null) {
             Image image = SwingFXUtils.toFXImage(item.getAvatar(), null);
+            if (image == null) {
+                System.out.print("Oops something went wrong with database");
+            }
             imgItem.setImage(image);
         }
     }
