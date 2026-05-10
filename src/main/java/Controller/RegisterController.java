@@ -46,7 +46,7 @@ public class RegisterController {
 
     private void switchToHome(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Home.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/HomeSeller.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             Scene scene = new Scene(root);
@@ -56,7 +56,6 @@ public class RegisterController {
             e.printStackTrace();
         }
     }
-
     @FXML
     void onhandleRegister(ActionEvent event) {
         try {

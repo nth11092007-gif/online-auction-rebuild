@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
-public class HomeController {
+public class HomeSellerController {
     private ItemDAO itemDAO = new ItemDAOImpl();
     @FXML
     private FlowPane productContainer;

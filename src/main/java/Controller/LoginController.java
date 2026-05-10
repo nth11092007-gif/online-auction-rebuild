@@ -1,6 +1,5 @@
 package Controller;
 
-import com.sun.javafx.util.Logging;
 import dao.UserDAO;
 import dao.UserDAOImpl;
 import javafx.event.ActionEvent;
@@ -105,7 +104,7 @@ public class LoginController {
             User user = login.login(UserName,Pass);
             if (user.getRole() == User.Role.USER ) {
                 try{
-                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/Home.fxml"));
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/Login.fxml"));
                     Parent root = loader.load();
                     Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
                     Scene scene = new Scene(root);

@@ -10,7 +10,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<ScrollPane fitToWidth="true" prefHeight="800.0" prefWidth="1200.0" style="-fx-background-color: #f8f9fa;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.HomeController">
+<ScrollPane fitToWidth="true" prefHeight="800.0" prefWidth="1200.0" style="-fx-background-color: #f8f9fa;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.HomeBidderController">
     <content>
         <VBox spacing="25.0" style="-fx-background-color: #f8f9fa;">
             <padding>
@@ -22,9 +22,6 @@
                     <font><Font name="System Bold" size="24.0" /></font>
                 </Label>
                 <HBox alignment="CENTER_RIGHT" spacing="15.0" HBox.hgrow="ALWAYS">
-                    <Button onAction="#GoToCreateSession" style="-fx-background-color: transparent; -fx-cursor: hand;" text="+ Tạo phiên">
-                        <font><Font size="14.0" /></font>
-                    </Button>
                     <Button onAction="#GoToProfile" style="-fx-background-color: transparent; -fx-cursor: hand;" text="👤 Tài khoản">
                         <font><Font size="14.0" /></font>
                     </Button>
