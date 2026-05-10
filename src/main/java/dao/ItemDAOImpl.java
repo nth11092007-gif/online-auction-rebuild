@@ -7,6 +7,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -177,5 +179,27 @@ public class ItemDAOImpl implements ItemDAO {
         }
         
         return null;
+    }
+    @Override
+    public List<Items> getAllItems() {
+        try (Connection conn = DBConnection.getConnection()) {
+            return getAllItems(conn);
+        } catch (SQLException e) {
+            logger.error("Lỗi khi lấy tất cả items: {}", e.getMessage(), e);
+            return new ArrayList<>();
+        }
+    }
+    @Override
+    public List<Items> getAllItems(Connection conn) throws SQLException {
+        String sql = "SELECT * FROM items";
+        try (Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            List<Items> itemList = new ArrayList<>();
+            while (rs.next()) {
+                itemList.add(extractItemFromResultSet(rs));
+            }
+            return itemList;
+        }
     }
 }
