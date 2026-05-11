@@ -110,4 +110,10 @@ public class User implements Bidder, Seller {
     public void setID(int id) {
         this.id = id;
     }
+    public void setUsername(String username) {
+        this.username = username;
+    }
+    public void setPassword(String password) {
+        this.password = password;
+    }
 }

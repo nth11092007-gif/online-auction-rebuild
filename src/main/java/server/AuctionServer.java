@@ -1,28 +1,31 @@
 package server;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import java.net.InetSocketAddress;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import server.command.*;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import dto.Message;
+import server.command.Command;
+import server.command.GetSessionsCommand;
+import server.command.GetUserCommand;
+import server.command.JoinSessionCommand;
+import server.command.PlaceBidCommand;
+import server.command.SettleSessionCommand;
 import service.AuctionService;
 import service.SettlementService;
 import service.UserService;
-
-import com.google.gson.Gson;
-
-import java.net.InetSocketAddress;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import dto.Message;
 
 public class AuctionServer extends WebSocketServer {
     private final Gson gson = new Gson();
@@ -52,7 +55,7 @@ public class AuctionServer extends WebSocketServer {
         // Khởi tạo command map (sau khi feedServer đã có)
         commandMap.put("GET_SESSIONS", new GetSessionsCommand(auctionService));
         commandMap.put("GET_USER", new GetUserCommand(userService));
-        commandMap.put("JOIN", new JoinSessionCommand(sessionSubscribers, feedServer));
+        commandMap.put("JOIN", new JoinSessionCommand(sessionSubscribers, feedServer, auctionService, userService));
         commandMap.put("BID", new PlaceBidCommand(auctionService, userService)); // PlaceBidCommand cần inject cả userService
         commandMap.put("SETTLE", new SettleSessionCommand(settlementService, feedServer));
     }

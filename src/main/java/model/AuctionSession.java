@@ -83,14 +83,29 @@ public class AuctionSession {
         System.err.println("Phiên đấu giá không còn hoạt động, không thể đặt giá");
         return false;
     }
-    if (newBid.getAmount() <= currentPrice + incrementStep) {
-        System.err.println("Giá đặt phải cao hơn giá hiện tại");
+    if (highestBidder == null) {
+        if (newBid.getAmount() < startingPrice) {
+            System.err.println("Giá đặt phải ít nhất bằng giá khởi điểm");
+            return false;
+        }
+    } 
+    else {
+    if (newBid.getBidder().getID() == highestBidder.getID()) {
+        System.err.println("Bạn đã là người đặt giá cao nhất, không thể đặt giá tiếp");
         return false;
+    }
+    if (newBid.getAmount() <= currentPrice + incrementStep) {
+        System.err.println("Giá đặt phải cao hơn giá hiện tại ít nhất một bước giá (" + incrementStep + ")");
+        return false;
+    }
     }
     // Thêm bid vào lịch sử
     bidHistory.add(newBid);
     // Cập nhật giá hiện tại
     this.currentPrice = newBid.getAmount();
+    // Cập nhật người đặt giá cao nhất
+    this.highestBidder = newBid.getBidder();
+    System.out.println("Bid mới: " + newBid.getBidder().getUsername()   + " đặt " + newBid.getAmount() + " cho phiên " + sessionID);
     return true;
-}
+    }
 }
