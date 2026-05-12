@@ -29,7 +29,7 @@ public class AuctionSessionDAOImpl implements AuctionSessionDAO {
     // =========================================================================
     // 1. TẠO PHIÊN ĐẤU GIÁ
     // =========================================================================
-    
+
     @Override
     public boolean createSession(Connection conn, AuctionSession session, int itemId) throws SQLException {
         // Đảm bảo session có startTime và endTime
@@ -46,9 +46,9 @@ public class AuctionSessionDAOImpl implements AuctionSessionDAO {
         }
         int durationDays = (int) Duration.between(startTime, endTime).toDays();
         if (durationDays < 0) durationDays = 0;
-        
+
         String sql = "INSERT INTO auction_sessions (session_id, owner_id, item_id, starting_price, step_price, "
-                   + "start_time, end_time, duration_days, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                + "start_time, end_time, duration_days, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, session.getSessionID());
             pstmt.setInt(2, session.getSeller().getID());
@@ -92,14 +92,14 @@ public class AuctionSessionDAOImpl implements AuctionSessionDAO {
                     LocalDateTime startTime = startTs != null ? startTs.toLocalDateTime() : null;
                     LocalDateTime endTime = endTs != null ? endTs.toLocalDateTime() : null;
                     int extensionCount = rs.getInt("extension_count"); // nếu cột tồn tại
-                    
+
                     // Tạo session (constructor có startTime)
                     AuctionSession session = new AuctionSession(seller, item, startingPrice, stepPrice, startTime);
                     session.setEndTime(endTime);
                     session.setStatus(AuctionSession.Status.valueOf(rs.getString("status")));
                     // Nếu model có extensionCount, set vào
                     // session.setExtensionCount(extensionCount);
-                    
+
                     // Lấy currentPrice và highestBidder từ bids
                     List<Bid> bids = bidDAO.getBidsBySession(conn, sessionId);
                     if (bids != null && !bids.isEmpty()) {
@@ -210,7 +210,7 @@ public class AuctionSessionDAOImpl implements AuctionSessionDAO {
     public AuctionSession getSessionForUpdate(Connection conn, String sessionId) throws SQLException {
         // Sử dụng cùng logic với getSessionById nhưng có FOR UPDATE trong SQL để khoá dòng
         String sql = "SELECT * FROM auction_sessions WHERE session_id = ? FOR UPDATE";
-         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, sessionId);
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
@@ -222,11 +222,11 @@ public class AuctionSessionDAOImpl implements AuctionSessionDAO {
                     Timestamp endTs = rs.getTimestamp("end_time");
                     LocalDateTime startTime = startTs != null ? startTs.toLocalDateTime() : null;
                     LocalDateTime endTime = endTs != null ? endTs.toLocalDateTime() : null;
-                    
+
                     AuctionSession session = new AuctionSession(seller, item, startingPrice, stepPrice, startTime);
                     session.setEndTime(endTime);
                     session.setStatus(AuctionSession.Status.valueOf(rs.getString("status")));
-                    
+
                     List<Bid> bids = bidDAO.getBidsBySession(conn, sessionId);
                     if (bids != null && !bids.isEmpty()) {
                         Bid highestBid = bids.get(0);
@@ -239,7 +239,7 @@ public class AuctionSessionDAOImpl implements AuctionSessionDAO {
                 }
             }
         }
-    catch (SQLException e) {
+        catch (SQLException e) {
             logger.error("Lỗi khi lấy phiên đấu giá có khoá theo ID {}: {}", sessionId, e.getMessage(), e);
         }
         return null;
@@ -267,7 +267,7 @@ public class AuctionSessionDAOImpl implements AuctionSessionDAO {
         return false;
     }
 
-    @Override 
+    @Override
     public boolean updateCurrentPrice(Connection conn, String sessionId, double newPrice) {
         String sql = "UPDATE auction_sessions SET current_price = ? WHERE session_id = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -278,34 +278,5 @@ public class AuctionSessionDAOImpl implements AuctionSessionDAO {
             logger.error("Lỗi cập nhật giá hiện tại phiên {}: {}", sessionId, e.getMessage(), e);
         }
         return false;
-    }
-
-    // Hàm phụ trợ giúp chuyển đổi ResultSet thành Object
-    private AuctionSession mapResultSetToSession(ResultSet rs) throws SQLException {
-        String sessionId = rs.getString("session_id");
-        int ownerId = rs.getInt("owner_id");
-        User seller = userDAO.getUserById(ownerId);
-        double startingPrice = rs.getDouble("starting_price");
-        double stepPrice = rs.getDouble("step_price");
-        int durationDays = rs.getInt("duration_days");
-        AuctionSession.Status status = AuctionSession.Status.valueOf(rs.getString("status").toUpperCase());
-
-        LocalDateTime startTime = rs.getTimestamp("created_at") != null ?
-                rs.getTimestamp("created_at").toLocalDateTime() : LocalDateTime.now();
-        LocalDateTime endTime = startTime.plusDays(durationDays);
-
-        // Lấy dữ liệu Bid để tính giá hiện tại và người đang trả giá cao nhất
-        double currentPrice = startingPrice;
-        User highestBidder = null;
-        List<Bid> bids = bidDAO.getBidsBySession(sessionId);
-        if (bids != null && !bids.isEmpty()) {
-            Bid highestBid = bids.get(0);
-            currentPrice = highestBid.getAmount();
-            highestBidder = highestBid.getBidder();
-        }
-
-        // Truyền vào Constructor đầy đủ
-        return new AuctionSession(sessionId, seller, startingPrice, stepPrice,
-                currentPrice, highestBidder, startTime, endTime, status);
     }
 }
