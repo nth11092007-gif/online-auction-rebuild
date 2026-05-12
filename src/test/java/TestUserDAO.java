@@ -37,12 +37,15 @@ public class TestUserDAO {
         }
         System.out.println("\n[Test 3]: Nạp thêm tiền cho Admin");
         // Giả sử nạp thêm 500k vào ví, tiền cọc giữ nguyên
-        boolean napTien = userDAO.updateBalance(admin.getID(), admin.getBalance() + 500000, admin.getFrozenBalance());
-        
-        if (napTien) {
-            System.out.println("-> Cập nhật số dư THÀNH CÔNG!");
-        } else {
-            System.out.println("-> LỖI: Không thể cập nhật tiền.");
+        try {
+            boolean napTien = userDAO.updateBalance(admin.getID(), admin.getBalance() + 500000, admin.getFrozenBalance());
+            if (napTien) {
+                System.out.println("-> Cập nhật số dư THÀNH CÔNG!");
+            } else {
+                System.out.println("-> LỖI: Không thể cập nhật tiền.");
+            }
+        } catch (Exception e) {
+            System.out.println("-> LỖI: Exception khi cập nhật tiền - " + e.getMessage());
         }
     }
 }

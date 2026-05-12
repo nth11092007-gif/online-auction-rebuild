@@ -1,12 +1,13 @@
 package model;
-// ItemsAttributes chứa tất cả các thuộc tính đầu vào để tạo Items.
-// Hỗ trợ khắc phục việc tạo nhiều tham số trong Factory.
-// Nhược điểm hiện tại: Có thể tạo ra nhiều giá trị null với các thuộc tính không tương thích.
-// Nên refactor sang Builder Pattern (Creational Pattern) để tối ưu việc khởi tạo.
 
 import java.awt.image.BufferedImage;
 import java.time.LocalDate;
-
+/* 
+    * Lớp này chứa các thuộc tính chung cho tất cả các loại mặt hàng
+    * và các thuộc tính riêng biệt cho từng loại mặt hàng (Arts, Electronics, Vehicles).
+    * Sử dụng Builder Pattern để tạo đối tượng một cách linh hoạt và 
+    * dễ dàng mở rộng trong tương lai nếu cần thêm loại mặt hàng mới hoặc thuộc tính mới.
+ */
 public class ItemsAttributes {
     // Thuoc tinh chung
     private String owner;
@@ -15,58 +16,99 @@ public class ItemsAttributes {
     private BufferedImage avatar;
 
     // Thuoc tinh rieng cho Arts
-    private String artistName;
-    private LocalDate releaseDate;
+    private final String artistName;
+    private final LocalDate releaseDate;
 
     // Thuoc tinh rieng cho Electronics / Vehicles
-    private int warranty;
-    private String brand;
-    private int mileage;
-    private String vehicleID;
+    private final int warranty;
+    private final String brand;
+    private final int mileage;
+    private final String vehicleID;
 
-    public String getOwner(){ return this.owner; }
-    public double getStartingPrice(){ return this.startingPrice; }
-    public String getDescription(){ return this.description; }
-    public String getArtistName(){ return this.artistName; }
-    public LocalDate getReleaseDate(){ return this.releaseDate; }
-    public int getWarranty(){ return this.warranty; }
-    public String getBrand(){ return this.brand; }
-    public int getMileage(){ return this.mileage; }
-    public String getVehicleID(){ return this.vehicleID; }
-
-    public void setOwner(String owner) {
-        this.owner = owner;
+    // Private constructor: Chỉ Builder mới có quyền gọi
+    private ItemsAttributes(Builder builder) {
+        this.owner = builder.owner;
+        this.startingPrice = builder.startingPrice;
+        this.description = builder.description;
+        this.artistName = builder.artistName;
+        this.releaseDate = builder.releaseDate;
+        this.warranty = builder.warranty;
+        this.brand = builder.brand;
+        this.mileage = builder.mileage;
+        this.vehicleID = builder.vehicleID;
     }
 
-    public void setStartingPrice(double startingPrice) {
-        this.startingPrice = startingPrice;
-    }
+    // Getters (Không có Setters để đảm bảo an toàn dữ liệu)
+    public User getOwner() { return owner; }
+    public String getOwnerName() { return owner != null ? owner.getUsername() : "Unknown"; }
+    public double getStartingPrice() { return startingPrice; }
+    public String getDescription() { return description; }
+    public String getArtistName() { return artistName; }
+    public LocalDate getReleaseDate() { return releaseDate; }
+    public int getWarranty() { return warranty; }
+    public String getBrand() { return brand; }
+    public int getMileage() { return mileage; }
+    public String getVehicleID() { return vehicleID; }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
+    // --- Static Inner Class Builder ---
+    public static class Builder {
+        // Required parameters (Các thuộc tính bắt buộc)
+        private final User owner;
+        private final double startingPrice;
 
-    public void setReleaseDate(LocalDate releaseDate) {
-        this.releaseDate = releaseDate;
-    }
+        // Optional parameters (Các thuộc tính tùy chọn - khởi tạo giá trị mặc định)
+        private String description = "";
+        private String artistName = null;
+        private LocalDate releaseDate = null;
+        private int warranty = 0;
+        private String brand = null;
+        private int mileage = 0;
+        private String vehicleID = null;
 
-    public void setArtistName(String artistName) {
-        this.artistName = artistName;
-    }
+        // Constructor cho các tham số bắt buộc
+        public Builder(User owner, double startingPrice) {
+            this.owner = owner;
+            this.startingPrice = startingPrice;
+        }
 
-    public void setWarranty(int warranty) {
-        this.warranty = warranty;
-    }
+        public Builder description(String description) {
+            this.description = description;
+            return this;
+        }
 
-    public void setBrand(String brand) {
-        this.brand = brand;
-    }
+        public Builder artistName(String artistName) {
+            this.artistName = artistName;
+            return this;
+        }
 
-    public void setMileage(int mileage) {
-        this.mileage = mileage;
-    }
+        public Builder releaseDate(LocalDate releaseDate) {
+            this.releaseDate = releaseDate;
+            return this;
+        }
 
-    public void setVehicleID(String vehicleID) {
-        this.vehicleID = vehicleID;
+        public Builder warranty(int warranty) {
+            this.warranty = warranty;
+            return this;
+        }
+
+        public Builder brand(String brand) {
+            this.brand = brand;
+            return this;
+        }
+
+        public Builder mileage(int mileage) {
+            this.mileage = mileage;
+            return this;
+        }
+
+        public Builder vehicleID(String vehicleID) {
+            this.vehicleID = vehicleID;
+            return this;
+        }
+
+        // Phương thức cuối cùng để tạo object
+        public ItemsAttributes build() {
+            return new ItemsAttributes(this);
+        }
     }
 }

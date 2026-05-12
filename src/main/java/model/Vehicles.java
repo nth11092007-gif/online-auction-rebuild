@@ -1,14 +1,11 @@
 package model;
-
-import java.io.IOException;
-
 public class Vehicles extends Items{
     private final String brand;
     private final int mileage;
     private final String vehicleID;
 
-    public Vehicles(int itemID, String owner, double startingPrice, String description, String brand, int mileage, String vehicleID){
-        super(itemID, owner, startingPrice, description);
+    public Vehicles(int itemID, String ownerName, double startingPrice, String description, String brand, int mileage, String vehicleID) {
+        super(itemID, ownerName, startingPrice, description);
         this.brand = brand;
         this.mileage = mileage;
         this.vehicleID = vehicleID;
@@ -26,6 +23,6 @@ public class Vehicles extends Items{
 
     @Override
     public String showInfo() {
-        return "Current Item: \nType: Vehicle\n Owner: " + getOwner() + "\nBrand: " + getBrand() + "\nLicense Plate: " + getVehicleID() + "\nMileage: " + getMileage() + "\nDescription: " + getDescription() + "\nStarting Price: " + getStartingPrice();
+        return "Current Item: \nType: Vehicle\n Owner: " + getOwnerName() + "\nBrand: " + getBrand() + "\nLicense Plate: " + getVehicleID() + "\nMileage: " + getMileage() + "\nDescription: " + getDescription() + "\nStarting Price: " + getStartingPrice();
     }
 }

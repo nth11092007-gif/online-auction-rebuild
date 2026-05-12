@@ -1,6 +1,7 @@
 package model;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 /* 
 Mẫu thiết kế áp dụng: "Bill Pugh Singleton - sử dụng một static inner class (lớp tĩnh bên trong). 
 Lớp tĩnh này chỉ được JVM tải vào bộ nhớ và khởi tạo đối tượng khi hàm getInstance() được gọi lần đầu tiên (Lazy Loading),
@@ -10,7 +11,7 @@ Lớp tĩnh này chỉ được JVM tải vào bộ nhớ và khởi tạo đố
 public class AuctionManager {
     final List<AuctionSession> auctionList; // final để không thay đổi tham chiếu, vẫn có thể thay đổi nội dung bên trong
     private AuctionManager(){
-        this.auctionList = new ArrayList<AuctionSession>();
+        this.auctionList = new ArrayList<>();
     };
     private static class SingletonHelper {
         private static final AuctionManager AUCTION_MANAGER = new AuctionManager();
@@ -30,7 +31,7 @@ public class AuctionManager {
     public List<AuctionSession> getSessionsByStatus(AuctionSession.Status status) {
         List<AuctionSession> filteredList = new ArrayList<>();
         for (AuctionSession session : auctionList) {
-            if (session.status == status) {
+            if (session.getStatus().equals(status)) {
                 filteredList.add(session);
             }
         }

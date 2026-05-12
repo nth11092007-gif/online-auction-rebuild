@@ -1,94 +1,58 @@
 package model;
 
-import java.time.*;
-import java.util.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+
+import utils.IDGenerator;
 
 public class AuctionSession {
-    private User seller;
+    private Seller seller;
+    private Items item;
     final private String sessionID;
     final private double startingPrice;
     final private double incrementStep;
     private double currentPrice;
-    private User highestBidder = null;
-    private ArrayList<Bid> bidHistory = new ArrayList<Bid>();
+    private Bidder highestBidder = null;
+    final private ArrayList<Bid> bidHistory = new ArrayList<>();
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     public enum Status { PENDING, OPEN, CLOSED, CANCELLED }; // một nhóm các hằng số
-    public Status status;
-
-    public AuctionSession(User seller, String sessionID, double startingPrice, double incrementStep, int openDays){
+    private Status status;
+    public AuctionSession(Seller seller, Items item, double startingPrice, double incrementStep, LocalDateTime startTime){
         this.seller = seller;
-        this.sessionID = sessionID;
+        this.item = item;
+        this.sessionID = IDGenerator.generateSessionId(); // sinh UUID duy nhất cho mỗi phiên đấu giá
         this.startingPrice = startingPrice;
         this.incrementStep = incrementStep;
-        this.startTime = LocalDateTime.now();
-        this.endTime = startTime.plusDays(openDays);
+        this.startTime = startTime;
         this.status = Status.PENDING;
         if (this.seller != null) {
-            this.seller.addCreatedSessions(this); // thêm phiên đấu giá vào lịch sử của người bán
+            this.seller.addCreatedAuctionSession(this); // thêm phiên đấu giá vào lịch sử của người bán
         }
     }
-    public AuctionSession(User seller, String sessionID, double startingPrice){
-        this(seller, sessionID, startingPrice, 0.1, 3);
+    public AuctionSession(Seller seller, Items item, double startingPrice){
+        this(seller, item, startingPrice, 0.1, LocalDateTime.now());
     }
-    // Constructor đầy đủ cho DAO khi lấy từ Database
-    public AuctionSession(String sessionID, User seller, double startingPrice, double incrementStep,
-                          double currentPrice, User highestBidder, LocalDateTime startTime,
-                          LocalDateTime endTime, Status status) {
-        this.sessionID = sessionID;
-        this.seller = seller;
-        this.startingPrice = startingPrice;
-        this.incrementStep = incrementStep;
-        this.currentPrice = currentPrice;
-        this.highestBidder = highestBidder;
-        this.startTime = startTime;
-        this.endTime = endTime;
-        this.status = status;
-    }
-    // Bổ sung Getter
-    public String getSessionID(){
-        return this.sessionID;
-    }
+    // Bổ sung Setter
+    public void setCurrentPrice(double price) { this.currentPrice = price; }
+    public void setHighestBidder(Bidder bidder) { this.highestBidder = bidder; }
+    public void setStartTime(LocalDateTime time) { this.startTime = time; }
+    public void setEndTime(LocalDateTime time) { this.endTime = time; }
+    public void setStatus(Status status) { this.status = status; }
+
+    // Bổ sung các Getter
+    public Seller getSeller() { return seller; }
+    public Items getItem() { return item; }
     public double getStartingPrice() { return startingPrice; }
-    public ArrayList<Bid> getBidHistory() { return bidHistory; }
-    public double getCurrentPrice() { return currentPrice; }
     public double getIncrementStep() { return incrementStep; }
-    public LocalDateTime getEndTime() { return endTime; }
+    public double getCurrentPrice() { return currentPrice; }
     public LocalDateTime getStartTime() { return startTime; }
-    public Status getStatus() { return status; }
-    public User getHighestBidder() { return highestBidder; }
-    public User getSeller() { return seller; }
-
-    public boolean isValidBid(double amount){
-        if (this.status != Status.OPEN) {
-            System.out.println("Phiên đấu giá chưa mở hoặc đã kết thúc!");
-            return false;
-        }
-        if (amount >= currentPrice + incrementStep) {
-            return true;
-        }
-        else {
-            return false;
-        }
+    public LocalDateTime getEndTime() { return endTime; }
+    public String getSessionID(){
+         return this.sessionID;
     }
-    public synchronized boolean placeBid(User user, double amount){
-        if (!isValidBid(amount)){
-            return false; // bid sai luật thì không cho bid
-        }
-        if (amount > user.getBalance()){
-            System.out.println("Tài khoản của " + user.getUsername() + " không đủ tiền để thực hiện lượt đấu giá.");
-            return false; // không đủ tiền thì không cho bid
-        }
-        this.currentPrice = amount;
-        this.highestBidder = user;
-
-        Bid newBid = new Bid(user, amount);
-        bidHistory.add(newBid); // lưu lịch sử bid
-        if (!user.getJoinedAuctionSessions().contains(this)) {
-            user.addJoinedSessions(this); // thêm phiên đấu giá vào lịch sử của người bid
-        }
-        System.out.println("Người dùng " + user.getUsername() + " đã đấu giá thành công!");
-        return true;
+    public Status getStatus(){
+        return this.status;
     }
     public void startSession(int openDays) {
         this.status = Status.OPEN;
@@ -111,4 +75,22 @@ public class AuctionSession {
             System.out.println("Không có ai tham gia trả giá. Vật phẩm chưa được bán!");
         }
     }
+    public boolean addBid(Bid newBid) {
+    if (newBid == null) {
+        return false;
+    }
+    if (status != Status.OPEN) {
+        System.err.println("Phiên đấu giá không còn hoạt động, không thể đặt giá");
+        return false;
+    }
+    if (newBid.getAmount() <= currentPrice + incrementStep) {
+        System.err.println("Giá đặt phải cao hơn giá hiện tại");
+        return false;
+    }
+    // Thêm bid vào lịch sử
+    bidHistory.add(newBid);
+    // Cập nhật giá hiện tại
+    this.currentPrice = newBid.getAmount();
+    return true;
+}
 }

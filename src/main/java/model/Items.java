@@ -14,15 +14,16 @@ import java.io.InputStream;
 public abstract class Items {
     //Tích hợp tự động sinh UUID hoặc lấy ID từ Database sau.
     protected int itemID;
-    protected String owner;
+    protected String ownerName;
     protected double startingPrice;
     protected String description;
     protected BufferedImage avatar;
     private static Logger logger = LoggerFactory.getLogger(Items.class);
 
-    public Items(int itemID, String owner, double startingPrice, String description) {
+
+    public Items(int itemID, String ownerName, double startingPrice, String description) {
         this.itemID = itemID;
-        this.owner = owner;
+        this.ownerName = ownerName;
         this.startingPrice = startingPrice;
         this.description = description;
         try {
@@ -60,6 +61,9 @@ public abstract class Items {
     public int getItemID() { return itemID; }
     public String getOwner() {
         return owner;
+    public int getItemID() { return itemID; }
+    public String getOwnerName() {
+        return ownerName;
     }
     public double getStartingPrice() {
         return startingPrice;

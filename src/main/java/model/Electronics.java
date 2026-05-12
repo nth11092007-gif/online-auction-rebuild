@@ -1,13 +1,10 @@
 package model;
-
-import java.io.IOException;
-
 public class Electronics extends Items{
     private final int warranty;
     private final String brand;
 
-    public Electronics(int itemID, String owner, double startingPrice, String description, int warranty, String brand) {
-        super(itemID, owner, startingPrice, description);
+    public Electronics(int itemID, String ownerName, double startingPrice, String description, int warranty, String brand) {
+        super(itemID, ownerName, startingPrice, description);
         this.warranty = warranty;
         this.brand = brand;
     }
@@ -21,6 +18,6 @@ public class Electronics extends Items{
 
     @Override
     public String showInfo() {
-        return "Current Item: \nType: Electronic\n Owner: " + getOwner() + "\nBrand: " + getBrand() + "\nWarranty Period: " + getWarranty()+ "\nDescription: " + getDescription() + "\nStarting Price: " + getStartingPrice();
+        return "Current Item: \nType: Electronic\n Owner: " + getOwnerName() + "\nBrand: " + getBrand() + "\nWarranty Period: " + getWarranty()+ "\nDescription: " + getDescription() + "\nStarting Price: " + getStartingPrice();
     }
 }

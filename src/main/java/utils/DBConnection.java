@@ -1,43 +1,59 @@
 package utils;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+
 public class DBConnection {
-    // 1. Thông tin cấu hình kết nối
-    // Thay "quan_ly_dau_gia" bằng tên Database bạn đã tạo trong phpMyAdmin
-    private static final String URL = "jdbc:mysql://localhost:3306/quan_ly_dau_gia?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
-    private static final String USER = "root";
-    private static final String PASSWORD = ""; // Mặc định XAMPP để trống mật khẩu
-    private static final String DRIVER = "com.mysql.cj.jdbc.Driver";
+    private static final Logger logger = LoggerFactory.getLogger(DBConnection.class);
+    private static HikariDataSource dataSource;
 
-    /**
-     * Phương thức trả về đối tượng Connection để thực thi SQL
-     */
-    public static Connection getConnection() {
-        Connection conn = null;
+    static {
         try {
-            // Đăng ký Driver với DriverManager
-            Class.forName(DRIVER);
+            // Cấu hình HikariCP
+            HikariConfig config = new HikariConfig();
+            config.setJdbcUrl("jdbc:mysql://localhost:3306/quan_ly_dau_gia?allowMultiQueries=true&useSSL=false&serverTimezone=Asia/Ho_Chi_Minh");
+            config.setUsername("root");
+            config.setPassword("root");
 
-            // Thực hiện kết nối
-            conn = DriverManager.getConnection(URL, USER, PASSWORD);
+            // Tối ưu pool
+            config.setMaximumPoolSize(10);
+            config.setMinimumIdle(2);
+            config.setConnectionTimeout(30000);
+            config.setIdleTimeout(600000);
+            config.setMaxLifetime(1800000);
+            config.setConnectionTestQuery("SELECT 1");
+            config.setPoolName("HikariPool-DauGia");
+            config.setDriverClassName("com.mysql.cj.jdbc.Driver");
 
-        } catch (ClassNotFoundException e) {
-            System.err.println("❌ Lỗi: Không tìm thấy MySQL Driver. Hãy kiểm tra lại thư viện .jar hoặc Dependency!");
-            e.printStackTrace();
-        } catch (SQLException e) {
-            System.err.println("❌ Lỗi: Không thể kết nối đến Database. Hãy kiểm tra XAMPP (Apache/MySQL)!");
-            e.printStackTrace();
+            dataSource = new HikariDataSource(config);
+            logger.info("✅ HikariCP DataSource khởi tạo thành công!");
+        } catch (Exception e) {
+            logger.error("❌ Lỗi khởi tạo HikariCP: {}", e.getMessage(), e);
+            throw new ExceptionInInitializerError(e);
         }
-        return conn;
     }
 
-    // Hàm main để chạy thử xem kết nối đã thông chưa
-    public static void main(String[] args) {
-        if (getConnection() != null) {
-            System.out.println("🎉 Chúc mừng! Kết nối Java với MySQL thành công.");
+    public static Connection getConnection() throws SQLException {
+        if (dataSource == null) {
+            throw new SQLException("HikariDataSource chưa được khởi tạo");
+        }
+        return dataSource.getConnection();
+    }
+
+    public static HikariDataSource getDataSource() {
+        return dataSource;
+    }
+
+    public static void closePool() {
+        if (dataSource != null && !dataSource.isClosed()) {
+            dataSource.close();
+            logger.info("🔌 HikariCP connection pool đã đóng.");
         }
     }
 }

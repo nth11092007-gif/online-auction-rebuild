@@ -1,0 +1,85 @@
+package service;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import dao.AuctionSessionDAO;
+import dao.AuctionSessionDAOImpl;
+import dao.BidDAO;
+import dao.BidDAOImpl;
+import dao.ItemDAO;
+import dao.ItemDAOImpl;
+import dao.UserDAO;
+import dao.UserDAOImpl;
+import model.AuctionSession;
+import model.Bid;
+import utils.DBConnection;
+
+public class SettlementService {
+    private static final Logger logger = LoggerFactory.getLogger(SettlementService.class);
+    private final AuctionSessionDAO sessionDAO = new AuctionSessionDAOImpl();
+    private final BidDAO bidDAO = new BidDAOImpl();
+    private final UserDAO userDAO = new UserDAOImpl();
+    private final ItemDAO itemDAO = new ItemDAOImpl();
+
+    /**
+     * Hàm xử lý kết thúc phiên đấu giá
+     */
+    public boolean settleAuction(String sessionId) {
+        Connection conn = null;
+        try {
+            conn = DBConnection.getConnection();
+            conn.setAutoCommit(false);
+
+            AuctionSession session = sessionDAO.getSessionById(conn, sessionId);
+            if (session == null || session.getStatus() != AuctionSession.Status.OPEN) {
+                logger.warn("Phiên đấu giá {} không tồn tại hoặc không ở trạng thái OPEN", sessionId);
+                return false;
+            }
+
+            Bid winningBid = bidDAO.getHighestBid(conn, sessionId);
+
+            if (winningBid != null) {
+                int buyerId = winningBid.getBidder().getID();
+                int sellerId = session.getSeller().getID();
+                double finalPrice = winningBid.getAmount();
+
+                userDAO.deductFrozenMoneyAtomic(conn, buyerId, finalPrice);
+                userDAO.addMoneyAtomic(conn, sellerId, finalPrice);
+                itemDAO.updateItemOwner(conn, session.getItem().getItemID(), buyerId);
+
+                logger.info("Đấu giá thành công! Phiên {}, giá {}, người mua ID: {}", sessionId, finalPrice, buyerId);
+            } else {
+                logger.info("Phiên đấu giá {} kết thúc. Không có ai đặt giá.", sessionId);
+            }
+
+            sessionDAO.updateSessionStatusAtomic(conn, sessionId, AuctionSession.Status.CLOSED);
+            conn.commit();
+            return true;
+
+        } catch (Exception e) {
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                    logger.warn("Đã rollback transaction cho session {}", sessionId);
+                } catch (SQLException ex) {
+                    logger.error("Lỗi khi rollback transaction: {}", ex.getMessage(), ex);
+                }
+            }
+            logger.error("Lỗi hệ thống khi chốt phiên {}: {}", sessionId, e.getMessage(), e);
+            return false;
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (SQLException e) {
+                    logger.error("Lỗi khi đóng kết nối: {}", e.getMessage(), e);
+                }
+            }
+        }
+    }
+}
