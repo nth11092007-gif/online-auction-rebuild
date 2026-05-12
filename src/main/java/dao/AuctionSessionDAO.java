@@ -25,7 +25,4 @@ public interface AuctionSessionDAO {
 
     // 3. Cập nhật trạng thái phiên
     boolean updateSessionStatus(String sessionId, AuctionSession.Status status);
-
-    // Bổ sung lấy danh sách phục vụ hiển thị
-    List<AuctionSession> getAllSessions();
 }

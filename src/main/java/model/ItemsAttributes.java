@@ -1,19 +1,17 @@
 package model;
 
-import java.awt.image.BufferedImage;
 import java.time.LocalDate;
-/* 
-    * Lớp này chứa các thuộc tính chung cho tất cả các loại mặt hàng
-    * và các thuộc tính riêng biệt cho từng loại mặt hàng (Arts, Electronics, Vehicles).
-    * Sử dụng Builder Pattern để tạo đối tượng một cách linh hoạt và 
-    * dễ dàng mở rộng trong tương lai nếu cần thêm loại mặt hàng mới hoặc thuộc tính mới.
+/*
+ * Lớp này chứa các thuộc tính chung cho tất cả các loại mặt hàng
+ * và các thuộc tính riêng biệt cho từng loại mặt hàng (Arts, Electronics, Vehicles).
+ * Sử dụng Builder Pattern để tạo đối tượng một cách linh hoạt và
+ * dễ dàng mở rộng trong tương lai nếu cần thêm loại mặt hàng mới hoặc thuộc tính mới.
  */
 public class ItemsAttributes {
-    // Thuoc tinh chung
-    private String ownerName;
-    private double startingPrice;
-    private String description;
-    private BufferedImage avatar;
+    // Thuoc tinh chung (Immutable)
+    private final User owner;
+    private final double startingPrice;
+    private final String description;
 
     // Thuoc tinh rieng cho Arts
     private final String artistName;
@@ -27,7 +25,7 @@ public class ItemsAttributes {
 
     // Private constructor: Chỉ Builder mới có quyền gọi
     private ItemsAttributes(Builder builder) {
-        this.ownerName = builder.build().getOwnerName();
+        this.owner = builder.owner;
         this.startingPrice = builder.startingPrice;
         this.description = builder.description;
         this.artistName = builder.artistName;
