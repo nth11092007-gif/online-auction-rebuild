@@ -59,9 +59,6 @@ public abstract class Items {
         }
     }
     public int getItemID() { return itemID; }
-    public String getOwner() {
-        return owner;
-    public int getItemID() { return itemID; }
     public String getOwnerName() {
         return ownerName;
     }

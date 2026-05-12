@@ -19,7 +19,4 @@ public interface ItemDAO {
     void setAvatar(int id, File file);
     List<Items> getAllItems() throws SQLException;
     List<Items> getAllItems(Connection conn) throws SQLException;
-
-    List<Items> getAllItems();
-    List<Items> getAllItems(Connection conn) throws SQLException;
 }

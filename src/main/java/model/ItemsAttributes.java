@@ -10,7 +10,7 @@ import java.time.LocalDate;
  */
 public class ItemsAttributes {
     // Thuoc tinh chung
-    private String owner;
+    private String ownerName;
     private double startingPrice;
     private String description;
     private BufferedImage avatar;
@@ -27,7 +27,7 @@ public class ItemsAttributes {
 
     // Private constructor: Chỉ Builder mới có quyền gọi
     private ItemsAttributes(Builder builder) {
-        this.owner = builder.owner;
+        this.ownerName = builder.build().getOwnerName();
         this.startingPrice = builder.startingPrice;
         this.description = builder.description;
         this.artistName = builder.artistName;

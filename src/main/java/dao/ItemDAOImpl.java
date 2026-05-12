@@ -1,11 +1,8 @@
 package dao;
 
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +15,8 @@ import model.Electronics;
 import model.Items;
 import model.Vehicles;
 import utils.DBConnection;
+
+import javax.imageio.ImageIO;
 
 public class ItemDAOImpl implements ItemDAO {
 
@@ -41,11 +40,15 @@ public class ItemDAOImpl implements ItemDAO {
             BufferedImage avatar = item.getAvatar();
             if (avatar != null) {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                javax.imageio.ImageIO.write(avatar, "png", baos);
+                try {
+                    ImageIO.write(avatar, "png", baos);
+                } catch (IOException e) {
+                    logger.error("loi khi doc file anh");
+                }
                 byte[] imageBytes = baos.toByteArray();
                 ps.setBytes(11, imageBytes);
             } else {
-                ps.setNull(11, java.sql.Types.BLOB);
+                ps.setNull(11, Types.BLOB);
             }
 
             if (item instanceof Arts) {
@@ -55,32 +58,32 @@ public class ItemDAOImpl implements ItemDAO {
                 
                 LocalDate rd = art.getReleaseDate();
                 if (rd != null) {
-                    ps.setDate(6, java.sql.Date.valueOf(rd));
+                    ps.setDate(6, Date.valueOf(rd));
                 } else {
-                    ps.setNull(6, java.sql.Types.DATE);
+                    ps.setNull(6, Types.DATE);
                 }
                 
-                ps.setNull(7, java.sql.Types.INTEGER);
-                ps.setNull(8, java.sql.Types.VARCHAR);
-                ps.setNull(9, java.sql.Types.INTEGER);
-                ps.setNull(10, java.sql.Types.VARCHAR);
+                ps.setNull(7, Types.INTEGER);
+                ps.setNull(8, Types.VARCHAR);
+                ps.setNull(9, Types.INTEGER);
+                ps.setNull(10, Types.VARCHAR);
 
             } else if (item instanceof Electronics) {
                 Electronics elec = (Electronics) item;
                 ps.setString(1, "Electronics");
-                ps.setNull(5, java.sql.Types.VARCHAR);
-                ps.setNull(6, java.sql.Types.DATE);
+                ps.setNull(5, Types.VARCHAR);
+                ps.setNull(6, Types.DATE);
                 ps.setInt(7, elec.getWarranty());
                 ps.setString(8, elec.getBrand());
-                ps.setNull(9, java.sql.Types.INTEGER);
-                ps.setNull(10, java.sql.Types.VARCHAR);
+                ps.setNull(9, Types.INTEGER);
+                ps.setNull(10, Types.VARCHAR);
 
             } else if (item instanceof Vehicles) {
                 Vehicles veh = (Vehicles) item;
                 ps.setString(1, "Vehicles");
-                ps.setNull(5, java.sql.Types.VARCHAR);
-                ps.setNull(6, java.sql.Types.DATE);
-                ps.setNull(7, java.sql.Types.INTEGER);
+                ps.setNull(5, Types.VARCHAR);
+                ps.setNull(6, Types.DATE);
+                ps.setNull(7, Types.INTEGER);
                 ps.setString(8, veh.getBrand());
                 ps.setInt(9, veh.getMileage());
                 ps.setString(10, veh.getVehicleID());
@@ -194,7 +197,7 @@ public class ItemDAOImpl implements ItemDAO {
         String owner = rs.getString("owner");
         double startingPrice = rs.getDouble("starting_price");
         String desc = rs.getString("description");
-        Item item;
+        Items item = null;
         if ("Arts".equals(type)) {
             Date sqlDate = rs.getDate("release_date");
             item = new Arts(id, owner, startingPrice, desc,
@@ -216,24 +219,15 @@ public class ItemDAOImpl implements ItemDAO {
         if (item != null) {
             Blob blob = rs.getBlob("avatar");
             if (blob != null) {
-                try (java.io.InputStream is = blob.getBinaryStream()) {
-                    BufferedImage bi = javax.imageio.ImageIO.read(is);
+                try (InputStream is = blob.getBinaryStream()) {
+                    BufferedImage bi = ImageIO.read(is);
                     item.setAvatar(bi); // Sử dụng setter đã thêm ở bước 1
-                } catch (java.io.IOException e) {
+                } catch (IOException e) {
                     logger.error("Lỗi chuyển đổi ảnh từ database: " + e.getMessage());
                    }
             }
         }
         return item;
-    }
-    @Override
-    public List<Items> getAllItems() {
-        try (Connection conn = DBConnection.getConnection()) {
-            return getAllItems(conn);
-        } catch (SQLException e) {
-            logger.error("Lỗi khi lấy tất cả items: {}", e.getMessage(), e);
-            return new ArrayList<>();
-        }
     }
     @Override
     public List<Items> getAllItems(Connection conn) throws SQLException {
@@ -247,7 +241,7 @@ public class ItemDAOImpl implements ItemDAO {
             }
             return itemList;
         } catch (SQLException e) {
-            logger.error("That shit bro!");
+            logger.error("Loi khi lay tat ca cac item!");
             return new ArrayList<>();
         }
     }
