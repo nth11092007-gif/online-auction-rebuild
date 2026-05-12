@@ -16,7 +16,9 @@ public interface ItemDAO {
     void addItem(Connection conn, Items item) throws SQLException;
 
     Items getItemById(int id);
-    void setAvatar(int id, File file);
+    Items getItemById(Connection conn,int id) throws SQLException;
+    boolean updateItemOwner(int itemId, int newOwnerId);
+    boolean updateItemOwner(Connection conn, int itemId, int newOwnerId) throws SQLException;    void setAvatar(int id, File file);
     List<Items> getAllItems() throws SQLException;
     List<Items> getAllItems(Connection conn) throws SQLException;
 }

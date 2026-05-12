@@ -33,7 +33,7 @@ public class ItemCardController{
         lblItemID.setText("ID: " + item.getItemID());
         lblCurrentPrice.setText("Giá hiện tại: " + item.getStartingPrice() + " VND");
         lblType.setText("Phân loại: " + item.getClass().getSimpleName());
-        lblOwner.setText("Người sở hữu: " + item.getOwner());
+        lblOwner.setText("Người sở hữu: " + item.getOwnerName());
         lblDescribe.setText("Mô tả: " + item.getDescription());
         if (item.getAvatar() != null) {
             Image image = SwingFXUtils.toFXImage(item.getAvatar(), null);

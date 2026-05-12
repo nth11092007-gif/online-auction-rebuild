@@ -16,6 +16,7 @@ import javafx.stage.Stage;
 import model.User;
 
 import java.io.IOException;
+import java.sql.SQLException;
 
 public class ProfileController {
     private int currentUserID;
@@ -104,6 +105,8 @@ public class ProfileController {
             }
         } catch (NumberFormatException e) {
             showAlert("Vui lòng nhập số tiền hợp lệ!", Alert.AlertType.WARNING);
+        } catch (SQLException e) {
+            showAlert("lỗi lấy thông tin số dư", Alert.AlertType.ERROR);
         }
     }
 
@@ -129,6 +132,8 @@ public class ProfileController {
             }
         } catch (NumberFormatException e) {
             showAlert("Vui lòng nhập số tiền hợp lệ!", Alert.AlertType.WARNING);
+        } catch (SQLException e) {
+            showAlert("lỗi lấy thông tin số dư", Alert.AlertType.ERROR);
         }
     }
 }

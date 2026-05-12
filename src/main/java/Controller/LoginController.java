@@ -91,7 +91,7 @@ public class LoginController {
         String Pass = txtPassword.getText();
         System.out.print(UserName+"/n"+Pass);
         try {
-            if (login.getUserByUserName(UserName) != null) {
+            if (login.getUserByUsername(UserName) != null) {
                 throw new  UserExisted();
             }
             switch (checkPasswordStrength(Pass)) {
