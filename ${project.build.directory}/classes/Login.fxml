@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<HBox prefHeight="720.0" prefWidth="1280.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.LoginController">
+    <children>
+        <AnchorPane prefHeight="200.0" prefWidth="200.0" HBox.hgrow="ALWAYS">
+            <children>
+                <ImageView fitHeight="720.0" fitWidth="800.0" pickOnBounds="true" preserveRatio="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                    <image>
+                        <Image url="@Images/background.jpg" />
+                    </image></ImageView>
+            </children>
+        </AnchorPane>
+        <VBox alignment="CENTER" prefWidth="480.0" spacing="20.0" style="-fx-background-color: #320140;">
+            <children>
+                <ImageView fitHeight="109.0" fitWidth="111.0" pickOnBounds="true" preserveRatio="true">
+                    <image>
+                        <Image url="@Images/logo.png" />
+                    </image></ImageView>
+                <VBox alignment="CENTER" spacing="5.0">
+                    <children>
+                        <Label text="SÀN GIAO DỊCH UY TÍN SỐ 1 CHÂU Á" textFill="WHITE">
+                            <font>
+                                <Font name="System Bold" size="18.0" />
+                            </font>
+                        </Label>
+                    </children>
+                </VBox>
+                <VBox maxWidth="380.0" prefWidth="380.0" spacing="20.0" style="-fx-background-color: F2F2F2; -fx-background-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);">
+                    <children>
+                        <VBox alignment="CENTER" spacing="10.0">
+                            <children>
+                                <Label alignment="CENTER" text="ĐĂNG NHẬP">
+                                    <font>
+                                        <Font name="System Bold" size="28.0" />
+                                    </font>
+                                </Label>
+                                <Label prefHeight="17.0" prefWidth="155.0" text="Cổng đăng nhập &amp; đăng ký" />
+                            </children>
+                        </VBox>
+                        <TextField fx:id="txtUser" prefHeight="45.0" promptText="Tên đăng nhập" style="-fx-background-color: transparent; -fx-border-color: #cccccc; -fx-border-radius: 8; -fx-background-radius: 8;" />
+                        <PasswordField fx:id="txtPassword" prefHeight="45.0" promptText="Mật khẩu" style="-fx-background-color: transparent; -fx-border-color: #cccccc; -fx-border-radius: 8; -fx-background-radius: 8;" />
+                        <Button fx:id="btnIn" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#onhandleIn" prefHeight="45.0" style="-fx-background-color: #1BF2F2; -fx-text-fill: #3E39BF; -fx-background-radius: 8; -fx-font-weight: bold;" text="Đăng nhập">
+                            <font>
+                                <Font size="14.0" />
+                            </font>
+                        </Button>
+                        <Button fx:id="btnUp" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#onhandleUp" prefHeight="45.0" style="-fx-background-color: #1BF2F2; -fx-text-fill: #3E39BF; -fx-background-radius: 8; -fx-font-weight: bold;" text="Đăng ký">
+                            <font>
+                                <Font size="14.0" />
+                            </font>
+                        </Button>
+                    </children>
+                    <padding>
+                        <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
+                    </padding>
+                </VBox>
+                <Label text="Make by Huy" textFill="#8d8d8d">
+                    <font>
+                        <Font size="10.0" />
+                    </font>
+                    <VBox.margin>
+                        <Insets top="40.0" />
+                    </VBox.margin>
+                </Label>
+            </children>
+        </VBox>
+    </children>
+</HBox>

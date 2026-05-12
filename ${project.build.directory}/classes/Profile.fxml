@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" spacing="20.0" style="-fx-background-color: #f5f6fa;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.ProfileController">
+   <padding>
+      <Insets top="20.0" />
+   </padding>
+   <children>
+      <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="600.0" spacing="15.0">
+         <children>
+            <Button fx:id="HandleBack" mnemonicParsing="false" onAction="#handleGoBack" style="-fx-background-color: transparent; -fx-font-size: 14;" text="&lt;- Quay lại" />
+            <Label style="-fx-font-size: 24; -fx-font-weight: bold; -fx-text-fill: #2d6cdf;" text="Trang Cá Nhân &amp; Ví" />
+         </children>
+      </HBox>
+      <HBox prefHeight="100.0" prefWidth="200.0" spacing="20.0" VBox.vgrow="ALWAYS">
+         <children>
+            <VBox prefHeight="200.0" prefWidth="280.0" spacing="15.0" style="-fx-background-color: white; -fx-background-radius: 12; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 4);">
+               <children>
+                  <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="10.0">
+                     <children>
+                        <Label style="-fx-font-size: 18; -fx-background-color: #e3ecff; -fx-padding: 8; -fx-background-radius: 50;" text="👤" />
+                        <Label style="-fx-font-size: 18; -fx-font-weight: bold;" text="Thông tin cá nhân" />
+                     </children>
+                  </HBox>
+                  <VBox prefHeight="200.0" prefWidth="100.0" spacing="5.0">
+                     <children>
+                        <Label style="-fx-text-fill: gray;" text="Họ và tên:" />
+                        <Label fx:id="lblRealName" text="Nguyễn Văn A" />
+                     </children>
+                  </VBox>
+                  <VBox prefHeight="200.0" prefWidth="100.0" spacing="5.0">
+                     <children>
+                        <Label style="-fx-text-fill: gray;" text="Email:" />
+                        <Label fx:id="lblEmail" text="abc@gmail.com" />
+                     </children>
+                  </VBox>
+                  <VBox prefHeight="200.0" prefWidth="100.0" spacing="5.0">
+                     <children>
+                        <Label style="-fx-text-fill: gray;" text="Số điện thoại:" />
+                        <Label fx:id="lblPhoneNumber" text="0123456789" />
+                     </children>
+                  </VBox>
+               </children>
+            </VBox>
+            <VBox prefHeight="274.0" prefWidth="356.0" spacing="15.0" style="-fx-background-color: white; -fx-background-radius: 12; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 4);">
+               <children>
+                  <HBox alignment="CENTER_LEFT" prefHeight="53.0" prefWidth="240.0" spacing="10.0">
+                     <children>
+                        <Label style="-fx-font-size: 18; -fx-background-color: #e3ecff; -fx-padding: 8; -fx-background-radius: 50;" text="💼" />
+                        <Label style="-fx-font-size: 18; -fx-font-weight: bold;" text="Quản lý ví" />
+                     </children>
+                  </HBox>
+                  <HBox prefHeight="100.0" prefWidth="200.0" spacing="15.0">
+                     <children>
+                        <VBox prefHeight="200.0" prefWidth="100.0" style="-fx-background-color: #1a73e8; -fx-background-radius: 10; -fx-padding: 15;" HBox.hgrow="ALWAYS">
+                           <children>
+                              <Label text="Số dư khả dụng" textFill="WHITE">
+                                 <font>
+                                    <Font name="System Bold" size="15.0" />
+                                 </font>
+                              </Label>
+                              <Label fx:id="lblBalance" text="50000000 đ" textFill="WHITE" />
+                           </children>
+                        </VBox>
+                        <VBox prefHeight="66.0" prefWidth="141.0" style="-fx-background-color: #ff6d00; -fx-background-radius: 10; -fx-padding: 15;">
+                           <children>
+                              <Label text="Số dư đóng băng" textFill="WHITE">
+                                 <font>
+                                    <Font name="System Bold" size="15.0" />
+                                 </font>
+                              </Label>
+                              <Label fx:id="lblFrozenBalance" text="50000000 đ" textFill="WHITE" VBox.vgrow="ALWAYS" />
+                           </children>
+                        </VBox>
+                     </children>
+                  </HBox>
+                  <HBox prefHeight="100.0" prefWidth="200.0" spacing="15.0">
+                     <children>
+                        <VBox prefHeight="128.0" prefWidth="126.0" style="-fx-background-color: whihte; -fx-border-color: #e0e0e0; -fx-background-radius: 10; -fx-padding: 15; -fx-border-radius: 10;" HBox.hgrow="ALWAYS">
+                           <children>
+                              <Label text="📈 Nạp tiền" />
+                              <TextField fx:id="txtDepositAmount" />
+                              <Button mnemonicParsing="false" onAction="#HandleDeposit" style="-fx-background-color: #0f9d58;" text="Nạp tiền" textFill="WHITE" />
+                           </children>
+                        </VBox>
+                        <VBox prefHeight="100.0" prefWidth="123.0" style="-fx-background-color: white; -fx-background-radius: 10; -fx-border-color: #e0e0e0; -fx-padding: 15; -fx-border-radius: 10;" HBox.hgrow="ALWAYS">
+                           <children>
+                              <Label text="📈 Rút tiền" />
+                              <TextField fx:id="txtWithdrawAmount" VBox.vgrow="ALWAYS" />
+                              <Button fx:id="HandleWithdrawAmount" mnemonicParsing="false" onAction="#HandleWithdraw" style="-fx-background-color: d32f2f;" text="Rút tiền" textFill="WHITE" />
+                           </children>
+                        </VBox>
+                     </children>
+                  </HBox>
+               </children>
+            </VBox>
+         </children>
+      </HBox>
+   </children>
+</VBox>
