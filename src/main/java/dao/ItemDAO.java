@@ -4,18 +4,18 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
-import model.Items;
+import model.Item;
 
 public interface ItemDAO {
-    void addItem(Items item);
-    void addItem(Connection conn, Items item) throws SQLException;
+    void addItem(Item item);
+    void addItem(Connection conn, Item item) throws SQLException;
 
-    Items getItemById(int id);
-    Items getItemById(Connection conn, int id) throws SQLException;
+    Item getItemById(int id);
+    Item getItemById(Connection conn, int id) throws SQLException;
 
     boolean updateItemOwner(Connection conn, int itemId, int newOwnerId) throws SQLException;
     boolean updateItemOwner(int itemId, int newOwnerId);
 
-    List<Items> getAllItems();
-    List<Items> getAllItems(Connection conn) throws SQLException;
+    List<Item> getAllItems();
+    List<Item> getAllItems(Connection conn) throws SQLException;
 }

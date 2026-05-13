@@ -1,7 +1,7 @@
 package model;
 //Lớp trừu tượng đại diện cho một món hàng cơ bản trong hệ thống đấu giá.
 
-public abstract class Items {
+public abstract class Item {
     //Tích hợp tự động sinh UUID hoặc lấy ID từ Database sau.
     protected int itemID;
     protected String ownerName;
@@ -9,7 +9,7 @@ public abstract class Items {
     protected String description;
 
 
-    public Items(int itemID, String ownerName, double startingPrice, String description) {
+    public Item(int itemID, String ownerName, double startingPrice, String description) {
         this.itemID = itemID;
         this.ownerName = ownerName;
         this.startingPrice = startingPrice;
@@ -29,4 +29,8 @@ public abstract class Items {
     }
 
     public abstract String showInfo();
+
+    public String getItemType() {
+        return this.getClass().getSimpleName();
+    }
 }

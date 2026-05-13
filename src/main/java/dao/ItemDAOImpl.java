@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import model.Arts;
 import model.Electronics;
-import model.Items;
+import model.Item;
 import model.Vehicles;
 import utils.DBConnection;
 
@@ -28,7 +28,7 @@ public class ItemDAOImpl implements ItemDAO {
     // =========================================================================
 
     @Override
-    public void addItem(Connection conn, Items item) throws SQLException {
+    public void addItem(Connection conn, Item item) throws SQLException {
         String sql = "INSERT INTO items (item_type, owner, starting_price, description, " +
                 "artist_name, release_date, warranty, brand, mileage, vehicle_id_plate) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -89,7 +89,7 @@ public class ItemDAOImpl implements ItemDAO {
     }
 
     @Override
-    public void addItem(Items item) {
+    public void addItem(Item item) {
         try (Connection conn = DBConnection.getConnection()) {
             addItem(conn, item);
         } catch (SQLException e) {
@@ -102,7 +102,7 @@ public class ItemDAOImpl implements ItemDAO {
     // =========================================================================
 
     @Override
-    public Items getItemById(Connection conn, int id) throws SQLException {
+    public Item getItemById(Connection conn, int id) throws SQLException {
         String sql = "SELECT * FROM items WHERE item_id = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, id);
@@ -116,7 +116,7 @@ public class ItemDAOImpl implements ItemDAO {
     }
 
     @Override
-    public Items getItemById(int id) {
+    public Item getItemById(int id) {
         try (Connection conn = DBConnection.getConnection()) {
             return getItemById(conn, id);
         } catch (SQLException e) {
@@ -153,7 +153,7 @@ public class ItemDAOImpl implements ItemDAO {
     // HÀM TIỆN ÍCH (Utility) DÙNG NỘI BỘ TRONG DAO
     // =========================================================================
 
-    private Items extractItemFromResultSet(ResultSet rs) throws SQLException {
+    private Item extractItemFromResultSet(ResultSet rs) throws SQLException {
         int id = rs.getInt("item_id");
         String type = rs.getString("item_type");
         String owner = rs.getString("owner");
@@ -181,7 +181,7 @@ public class ItemDAOImpl implements ItemDAO {
         return null;
     }
     @Override
-    public List<Items> getAllItems() {
+    public List<Item> getAllItems() {
         try (Connection conn = DBConnection.getConnection()) {
             return getAllItems(conn);
         } catch (SQLException e) {
@@ -190,12 +190,12 @@ public class ItemDAOImpl implements ItemDAO {
         }
     }
     @Override
-    public List<Items> getAllItems(Connection conn) throws SQLException {
+    public List<Item> getAllItems(Connection conn) throws SQLException {
         String sql = "SELECT * FROM items";
         try (Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
 
-            List<Items> itemList = new ArrayList<>();
+            List<Item> itemList = new ArrayList<>();
             while (rs.next()) {
                 itemList.add(extractItemFromResultSet(rs));
             }

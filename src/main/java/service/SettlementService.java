@@ -7,13 +7,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dao.AuctionSessionDAO;
-import dao.AuctionSessionDAOImpl;
 import dao.BidDAO;
-import dao.BidDAOImpl;
 import dao.ItemDAO;
-import dao.ItemDAOImpl;
 import dao.UserDAO;
-import dao.UserDAOImpl;
 import model.AuctionSession;
 import model.Bid;
 import utils.DBConnection;
@@ -39,6 +35,14 @@ public class SettlementService {
         this.bidDAO = bidDAO;
         this.userDAO = userDAO;
         this.itemDAO = itemDAO;
+    }
+
+    public SettlementService(AuctionSessionDAO sessionDAO, BidDAO bidDAO, UserDAO userDAO, ItemDAO itemDAO) {
+        this.sessionDAO = sessionDAO;
+        this.bidDAO = bidDAO;
+        this.userDAO = userDAO;
+        this.itemDAO = itemDAO;
+        this.dataSource = null; // Không dùng DataSource trong constructor này
     }
     /**
      * Hàm xử lý kết thúc phiên đấu giá
