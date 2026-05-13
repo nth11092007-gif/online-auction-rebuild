@@ -9,9 +9,13 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import model.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 
@@ -28,6 +32,12 @@ public class CreateAutionController {
     private ComboBox<String> cbItemType;
 
     @FXML
+    private ImageView imgPreview;
+
+    @FXML
+    private Label lblImagePath;
+
+    @FXML
     private TextArea txtDescription;
 
     @FXML
@@ -41,6 +51,7 @@ public class CreateAutionController {
 
     @FXML
     private TextField txtStartingPrice;
+
 
     @FXML
     void handleGoBack(ActionEvent event) {
@@ -64,6 +75,9 @@ public class CreateAutionController {
         txtOpenDays.clear();
         txtDescription.clear();
         cbItemType.getSelectionModel().clearSelection();
+        selectedImageFile = null;
+        lblImagePath.setText("Chưa có ảnh nào được chọn");
+        imgPreview.setImage(null);
     }
     @FXML
     void HandleCreatAution(ActionEvent event) {
@@ -133,6 +147,26 @@ public class CreateAutionController {
         // Thêm các loại vật phẩm vào ComboBox
         cbItemType.getItems().addAll("Electronics", "Arts", "Vehicles");
     }
+    @FXML
+    void handleSelectImage(ActionEvent event) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Chọn ảnh sản phẩm");
 
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg")
+        );
+
+        // Lấy Stage hiện tại
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        File file = fileChooser.showOpenDialog(stage);
+
+        if (file != null) {
+            File selectedImageFile = file;
+            lblImagePath.setText(file.getName());
+
+            Image image = new Image(file.toURI().toString());
+            imgPreview.setImage(image);
+        }
+    }
 }
 //thêm màn hình riêng cho arts,....
