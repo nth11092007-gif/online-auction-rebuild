@@ -9,7 +9,8 @@ import java.time.LocalDate;
 
 public class MainTest {
     public static void main(String[] args) {
-       Items testing = new Vehicles(123,"ô",0.0,"","",2,"1223");
-       System.out.print(testing.getAvatar());
+        UserDAO testUserDAO = new UserDAOImpl();
+        User user = testUserDAO.getUserByUsername("buyer_an");
+        System.out.print(user.getUsername());
     }
 }

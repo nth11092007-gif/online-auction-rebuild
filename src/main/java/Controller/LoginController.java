@@ -105,7 +105,7 @@ public class LoginController {
             User user = login.login(UserName,Pass);
             if (user.getRole() == User.Role.USER ) {
                 try{
-                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/Login.fxml"));
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/HomeSeller.fxml"));
                     Parent root = loader.load();
                     Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
                     Scene scene = new Scene(root);
