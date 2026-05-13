@@ -80,23 +80,24 @@ public class CreateAutionController {
             int ItemId;
             Items initItem;
             switch (cbItemType.toString()) {
-                case "Vehicles" : ItemId = 2; initItem = new Vehicles(null, )
-                case "Arts" : ItemId = 1;
-                case "Electronics" : ItemId = 3;
-            };
+                case "Vehicles":
+                    ItemId = 2;
+                    initItem = new Vehicles(null, )
+                case "Arts":
+                    ItemId = 1;
+                case "Electronics":
+                    ItemId = 3;
+            } ;
 
 
             // 3. Khởi tạo đối tượng AuctionSession
             AuctionSession auctionSession = new AuctionSession((Seller) ProfileController.currentUser, cbItemType, startPrice);
             AuctionSessionDAO newSession = new AuctionSessionDAOImpl();
-            //newSession.setStartingPrice(startPrice);
-            //newSession.setCurrentPrice(startPrice);
-            //newSession.setStepPrice(stepPrice);
             newSession.createSession()
             newSession.
 
-            // Tính toán thời gian bắt đầu và kết thúc
-            LocalDateTime startTime = LocalDateTime.now();
+                    // Tính toán thời gian bắt đầu và kết thúc
+                    LocalDateTime startTime = LocalDateTime.now();
             LocalDateTime endTime = startTime.plusDays(openDays);
 
             newSession.setStartTime(startTime);
@@ -119,7 +120,14 @@ public class CreateAutionController {
             e.printStackTrace();
             showAlert(Alert.AlertType.ERROR, "Lỗi hệ thống", "Đã xảy ra lỗi: " + e.getMessage());
         }
-        }
+    }
+    private void showAlert(Alert.AlertType type, String title, String content) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(content);
+        alert.showAndWait();
+    }
     @FXML
     public void initialize() {
         // Thêm các loại vật phẩm vào ComboBox
