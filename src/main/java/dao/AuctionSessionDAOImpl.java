@@ -46,7 +46,7 @@ public class AuctionSessionDAOImpl implements AuctionSessionDAO {
         }
         int durationDays = (int) Duration.between(startTime, endTime).toDays();
         if (durationDays < 0) durationDays = 0;
-        
+
         String sql = "INSERT INTO auction_sessions (session_id, owner_id, item_id, starting_price, step_price, "
                    + "start_time, end_time, duration_days, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -92,14 +92,14 @@ public class AuctionSessionDAOImpl implements AuctionSessionDAO {
                     LocalDateTime startTime = startTs != null ? startTs.toLocalDateTime() : null;
                     LocalDateTime endTime = endTs != null ? endTs.toLocalDateTime() : null;
                     int extensionCount = rs.getInt("extension_count"); // nếu cột tồn tại
-                    
+
                     // Tạo session (constructor có startTime)
                     AuctionSession session = new AuctionSession(seller, item, startingPrice, stepPrice, startTime);
                     session.setEndTime(endTime);
                     session.setStatus(AuctionSession.Status.valueOf(rs.getString("status")));
                     // Nếu model có extensionCount, set vào
                     // session.setExtensionCount(extensionCount);
-                    
+
                     // Lấy currentPrice và highestBidder từ bids
                     List<Bid> bids = bidDAO.getBidsBySession(conn, sessionId);
                     if (bids != null && !bids.isEmpty()) {
@@ -152,6 +152,42 @@ public class AuctionSessionDAOImpl implements AuctionSessionDAO {
         return new ArrayList<>();
     }
 
+    // =========================================================================
+    // 3. CẬP NHẬT TRẠNG THÁI PHIÊN & GIA HẠN
+    // =========================================================================
+    @Override
+    public boolean updateSessionStatusAtomic(Connection conn, String sessionId, AuctionSession.Status status) throws SQLException {
+        String sql = "UPDATE auction_sessions SET status = ? WHERE session_id = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, status.name());
+            pstmt.setString(2, sessionId);
+            return pstmt.executeUpdate() > 0;
+        }
+    }
+
+    @Override
+    public boolean updateSessionStatusAtomic(String sessionId, AuctionSession.Status status) {
+        try (Connection conn = DBConnection.getConnection()) {
+            return updateSessionStatusAtomic(conn, sessionId, status);
+        } catch (SQLException e) {
+            logger.error("Lỗi cập nhật trạng thái phiên {}: {}", sessionId, e.getMessage(), e);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean updateEndTime(Connection conn, String sessionId, Timestamp newEndTime) throws SQLException {
+        String sql = "UPDATE auction_sessions SET end_time = ? WHERE session_id = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setTimestamp(1, newEndTime);
+            pstmt.setString(2, sessionId);
+            return pstmt.executeUpdate() > 0;
+        }
+    }
+
+    // =========================================================================
+    // 4. LẤY DANH SÁCH PHIÊN THEO THỜI GIAN (CHO SCHEDULER)
+    // =========================================================================
     @Override
     public List<AuctionSession> getSessionsStartBefore(Connection conn, LocalDateTime time, AuctionSession.Status status) throws SQLException {
         List<AuctionSession> list = new ArrayList<>();

@@ -2,6 +2,7 @@ package dao;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -37,4 +38,7 @@ public interface AuctionSessionDAO {
     boolean updateSessionStatusAtomic(String sessionId, AuctionSession.Status status); // Bản gọi lẹ
 
     boolean updateCurrentPrice(Connection conn, String sessionId, double newPrice);
+
+    // Thêm hàm này để lưu thời gian mới vào DB khi Anti-sniping kích hoạt
+    boolean updateEndTime(Connection conn, String sessionId, Timestamp newEndTime) throws SQLException;
 }
