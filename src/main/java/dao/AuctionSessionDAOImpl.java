@@ -19,12 +19,26 @@ import model.Items;
 import model.User;
 import utils.DBConnection;
 
+import javax.sql.DataSource;
+
 public class AuctionSessionDAOImpl implements AuctionSessionDAO {
 
     private static final Logger logger = LoggerFactory.getLogger(AuctionSessionDAOImpl.class);
-    private final UserDAO userDAO = new UserDAOImpl();
-    private final ItemDAO itemDAO = new ItemDAOImpl();
-    private final BidDAO bidDAO = new BidDAOImpl();
+    private final UserDAO userDAO;
+    private final ItemDAO itemDAO;
+    private final BidDAO bidDAO;
+    private final DataSource dataSource;
+
+    public AuctionSessionDAOImpl() {
+        this(DBConnection.getDataSource(), new UserDAOImpl(), new ItemDAOImpl(), new BidDAOImpl());
+    }
+
+    public AuctionSessionDAOImpl(DataSource dataSource, UserDAO userDAO, ItemDAO itemDAO, BidDAO bidDAO) {
+        this.dataSource = dataSource;
+        this.userDAO = userDAO;
+        this.itemDAO = itemDAO;
+        this.bidDAO = bidDAO;
+    }
 
     // =========================================================================
     // 1. TẠO PHIÊN ĐẤU GIÁ
@@ -65,7 +79,7 @@ public class AuctionSessionDAOImpl implements AuctionSessionDAO {
 
     @Override
     public boolean createSession(AuctionSession session, int itemId) {
-        try (Connection conn = DBConnection.getConnection()) {
+        try (Connection conn = dataSource.getConnection()) {
             return createSession(conn, session, itemId);
         } catch (SQLException e) {
             logger.error("❌ Lỗi khi tạo phiên đấu giá: {}", e.getMessage(), e);
@@ -120,7 +134,7 @@ public class AuctionSessionDAOImpl implements AuctionSessionDAO {
 
     @Override
     public AuctionSession getSessionById(String sessionId) {
-        try (Connection conn = DBConnection.getConnection()) {
+        try (Connection conn = dataSource.getConnection()) {
             return getSessionById(conn, sessionId);
         } catch (SQLException e) {
             logger.error("Lỗi kết nối khi lấy session {}: {}", sessionId, e.getMessage(), e);
@@ -144,7 +158,7 @@ public class AuctionSessionDAOImpl implements AuctionSessionDAO {
 
     @Override
     public List<AuctionSession> getAllSessions() {
-        try (Connection conn = DBConnection.getConnection()) {
+        try (Connection conn = dataSource.getConnection()) {
             return getAllSessions(conn);
         } catch (SQLException e) {
             logger.error("Lỗi khi lấy danh sách tất cả phiên: {}", e.getMessage(), e);
@@ -167,7 +181,7 @@ public class AuctionSessionDAOImpl implements AuctionSessionDAO {
 
     @Override
     public boolean updateSessionStatusAtomic(String sessionId, AuctionSession.Status status) {
-        try (Connection conn = DBConnection.getConnection()) {
+        try (Connection conn = dataSource.getConnection()) {
             return updateSessionStatusAtomic(conn, sessionId, status);
         } catch (SQLException e) {
             logger.error("Lỗi cập nhật trạng thái phiên {}: {}", sessionId, e.getMessage(), e);
@@ -207,7 +221,7 @@ public class AuctionSessionDAOImpl implements AuctionSessionDAO {
 
     @Override
     public List<AuctionSession> getSessionsStartBefore(LocalDateTime time, AuctionSession.Status status) {
-        try (Connection conn = DBConnection.getConnection()) {
+        try (Connection conn = dataSource.getConnection()) {
             return getSessionsStartBefore(conn, time, status);
         } catch (SQLException e) {
             logger.error("Lỗi lấy phiên startBefore: {}", e.getMessage(), e);
@@ -234,7 +248,7 @@ public class AuctionSessionDAOImpl implements AuctionSessionDAO {
 
     @Override
     public List<AuctionSession> getSessionsEndBefore(LocalDateTime time, AuctionSession.Status status) {
-        try (Connection conn = DBConnection.getConnection()) {
+        try (Connection conn = dataSource.getConnection()) {
             return getSessionsEndBefore(conn, time, status);
         } catch (SQLException e) {
             logger.error("Lỗi lấy phiên endBefore: {}", e.getMessage(), e);

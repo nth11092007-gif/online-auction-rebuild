@@ -14,10 +14,22 @@ import model.Bid;
 import model.User;
 import utils.DBConnection;
 
+import javax.sql.DataSource;
+
 public class BidDAOImpl implements BidDAO {
 
     private static final Logger logger = LoggerFactory.getLogger(BidDAOImpl.class);
-    private final UserDAO userDAO = new UserDAOImpl();
+    private final UserDAO userDAO;
+    private final DataSource dataSource;
+
+    public BidDAOImpl() {
+        this(DBConnection.getDataSource(), new UserDAOImpl());
+    }
+
+    public BidDAOImpl(DataSource dataSource, UserDAO userDAO) {
+        this.dataSource = dataSource;
+        this.userDAO = userDAO;
+    }
 
     // =========================================================================
     // 1. LẤY GIÁ CAO NHẤT
@@ -39,7 +51,7 @@ public class BidDAOImpl implements BidDAO {
 
     @Override
     public Bid getHighestBid(String sessionId) {
-        try (Connection conn = DBConnection.getConnection()) {
+        try (Connection conn = dataSource.getConnection()) {
             return getHighestBid(conn, sessionId);
         } catch (SQLException e) {
             logger.error("Lỗi khi lấy giá cao nhất cho session {}: {}", sessionId, e.getMessage(), e);
@@ -63,7 +75,7 @@ public class BidDAOImpl implements BidDAO {
 
     @Override
     public boolean addBid(String sessionId, Bid bid) {
-        try (Connection conn = DBConnection.getConnection()) {
+        try (Connection conn = dataSource.getConnection()) {
             return addBid(conn, sessionId, bid);
         } catch (SQLException e) {
             logger.error("Lỗi khi thêm lượt đặt giá cho session {}: {}", sessionId, e.getMessage(), e);
@@ -92,7 +104,7 @@ public class BidDAOImpl implements BidDAO {
 
     @Override
     public List<Bid> getBidsBySession(String sessionId) {
-        try (Connection conn = DBConnection.getConnection()) {
+        try (Connection conn = dataSource.getConnection()) {
             return getBidsBySession(conn, sessionId);
         } catch (SQLException e) {
             logger.error("Lỗi khi lấy lịch sử đặt giá cho session {}: {}", sessionId, e.getMessage(), e);
