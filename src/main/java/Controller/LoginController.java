@@ -33,60 +33,8 @@ public class LoginController {
 
     @FXML
     private TextField txtUser;
-
-    public static String checkPasswordStrength(String password) {
-        // Kiểm tra đầu vào rỗng hoặc null
-        if (password == null || password.trim().isEmpty()) {
-            return "Trống";
-        }
-
-        int score = 0;
-
-        // 1. Kiểm tra độ dài (ít nhất 8 ký tự)
-        if (password.length() >= 8) {
-            score++;
-        }
-
-        // 2. Kiểm tra có chứa ít nhất một chữ cái viết hoa (A-Z)
-        if (password.matches(".*[A-Z].*")) {
-            score++;
-        }
-
-        // 3. Kiểm tra có chứa ít nhất một chữ cái viết thường (a-z)
-        if (password.matches(".*[a-z].*")) {
-            score++;
-        }
-
-        // 4. Kiểm tra có chứa ít nhất một chữ số (0-9)
-        if (password.matches(".*\\d.*")) {
-            score++;
-        }
-
-        // 5. Kiểm tra có chứa ít nhất một ký tự đặc biệt
-        // Bạn có thể thêm hoặc bớt các ký tự đặc biệt trong biểu thức chính quy này
-        if (password.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?].*")) {
-            score++;
-        }
-
-        // Đánh giá độ khó dựa trên tổng điểm (tối đa 5 điểm)
-        switch (score) {
-            case 0:
-            case 1:
-            case 2:
-                return "Yếu"; // Chỉ đạt 1-2 tiêu chí (thường là quá ngắn hoặc chỉ có chữ/số)
-            case 3:
-                return "Trung bình"; // Đạt 3 tiêu chí
-            case 4:
-                return "Mạnh"; // Đạt 4 tiêu chí
-            case 5:
-                return "Rất mạnh"; // Đạt đủ 5 tiêu chí
-            default:
-                return "Không xác định";
-        }
-    }
-
     @FXML
-    void onhandleIn(ActionEvent event) throws UserExisted, PasswordStrengthCheck {
+    void onhandleIn(ActionEvent event) throws UserExisted{
         String UserName = txtUser.getText();
         String Pass = txtPassword.getText();
         System.out.print(UserName+"/n"+Pass);
@@ -94,19 +42,20 @@ public class LoginController {
             if (login.getUserByUsername(UserName) != null) {
                 throw new  UserExisted();
             }
-            switch (checkPasswordStrength(Pass)) {
-                case "Yếu":
-                    throw new PasswordStrengthCheck();
-                case "Trung bình":
-                    System.out.println("mk trung bình");
-                case  "Rất mạnh":
-                    System.out.println("ok");
-            }
             User user = login.login(UserName,Pass);
             if (user.getRole() == User.Role.USER ) {
-                try{
-                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/HomeSeller.fxml"));
-                    Parent root = loader.load();
+                try {
+                    Parent root = FXMLLoader.load(getClass().getResource("/HomeSeller.fxml"));
+                    Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+                    Scene scene = new Scene(root);
+                    stage.setScene(scene);
+                    stage.show();
+                } catch ( IOException e){
+                    e.printStackTrace();
+                }
+            } else if (user.getRole() == User.Role.ADMIN ) {
+                try {
+                    Parent root = FXMLLoader.load(getClass().getResource("/HomeAdmin.fxml"));
                     Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
                     Scene scene = new Scene(root);
                     stage.setScene(scene);
@@ -124,8 +73,7 @@ public class LoginController {
     @FXML
     void onhandleUp(ActionEvent event) {
         try{
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Register.fxml"));
-            Parent root = loader.load();
+            Parent root = FXMLLoader.load(getClass().getResource("/Register.fxml"));
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             Scene scene = new Scene(root);
             stage.setScene(scene);
