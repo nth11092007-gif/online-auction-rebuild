@@ -1,5 +1,5 @@
 package model;
-public class Electronics extends Items{
+public class Electronics extends Item{
     private final int warranty;
     private final String brand;
 

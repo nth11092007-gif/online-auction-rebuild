@@ -2,7 +2,12 @@ package service;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
+
+import javax.sql.DataSource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +20,6 @@ import dao.UserDAO;
 import dao.UserDAOImpl;
 import model.AuctionSession;
 import model.Bid;
-import model.Bidder;
 import server.AuctionFeedServer;
 import utils.DBConnection;
 
@@ -23,11 +27,28 @@ public class AuctionService {
     
     private static final Logger logger = LoggerFactory.getLogger(AuctionService.class);
     
-    final private UserDAO userDAO = new UserDAOImpl();
-    final private BidDAO bidDAO = new BidDAOImpl();
-    final private AuctionSessionDAO sessionDAO = new AuctionSessionDAOImpl();
+    final private UserDAO userDAO;
+    final private BidDAO bidDAO;
+    final private AuctionSessionDAO sessionDAO;
     private AuctionFeedServer feedServer;
-
+    private DataSource dataSource;
+    public AuctionService() {
+        this.userDAO = new UserDAOImpl();
+        this.bidDAO = new BidDAOImpl();
+        this.sessionDAO = new AuctionSessionDAOImpl();
+        this.dataSource = DBConnection.getDataSource();
+    }
+    public AuctionService(UserDAO userDAO, BidDAO bidDAO, AuctionSessionDAO sessionDAO, DataSource dataSource) {
+        this.userDAO = userDAO;
+        this.bidDAO = bidDAO;
+        this.sessionDAO = sessionDAO;
+        this.dataSource = dataSource;
+    }
+    public AuctionService(UserDAO userDAO, BidDAO bidDAO, AuctionSessionDAO sessionDAO) {
+        this.userDAO = userDAO;
+        this.bidDAO = bidDAO;
+        this.sessionDAO = sessionDAO;
+    }
     // Cấu hình Anti-sniping
     private static final int SNIPING_THRESHOLD_MS = 3 * 60 * 1000;
     private static final int EXTENSION_TIME_MINUTES = 3;
@@ -50,64 +71,59 @@ public class AuctionService {
         conn = DBConnection.getConnection();
         conn.setAutoCommit(false);
 
-        AuctionSession session = sessionDAO.getSessionForUpdate(conn, sessionId);
+        AuctionSession session = sessionDAO.getSessionById(conn, sessionId);
         if (session == null) {
-            logger.warn("Phiên {} không tồn tại", sessionId);
+            logger.warn("Session {} not found", sessionId);
             return false;
         }
 
-        // Lấy user (để đóng băng tiền)
-        Bidder bidder = userDAO.getUserForUpdate(conn, currentUserId);
-        if (bidder == null) {
-            logger.warn("Người dùng {} không tồn tại", currentUserId);
+        // 1. Freeze tiền NGAY LẬP TỨC (atomic trong DB)
+        boolean isDeducted = userDAO.freezeMoneyAtomic(conn, currentUserId, bidAmount);
+        if (!isDeducted) {
+            logger.warn("Không thể đóng băng {} từ user {}", bidAmount, currentUserId);
+            conn.rollback();
             return false;
         }
 
-            // Kiểm tra người bán không được tự đấu giá
-            if (session.getSeller().getID() == currentUserId) {
-                logger.warn("Người bán không được phép đấu giá sản phẩm của chính mình.");
-                return false;
-            }
-
-            Bid highestBid = bidDAO.getHighestBid(conn, sessionId);
-            
-            double minValidBid;
-            if (highestBid == null) {
-                minValidBid = session.getStartingPrice();
-            } else {
-                minValidBid = highestBid.getAmount() + session.getIncrementStep();
-            }
-
-            if (bidAmount < minValidBid) {
-                logger.warn("Giá đặt {} không hợp lệ cho session {}. Phải >= {}", bidAmount, sessionId, minValidBid);
-                conn.rollback();
-                return false;
-            }
-
-            boolean isDeducted = userDAO.freezeMoneyAtomic(conn, currentUserId, bidAmount);
-            if (!isDeducted) {
-                logger.warn("Số dư không đủ để đặt giá {} cho user {} trong session {}", bidAmount, currentUserId, sessionId);
-                conn.rollback();
-                return false;
-            }
-
-        // Nếu có người bị vượt, hoàn tiền cho họ (lấy highest bid trước khi add)
-        // Cần lấy highest trước khi addBid vì addBid đã thay đổi lịch sử
-        // Hoặc bạn có thể lấy highest từ DB trước khi gọi addBid:
-        Bid previousHighest = bidDAO.getHighestBid(conn, sessionId);
-        if (previousHighest != null) {
-            int prevUserId = previousHighest.getBidder().getID();
-            double prevAmount = previousHighest.getAmount();
-            userDAO.refundMoneyAtomic(conn, prevUserId, prevAmount);
+        // 2. Kiểm tra trạng thái session và các điều kiện khác
+        if (!session.getState().canJoin()) {
+            logger.warn("Session {} không ở trạng thái có thể đặt giá", sessionId);
+            // Hoàn tiền vì đã freeze rồi
+            userDAO.refundMoneyAtomic(conn, currentUserId, bidAmount);
+            conn.rollback();
+            return false;
         }
 
-            Bid newBid = new Bid(userDAO.getUserById(conn, currentUserId), bidAmount);
-            bidDAO.addBid(conn, sessionId, newBid);
+        Bid highestBid = bidDAO.getHighestBid(conn, sessionId);
+        double minValidBid = (highestBid == null) ? session.getStartingPrice() 
+                            : highestBid.getAmount() + session.getIncrementStep();
+        if (bidAmount < minValidBid) {
+            userDAO.refundMoneyAtomic(conn, currentUserId, bidAmount);
+            conn.rollback();
+            return false;
+        }
 
-            conn.commit();
-            logger.info("Đặt giá thành công: user {}, session {}, amount {}", currentUserId, sessionId, bidAmount);
-            return true;
+        // 3. Hoàn tiền cho người bị vượt (nếu có) và thêm bid
+        if (highestBid != null) {
+            int previousUserId = highestBid.getBidder().getID();
+            double previousAmount = highestBid.getAmount();
+            userDAO.refundMoneyAtomic(conn, previousUserId, previousAmount);
+        }
 
+        Bid newBid = new Bid(userDAO.getUserById(conn, currentUserId), bidAmount);
+        session.addBid(newBid);  // dùng State Pattern
+        bidDAO.addBid(conn, sessionId, newBid);
+        sessionDAO.updateCurrentPrice(conn, sessionId, bidAmount); // nếu cần
+
+        // 4. Anti-sniping: nếu còn dưới threshold, gia hạn phiên
+        long timeToEnd = ChronoUnit.MILLIS.between(LocalDateTime.now(), session.getEndTime());
+        if (timeToEnd < SNIPING_THRESHOLD_MS) {
+            LocalDateTime newEndTime = session.getEndTime().plusMinutes(EXTENSION_TIME_MINUTES);
+            sessionDAO.updateEndTime(conn, sessionId, Timestamp.valueOf(newEndTime));
+            feedServer.notifyObservers(sessionId, "Session extended by 3 minutes."); // thông báo cho client về việc gia hạn
+        }
+        conn.commit();
+        return true;
     } catch (SQLException e) {
         logger.error("Lỗi khi đặt giá: user {}, session {}, amount {}: {}", currentUserId, sessionId, bidAmount, e.getMessage());
     } finally {

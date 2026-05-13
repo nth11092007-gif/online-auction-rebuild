@@ -1,6 +1,6 @@
 package service;
 
-import dao.UserDAOImpl;
+import dao.UserDAO;
 import model.User;
 
 /**
@@ -8,10 +8,10 @@ import model.User;
  * Trung gian giữa Server và DAO.
  */
 public class UserService {
-    private final UserDAOImpl userDao;
+    private final UserDAO userDao;
 
-    public UserService() {
-        this.userDao = new UserDAOImpl();
+    public UserService(UserDAO userDAO) {
+        this.userDao = userDAO;
     }
 
     /**

@@ -63,6 +63,7 @@ public class AuctionServer extends WebSocketServer {
         this.auctionService = new AuctionService(userDAO, bidDAO, sessionDAO);
         this.userService = new UserService(userDAO);
         this.settlementService = new SettlementService(sessionDAO, bidDAO, userDAO, itemDAO);
+        this. proxyBiddingService = new ProxyBiddingService(auctionService);
     }
 
     @Override

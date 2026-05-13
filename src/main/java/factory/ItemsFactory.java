@@ -1,8 +1,8 @@
 package factory;
 
-import model.Items;
+import model.Item;
 import model.ItemsAttributes;
 
 public interface ItemsFactory{
-    Items createItems(ItemsAttributes request);
+    Item createItems(ItemsAttributes request);
 }

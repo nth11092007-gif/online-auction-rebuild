@@ -7,24 +7,26 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dao.AuctionSessionDAO;
-import dao.AuctionSessionDAOImpl;
 import dao.BidDAO;
-import dao.BidDAOImpl;
 import dao.ItemDAO;
-import dao.ItemDAOImpl;
 import dao.UserDAO;
-import dao.UserDAOImpl;
 import model.AuctionSession;
 import model.Bid;
 import utils.DBConnection;
 
 public class SettlementService {
     private static final Logger logger = LoggerFactory.getLogger(SettlementService.class);
-    private final AuctionSessionDAO sessionDAO = new AuctionSessionDAOImpl();
-    private final BidDAO bidDAO = new BidDAOImpl();
-    private final UserDAO userDAO = new UserDAOImpl();
-    private final ItemDAO itemDAO = new ItemDAOImpl();
+    private final AuctionSessionDAO sessionDAO;
+    private final BidDAO bidDAO;
+    private final UserDAO userDAO;
+    private final ItemDAO itemDAO;
 
+    public SettlementService(AuctionSessionDAO sessionDAO, BidDAO bidDAO, UserDAO userDAO, ItemDAO itemDAO) {
+        this.sessionDAO = sessionDAO;
+        this.bidDAO = bidDAO;
+        this.userDAO = userDAO;
+        this.itemDAO = itemDAO;
+    }
     /**
      * Hàm xử lý kết thúc phiên đấu giá
      */

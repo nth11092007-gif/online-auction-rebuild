@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import model.AuctionSession;
 import model.Bid;
-import model.Items;
+import model.Item;
 import model.User;
 import utils.DBConnection;
 
@@ -84,7 +84,7 @@ public class AuctionSessionDAOImpl implements AuctionSessionDAO {
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     User seller = userDAO.getUserById(conn, rs.getInt("owner_id"));
-                    Items item = itemDAO.getItemById(conn, rs.getInt("item_id"));
+                    Item item = itemDAO.getItemById(conn, rs.getInt("item_id"));
                     double startingPrice = rs.getDouble("starting_price");
                     double stepPrice = rs.getDouble("step_price");
                     Timestamp startTs = rs.getTimestamp("start_time");
@@ -185,6 +185,18 @@ public class AuctionSessionDAOImpl implements AuctionSessionDAO {
         }
     }
 
+    @Override 
+    public boolean updateCurrentPrice(Connection conn, String sessionId, double newPrice) {
+        String sql = "UPDATE auction_sessions SET current_price = ? WHERE session_id = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setDouble(1, newPrice);
+            pstmt.setString(2, sessionId);
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            logger.error("Lỗi cập nhật giá hiện tại phiên {}: {}", sessionId, e.getMessage(), e);
+        }
+        return false;
+    }
     // =========================================================================
     // 4. LẤY DANH SÁCH PHIÊN THEO THỜI GIAN (CHO SCHEDULER)
     // =========================================================================
@@ -251,7 +263,7 @@ public class AuctionSessionDAOImpl implements AuctionSessionDAO {
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     User seller = userDAO.getUserById(conn, rs.getInt("owner_id"));
-                    Items item = itemDAO.getItemById(conn, rs.getInt("item_id"));
+                    Item item = itemDAO.getItemById(conn, rs.getInt("item_id"));
                     double startingPrice = rs.getDouble("starting_price");
                     double stepPrice = rs.getDouble("step_price");
                     Timestamp startTs = rs.getTimestamp("start_time");
@@ -279,40 +291,5 @@ public class AuctionSessionDAOImpl implements AuctionSessionDAO {
             logger.error("Lỗi khi lấy phiên đấu giá có khoá theo ID {}: {}", sessionId, e.getMessage(), e);
         }
         return null;
-    }
-    // =========================================================================
-    // 3. CẬP NHẬT TRẠNG THÁI PHIÊN & GIA HẠN
-    // =========================================================================
-    @Override
-    public boolean updateSessionStatusAtomic(Connection conn, String sessionId, AuctionSession.Status status) throws SQLException {
-        String sql = "UPDATE auction_sessions SET status = ? WHERE session_id = ?";
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, status.name());
-            pstmt.setString(2, sessionId);
-            return pstmt.executeUpdate() > 0;
-        }
-    }
-
-    @Override
-    public boolean updateSessionStatusAtomic(String sessionId, AuctionSession.Status status) {
-        try (Connection conn = DBConnection.getConnection()) {
-            return updateSessionStatusAtomic(conn, sessionId, status);
-        } catch (SQLException e) {
-            logger.error("Lỗi cập nhật trạng thái phiên {}: {}", sessionId, e.getMessage(), e);
-        }
-        return false;
-    }
-
-    @Override 
-    public boolean updateCurrentPrice(Connection conn, String sessionId, double newPrice) {
-        String sql = "UPDATE auction_sessions SET current_price = ? WHERE session_id = ?";
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setDouble(1, newPrice);
-            pstmt.setString(2, sessionId);
-            return pstmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            logger.error("Lỗi cập nhật giá hiện tại phiên {}: {}", sessionId, e.getMessage(), e);
-        }
-        return false;
     }
 }
