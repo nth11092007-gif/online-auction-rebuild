@@ -19,9 +19,20 @@ import model.Item;
 import model.Vehicles;
 import utils.DBConnection;
 
+import javax.sql.DataSource;
+
 public class ItemDAOImpl implements ItemDAO {
 
     private static final Logger logger = LoggerFactory.getLogger(ItemDAOImpl.class);
+    private final DataSource dataSource;
+
+    public ItemDAOImpl() {
+        this(DBConnection.getDataSource());
+    }
+
+    public ItemDAOImpl(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
 
     // =========================================================================
     // 1. THÊM SẢN PHẨM (NẠP CHỒNG)
@@ -89,8 +100,8 @@ public class ItemDAOImpl implements ItemDAO {
     }
 
     @Override
-    public void addItem(Item item) {
-        try (Connection conn = DBConnection.getConnection()) {
+    public void addItem(Items item) {
+        try (Connection conn = dataSource.getConnection()) {
             addItem(conn, item);
         } catch (SQLException e) {
             logger.error("❌ Lỗi khi thêm item: {}", e.getMessage(), e);
@@ -116,8 +127,8 @@ public class ItemDAOImpl implements ItemDAO {
     }
 
     @Override
-    public Item getItemById(int id) {
-        try (Connection conn = DBConnection.getConnection()) {
+    public Items getItemById(int id) {
+        try (Connection conn = dataSource.getConnection()) {
             return getItemById(conn, id);
         } catch (SQLException e) {
             logger.error("Lỗi khi lấy item theo ID {}: {}", id, e.getMessage(), e);
@@ -141,7 +152,7 @@ public class ItemDAOImpl implements ItemDAO {
 
     @Override
     public boolean updateItemOwner(int itemId, int newOwnerId) {
-        try (Connection conn = DBConnection.getConnection()) {
+        try (Connection conn = dataSource.getConnection()) {
             return updateItemOwner(conn, itemId, newOwnerId);
         } catch (SQLException e) {
             logger.error("Lỗi khi cập nhật chủ sở hữu cho item {}: {}", itemId, e.getMessage(), e);
@@ -181,8 +192,8 @@ public class ItemDAOImpl implements ItemDAO {
         return null;
     }
     @Override
-    public List<Item> getAllItems() {
-        try (Connection conn = DBConnection.getConnection()) {
+    public List<Items> getAllItems() {
+        try (Connection conn = dataSource.getConnection()) {
             return getAllItems(conn);
         } catch (SQLException e) {
             logger.error("Lỗi khi lấy tất cả items: {}", e.getMessage(), e);
