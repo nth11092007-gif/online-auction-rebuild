@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox spacing="15.0" style="-fx-background-color: #f4f7fb; -fx-background-radius: 8;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+    </padding>
+    <children>
+        <Label text="Thuộc tính Đồ điện tử">
+            <font>
+                <Font name="System Bold" size="16.0" />
+            </font>
+        </Label>
+
+        <GridPane hgap="20.0" vgap="15.0">
+            <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" percentWidth="50.0" />
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" percentWidth="50.0" />
+            </columnConstraints>
+            <children>
+                <!-- Hãng sản xuất -->
+                <VBox spacing="8.0" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                    <Label style="-fx-font-weight: bold;" text="Hãng sản xuất *" />
+                    <TextField fx:id="txtBrand" prefHeight="35.0" promptText="VD: Apple, Samsung, Sony..." style="-fx-background-color: transparent; -fx-border-color: #ccc; -fx-border-radius: 5;" />
+                </VBox>
+
+                <!-- Thời gian bảo hành -->
+                <VBox spacing="8.0" GridPane.columnIndex="1">
+                    <Label style="-fx-font-weight: bold;" text="Bảo hành (tháng) *" />
+                    <TextField fx:id="txtWarranty" prefHeight="35.0" promptText="VD: 12" style="-fx-background-color: transparent; -fx-border-color: #ccc; -fx-border-radius: 5;" />
+                </VBox>
+            </children>
+         <rowConstraints>
+            <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
+         </rowConstraints>
+        </GridPane>
+    </children>
+</VBox>

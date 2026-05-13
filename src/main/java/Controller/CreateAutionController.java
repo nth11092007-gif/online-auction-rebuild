@@ -11,6 +11,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import model.*;
@@ -22,6 +23,8 @@ import java.time.LocalDateTime;
 
 public class CreateAutionController {
     AuctionSessionDAO auctionSessionDAO = new AuctionSessionDAOImpl();
+    @FXML
+    private VBox Container;
     @FXML
     private Button btnClearForm;
 
@@ -135,6 +138,34 @@ public class CreateAutionController {
             showAlert(Alert.AlertType.ERROR, "Lỗi hệ thống", "Đã xảy ra lỗi: " + e.getMessage());
         }
     }
+    private void loadDynamicAttributes(String itemType) {
+        // Xóa thuộc tính của sản phẩm trước đó
+        Container.getChildren().clear();
+
+        if (itemType == null) return;
+
+        try {
+            Node nodeToAdd = null;
+            switch (itemType) {
+                case "Arts":
+                    nodeToAdd = FXMLLoader.load(getClass().getResource("ArtDetail.fxml"));
+                    break;
+                case "Vehicles":
+                    nodeToAdd = FXMLLoader.load(getClass().getResource("VehicleDetail.fxml"));
+                    break;
+                case "Electronics":
+                    nodeToAdd = FXMLLoader.load(getClass().getResource("ElectronicDetail.fxml"));
+                    break;
+            }
+            //thêm thuouộc tính
+            if (nodeToAdd != null) {
+                Container.getChildren().add(nodeToAdd);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
     private void showAlert(Alert.AlertType type, String title, String content) {
         Alert alert = new Alert(type);
         alert.setTitle(title);
@@ -146,6 +177,10 @@ public class CreateAutionController {
     public void initialize() {
         // Thêm các loại vật phẩm vào ComboBox
         cbItemType.getItems().addAll("Electronics", "Arts", "Vehicles");
+        // Lắng nghe sự thay đổi của ComboBox
+        cbItemType.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            loadDynamicAttributes(newValue);
+        });
     }
     @FXML
     void handleSelectImage(ActionEvent event) {
@@ -169,4 +204,3 @@ public class CreateAutionController {
         }
     }
 }
-//thêm màn hình riêng cho arts,....

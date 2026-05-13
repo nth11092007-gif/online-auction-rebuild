@@ -61,6 +61,7 @@
                         <Insets bottom="10.0" />
                      </VBox.margin>
                   </VBox>
+                  <VBox fx:id="Container" prefWidth="100.0" spacing="10.0" />
                   <Label text="Cấu Hình Phiên Đấu Giá" VBox.vgrow="ALWAYS">
                      <font>
                         <Font name="System Bold" size="18.0" />
