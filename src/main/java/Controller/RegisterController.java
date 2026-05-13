@@ -37,6 +37,48 @@ public class RegisterController {
     @FXML
     private TextField txtUser;
 
+    public static String checkPasswordStrength(String password) {
+        if (password == null || password.trim().isEmpty()) {
+            return "Trống";
+        }
+        int score = 0;
+        // 1. Kiểm tra độ dài (ít nhất 8 ký tự)
+        if (password.length() >= 8) {
+            score++;
+        }
+        // 2. Kiểm tra có chứa ít nhất một chữ cái viết hoa (A-Z)
+        if (password.matches(".*[A-Z].*")) {
+            score++;
+        }
+        // 3. Kiểm tra có chứa ít nhất một chữ cái viết thường (a-z)
+        if (password.matches(".*[a-z].*")) {
+            score++;
+        }
+        // 4. Kiểm tra có chứa ít nhất một chữ số (0-9)
+        if (password.matches(".*\\d.*")) {
+            score++;
+        }
+        // 5. Kiểm tra có chứa ít nhất một ký tự đặc biệt
+        if (password.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?].*")) {
+            score++;
+        }
+        // Đánh giá độ khó dựa trên tổng điểm (tối đa 5 điểm)
+        switch (score) {
+            case 0:
+            case 1:
+            case 2:
+                return "Yếu"; // Chỉ đạt 1-2 tiêu chí (thường là quá ngắn hoặc chỉ có chữ/số)
+            case 3:
+                return "Trung bình"; // Đạt 3 tiêu chí
+            case 4:
+                return "Mạnh"; // Đạt 4 tiêu chí
+            case 5:
+                return "Rất mạnh"; // Đạt đủ 5 tiêu chí
+            default:
+                return "Không xác định";
+        }
+    }
+
     private void showAlert(String content, Alert.AlertType type) {
         Alert alert = new Alert(type);
         alert.setTitle("Thông báo");

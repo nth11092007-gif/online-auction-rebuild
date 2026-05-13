@@ -20,8 +20,7 @@ public class UITest extends Application {
     public void start(Stage primaryStage) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/Login.fxml"));
-            Parent root = loader.load();
-            Scene scene = new Scene(root);
+            Scene scene = new Scene(loader.load());
             primaryStage.setScene(scene);
             primaryStage.show();
         } catch (IOException e) {

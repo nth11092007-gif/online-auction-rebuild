@@ -53,11 +53,11 @@ public class HomeSellerController {
     @FXML
     void GoToCreateSession(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("CreateSession.fxml"));
-            Parent root = loader.load();
+            Parent root = FXMLLoader.load(getClass().getResource("/CreateAution.fxml"));
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             Scene scene = new Scene(root);
             stage.setScene(scene);
+            stage.show();;
             stage.show();
 
         } catch (IOException e) {
@@ -68,8 +68,7 @@ public class HomeSellerController {
     @FXML
     void GoToProfile(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("CreateSession.fxml"));
-            Parent root = loader.load();
+            Parent root = FXMLLoader.load(getClass().getResource("/Profile.fxml"));
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             Scene scene = new Scene(root);
             stage.setScene(scene);
