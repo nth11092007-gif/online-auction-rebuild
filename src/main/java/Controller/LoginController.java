@@ -40,7 +40,7 @@ public class LoginController {
         System.out.print(UserName+"/n"+Pass);
         try {
             if (login.getUserByUsername(UserName) != null) {
-                throw new  UserExisted();
+                System.out.print("Da tim thay user!");
             }
             User user = login.login(UserName,Pass);
             if (user.getRole() == User.Role.USER ) {
