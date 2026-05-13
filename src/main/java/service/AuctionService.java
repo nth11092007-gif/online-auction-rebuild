@@ -22,14 +22,27 @@ import model.User;
 import server.AuctionFeedServer;
 import utils.DBConnection;
 
+import javax.sql.DataSource;
+
 public class AuctionService {
     
     private static final Logger logger = LoggerFactory.getLogger(AuctionService.class);
     
-    final private UserDAO userDAO = new UserDAOImpl();
-    final private BidDAO bidDAO = new BidDAOImpl();
-    final private AuctionSessionDAO sessionDAO = new AuctionSessionDAOImpl();
+    final private UserDAO userDAO;
+    final private BidDAO bidDAO;
+    final private AuctionSessionDAO sessionDAO;
     private AuctionFeedServer feedServer;
+    private final DataSource dataSource;
+
+    public AuctionService() {
+        this(DBConnection.getDataSource(), new UserDAOImpl(), new BidDAOImpl(), new AuctionSessionDAOImpl());
+    }
+    public AuctionService(DataSource dataSource, UserDAO userDAO, BidDAO bidDAO, AuctionSessionDAO sessionDAO) {
+        this.dataSource = dataSource;
+        this.userDAO = userDAO;
+        this.bidDAO = bidDAO;
+        this.sessionDAO = sessionDAO;
+    }
 
     // Cấu hình Anti-sniping
     private static final int SNIPING_THRESHOLD_MS = 3 * 60 * 1000;
@@ -50,7 +63,7 @@ public class AuctionService {
     public synchronized boolean placeBid(int currentUserId, String sessionId, double bidAmount) {
         Connection conn = null;
         try {
-            conn = DBConnection.getConnection();
+            conn = dataSource.getConnection();
             conn.setAutoCommit(false);
             
             AuctionSession session = sessionDAO.getSessionById(conn, sessionId);

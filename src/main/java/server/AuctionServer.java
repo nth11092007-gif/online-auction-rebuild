@@ -32,13 +32,21 @@ public class AuctionServer extends WebSocketServer {
     private final AuctionService auctionService;
     private final UserService userService;
     private final Map<String, Set<WebSocket>> sessionSubscribers = new ConcurrentHashMap<>();
-    private AuctionFeedServer feedServer;
+    private final AuctionFeedServer feedServer;
 
     public AuctionServer(int port) {
+        this(port, new AuctionService(), new SettlementService(), new UserService(), new AuctionFeedServer());
+    }
+
+    public AuctionServer(int port, AuctionService auctionService,
+                         SettlementService settlementService,
+                         UserService userService,
+                         AuctionFeedServer feedServer) {
         super(new InetSocketAddress(port));
-        this.settlementService = new SettlementService();
-        this.auctionService = new AuctionService();
-        this.userService = new UserService();
+        this.auctionService = auctionService;
+        this.settlementService = settlementService;
+        this.userService = userService;
+        this.feedServer = feedServer;
     }
     /**
     * onOpen: Khi có một kết nối WebSocket mới được mở, phương thức này sẽ được gọi.
@@ -207,7 +215,6 @@ public class AuctionServer extends WebSocketServer {
 
     @Override
     public void onStart() {
-        this.feedServer = new AuctionFeedServer();
         this.auctionService.setFeedServer(this.feedServer);
         System.out.println("🚀 Auction Server đã khởi động thành công trên port: " + getPort());
     }
