@@ -21,7 +21,7 @@ import java.sql.SQLException;
 public class ProfileController {
     private int currentUserID;
     private UserDAO userDAO = new UserDAOImpl();
-    private User currentUser;
+    static User currentUser;
     @FXML
     private Button HandleBack;
 
@@ -58,7 +58,6 @@ public class ProfileController {
     @FXML
     void handleGoBack(ActionEvent event) {
         try {
-            //Parent root = FXMLLoader.load(getClass().getResource("Home.fxml"));
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/HomeSeller.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
@@ -69,9 +68,11 @@ public class ProfileController {
             e.printStackTrace();
         }
     }
+    @FXML
     private void loadUserData() {
-        this.currentUser = userDAO.getUserById(currentUserID);
+        System.out.println(currentUser.getUsername());
         if (currentUser != null) {
+            System.out.println(currentUser.getUsername());
             lblRealName.setText(currentUser.getRealName());
             lblEmail.setText(currentUser.getEmail());
             lblPhoneNumber.setText(currentUser.getPhoneNumber());
@@ -135,5 +136,9 @@ public class ProfileController {
         } catch (SQLException e) {
             showAlert("lỗi lấy thông tin số dư", Alert.AlertType.ERROR);
         }
+    }
+    public void initialize() {
+        System.out.println("FXML đã load xong, đang gọi loadUserData...");
+        loadUserData();
     }
 }

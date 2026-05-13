@@ -40,9 +40,11 @@ public class LoginController {
         System.out.print(UserName+"/n"+Pass);
         try {
             if (login.getUserByUsername(UserName) != null) {
-                System.out.print("Da tim thay user!");
+                System.out.println("Da tim thay user!");
             }
             User user = login.login(UserName,Pass);
+            System.out.println(user.getUsername());
+            ProfileController.currentUser = user;
             if (user.getRole() == User.Role.USER ) {
                 try {
                     Parent root = FXMLLoader.load(getClass().getResource("/HomeSeller.fxml"));

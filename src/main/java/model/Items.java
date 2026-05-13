@@ -40,7 +40,6 @@ public abstract class Items {
             e.printStackTrace();
         }
     }
-
     public void setItemID(int itemID) { this.itemID = itemID; }
     public void setAvatar(BufferedImage avatar) {this.avatar = avatar;}
     public void setAvatar(String filePath) {

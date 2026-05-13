@@ -20,7 +20,7 @@
          <children>
             <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="15.0">
                <children>
-                  <Button mnemonicParsing="false" text="&lt;- Quay lại" />
+                  <Button mnemonicParsing="false" onAction="#handleGoBack" text="&lt;- Quay lại" />
                   <Label text="Tạo phiên đấu giá" />
                </children>
             </HBox>
