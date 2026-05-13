@@ -16,20 +16,24 @@ import dao.UserDAOImpl;
 import model.AuctionSession;
 import model.Bid;
 import model.Bidder;
-import model.User;
+import server.AuctionFeedServer;
 import utils.DBConnection;
 
 public class AuctionService {
     
     private static final Logger logger = LoggerFactory.getLogger(AuctionService.class);
     
-    final private UserDAO userDAO;
-    final private BidDAO bidDAO;
+    final private UserDAO userDAO = new UserDAOImpl();
+    final private BidDAO bidDAO = new BidDAOImpl();
     final private AuctionSessionDAO sessionDAO = new AuctionSessionDAOImpl();
+    private AuctionFeedServer feedServer;
 
-    public AuctionService() {
-        this.userDAO = new UserDAOImpl();
-        this.bidDAO = new BidDAOImpl();
+    // Cấu hình Anti-sniping
+    private static final int SNIPING_THRESHOLD_MS = 3 * 60 * 1000;
+    private static final int EXTENSION_TIME_MINUTES = 3;
+
+    public void setFeedServer(AuctionFeedServer feedServer) {
+        this.feedServer = feedServer;
     }
 
     public List<AuctionSession> getAllSessions() {
@@ -38,10 +42,6 @@ public class AuctionService {
 
     public AuctionSession getSessionById(String sessionId) {
         return sessionDAO.getSessionById(sessionId);
-    }
-
-    public User getUserById(int userId) {
-        return userDAO.getUserById(userId);
     }
 
     public boolean placeBid(int currentUserId, String sessionId, double bidAmount) {
@@ -63,29 +63,33 @@ public class AuctionService {
             return false;
         }
 
-        // Đóng băng tiền trước (vì cần kiểm tra số dư)
-        if (bidder.getBalance() < bidAmount) {
-            logger.warn("Số dư không đủ");
-            return false;
-        }
-        boolean deducted = userDAO.freezeMoneyAtomic(conn, currentUserId, bidAmount);
-        if (!deducted) {
-            logger.warn("Không thể đóng băng tiền");
-            conn.rollback();
-            return false;
-        }
+            // Kiểm tra người bán không được tự đấu giá
+            if (session.getSeller().getID() == currentUserId) {
+                logger.warn("Người bán không được phép đấu giá sản phẩm của chính mình.");
+                return false;
+            }
 
-        // Tạo Bid mới
-        Bid newBid = new Bid(bidder, bidAmount); // Constructor phù hợp
+            Bid highestBid = bidDAO.getHighestBid(conn, sessionId);
+            
+            double minValidBid;
+            if (highestBid == null) {
+                minValidBid = session.getStartingPrice();
+            } else {
+                minValidBid = highestBid.getAmount() + session.getIncrementStep();
+            }
 
-        // Gọi addBid trên session (session tự kiểm tra trạng thái & giá)
-        if (!session.addBid(newBid)) {
-            // Nếu không hợp lệ, hoàn tiền ngay và rollback
-            userDAO.refundMoneyAtomic(conn, currentUserId, bidAmount);
-            conn.rollback();
-            logger.warn("Bid không hợp lệ: giá={} session={}", bidAmount, sessionId);
-            return false;
-        }
+            if (bidAmount < minValidBid) {
+                logger.warn("Giá đặt {} không hợp lệ cho session {}. Phải >= {}", bidAmount, sessionId, minValidBid);
+                conn.rollback();
+                return false;
+            }
+
+            boolean isDeducted = userDAO.freezeMoneyAtomic(conn, currentUserId, bidAmount);
+            if (!isDeducted) {
+                logger.warn("Số dư không đủ để đặt giá {} cho user {} trong session {}", bidAmount, currentUserId, sessionId);
+                conn.rollback();
+                return false;
+            }
 
         // Nếu có người bị vượt, hoàn tiền cho họ (lấy highest bid trước khi add)
         // Cần lấy highest trước khi addBid vì addBid đã thay đổi lịch sử
@@ -97,15 +101,12 @@ public class AuctionService {
             userDAO.refundMoneyAtomic(conn, prevUserId, prevAmount);
         }
 
-        // Lưu bid vào DB
-        bidDAO.addBid(conn, sessionId, newBid);
+            Bid newBid = new Bid(userDAO.getUserById(conn, currentUserId), bidAmount);
+            bidDAO.addBid(conn, sessionId, newBid);
 
-        // Cập nhật session (currentPrice và có thể bid count) vào DB
-        sessionDAO.updateCurrentPrice(conn, sessionId, bidAmount); // Bạn cần thêm method này
-
-        conn.commit();
-        logger.info("Đặt giá thành công: user {}, session {}, amount {}", currentUserId, sessionId, bidAmount);
-        return true;
+            conn.commit();
+            logger.info("Đặt giá thành công: user {}, session {}, amount {}", currentUserId, sessionId, bidAmount);
+            return true;
 
     } catch (SQLException e) {
         logger.error("Lỗi khi đặt giá: user {}, session {}, amount {}: {}", currentUserId, sessionId, bidAmount, e.getMessage());
