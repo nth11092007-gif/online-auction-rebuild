@@ -1,22 +1,24 @@
 package model;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 public class Transaction {
+    final private Logger logger = LoggerFactory.getLogger(Transaction.class);
     public void deposit(User user, double amount){
         if (amount > 0) {
         user.deposit(amount);
-        System.out.printf("Nạp thành công %.2f vào tài khoản", amount);
+        logger.info("Nạp thành công {} vào tài khoản của {}", amount, user.getUsername());
         }
         else {
-            System.err.println("Không thể thực hiện giao dịch!");
+            logger.error("Không thể thực hiện giao dịch!");
         }
     }
     public void withdraw(User user, double amount){
         if (amount > 0 && user.getBalance() >= amount) {
             user.withdraw(amount);
-            System.out.printf("Rút thành công %.2f ra khỏi tài khoản", amount);
+            logger.info("Rút thành công {} từ tài khoản của {}", amount, user.getUsername());
         }
         else {
-        System.err.println("Không thể thực hiện giao dịch!");
+        logger.error("Không thể thực hiện giao dịch!");
         }
     }
 }

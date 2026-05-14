@@ -45,7 +45,7 @@ public class AuctionServer extends WebSocketServer {
     private final Map<String, Command> commandMap = new HashMap<>();
 
     public AuctionServer(int port) {
-        this(port, new AuctionService(), new SettlementService(), new UserService(new UserDAOImpl()), new AuctionFeedServer());
+        this(port, new AuctionService(), new SettlementService(), new UserService(new UserDAOImpl()), AuctionFeedServer.getInstance());
     }
 
     public AuctionServer(int port, AuctionService auctionService,

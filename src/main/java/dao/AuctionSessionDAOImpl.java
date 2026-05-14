@@ -10,6 +10,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.sql.DataSource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,8 +20,6 @@ import model.Bid;
 import model.Item;
 import model.User;
 import utils.DBConnection;
-
-import javax.sql.DataSource;
 
 public class AuctionSessionDAOImpl implements AuctionSessionDAO {
 
@@ -305,5 +305,23 @@ public class AuctionSessionDAOImpl implements AuctionSessionDAO {
             logger.error("Lỗi khi lấy phiên đấu giá có khoá theo ID {}: {}", sessionId, e.getMessage(), e);
         }
         return null;
+    }
+    @Override
+    public List<AuctionSession> getSessionsByStatus(AuctionSession.Status status) {
+        List<AuctionSession> list = new ArrayList<>();
+        String sql = "SELECT session_id FROM auction_sessions WHERE status = ?";
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, status.name());
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    AuctionSession session = getSessionById(conn, rs.getString("session_id"));
+                    if (session != null) list.add(session);
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Lỗi lấy phiên theo status {}: {}", status, e.getMessage(), e);
+        }
+        return list;
     }
 }

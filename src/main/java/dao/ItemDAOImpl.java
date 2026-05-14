@@ -10,6 +10,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.sql.DataSource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,8 +20,6 @@ import model.Electronics;
 import model.Item;
 import model.Vehicles;
 import utils.DBConnection;
-
-import javax.sql.DataSource;
 
 public class ItemDAOImpl implements ItemDAO {
 

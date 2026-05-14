@@ -1,6 +1,7 @@
 package service;
 
 import dao.UserDAO;
+import dao.UserDAOImpl;
 import model.User;
 
 /**
@@ -12,6 +13,9 @@ public class UserService {
 
     public UserService(UserDAO userDAO) {
         this.userDao = userDAO;
+    }
+    public UserService() {
+        this.userDao = new UserDAOImpl();
     }
 
     /**

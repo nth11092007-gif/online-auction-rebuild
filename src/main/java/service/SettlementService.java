@@ -3,15 +3,22 @@ package service;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import dao.*;
+import javax.sql.DataSource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import dao.AuctionSessionDAO;
+import dao.AuctionSessionDAOImpl;
+import dao.BidDAO;
+import dao.BidDAOImpl;
+import dao.ItemDAO;
+import dao.ItemDAOImpl;
+import dao.UserDAO;
+import dao.UserDAOImpl;
 import model.AuctionSession;
 import model.Bid;
 import utils.DBConnection;
-
-import javax.sql.DataSource;
 
 public class SettlementService {
     private final DataSource dataSource;
@@ -33,6 +40,14 @@ public class SettlementService {
         this.userDAO = userDAO;
         this.itemDAO = itemDAO;
     }
+    public SettlementService(AuctionSessionDAO sessionDAO,
+                             BidDAO bidDAO, UserDAO userDAO, ItemDAO itemDAO) {
+        this.dataSource = DBConnection.getDataSource();
+        this.sessionDAO = sessionDAO;
+        this.bidDAO = bidDAO;
+        this.userDAO = userDAO;
+        this.itemDAO = itemDAO;
+    }
 
     /**
      * Hàm xử lý kết thúc phiên đấu giá
@@ -44,7 +59,7 @@ public class SettlementService {
             conn.setAutoCommit(false);
 
             AuctionSession session = sessionDAO.getSessionById(conn, sessionId);
-            if (session == null || session.getStatus() != AuctionSession.Status.OPEN) {
+            if (session == null || !session.settle()) {
                 logger.warn("Phiên đấu giá {} không tồn tại hoặc không ở trạng thái OPEN", sessionId);
                 return false;
             }
@@ -64,7 +79,8 @@ public class SettlementService {
             } else {
                 logger.info("Phiên đấu giá {} kết thúc. Không có ai đặt giá.", sessionId);
             }
-
+            
+            session.settle();
             sessionDAO.updateSessionStatusAtomic(conn, sessionId, AuctionSession.Status.CLOSED);
             conn.commit();
             return true;

@@ -42,6 +42,12 @@ public class AuctionService {
         this.bidDAO = bidDAO;
         this.sessionDAO = sessionDAO;
     }
+    public AuctionService(UserDAO userDAO, BidDAO bidDAO, AuctionSessionDAO sessionDAO) {
+        this.dataSource = DBConnection.getDataSource();
+        this.userDAO = userDAO;
+        this.bidDAO = bidDAO;
+        this.sessionDAO = sessionDAO;
+    }
 
     // Cấu hình Anti-sniping
     private static final int SNIPING_THRESHOLD_MS = 3 * 60 * 1000;
@@ -58,7 +64,9 @@ public class AuctionService {
     public AuctionSession getSessionById(String sessionId) {
         return sessionDAO.getSessionById(sessionId);
     }
-
+    public List<AuctionSession> getSessionsByStatus(AuctionSession.Status status) {
+        return sessionDAO.getSessionsByStatus(status);
+    }
     public boolean placeBid(int currentUserId, String sessionId, double bidAmount) {
     Connection conn = null;
     try {
@@ -80,7 +88,7 @@ public class AuctionService {
         }
 
         // 2. Kiểm tra trạng thái session và các điều kiện khác
-        if (!session.getState().canJoin()) {
+        if (!session.joinable()) {
             logger.warn("Session {} không ở trạng thái có thể đặt giá", sessionId);
             // Hoàn tiền vì đã freeze rồi
             userDAO.refundMoneyAtomic(conn, currentUserId, bidAmount);

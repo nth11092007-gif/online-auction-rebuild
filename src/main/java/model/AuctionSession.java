@@ -3,6 +3,9 @@ package model;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import model.state.AuctionState;
 import model.state.AuctionStateFactory;
 import utils.IDGenerator;
@@ -20,6 +23,7 @@ public class AuctionSession {
     public enum Status { PENDING, OPEN, CLOSED, SETTLED }; // một nhóm các hằng số
     private Status status;
     private AuctionState state;
+    private final Logger logger = LoggerFactory.getLogger(AuctionSession.class);
     public AuctionSession(Seller seller, Item item, double startingPrice, double incrementStep, LocalDateTime startTime){
         this.seller = seller;
         this.item = item;
@@ -66,57 +70,39 @@ public class AuctionSession {
         this.state = state;
     }
     public void startSession(int openDays) {
-        this.status = Status.OPEN;
+        this.setOpen();
         this.currentPrice = startingPrice; 
         this.startTime = LocalDateTime.now(); // Lấy giờ bấm nút
         this.endTime = this.startTime.plusDays(openDays); // Tính giờ đóng cửa
-        System.out.println("Phiên đấu giá đã CHÍNH THỨC BẮT ĐẦU! Giá khởi điểm: " + startingPrice);
-        System.out.println("Kết thúc vào: " + this.endTime);
+        logger.info("Phiên đấu giá {} bắt đầu lúc {} và sẽ kết thúc lúc {}", sessionID, startTime, endTime);
+        logger.info("Giá khởi điểm: {}, Bước giá: {}", startingPrice, incrementStep);
     }
     public void endSession() {
-        this.status = Status.CLOSED;
+        this.setClose();
         this.endTime = LocalDateTime.now();
 
-        System.out.println("\n=== PHIÊN ĐẤU GIÁ KẾT THÚC ===");
+        logger.info("Phiên đấu giá {} đã kết thúc lúc {}", sessionID, endTime);
         if (highestBidder != null) {
-            System.out.println("Người chiến thắng: " + highestBidder.getUsername() + " với giá " + currentPrice);
+            logger.info("Người chiến thắng: {} với giá {}", highestBidder.getUsername(), currentPrice);
             // Gợi ý cho sau này: Tại đây bạn có thể gọi Transaction để trừ tiền người thắng
             // và cộng tiền cho seller.
         } else {
-            System.out.println("Không có ai tham gia trả giá. Vật phẩm chưa được bán!");
+            logger.info("Không có ai tham gia trả giá. Vật phẩm chưa được bán!");
         }
     }
     public boolean addBid(Bid newBid) {
-    if (newBid == null) {
-        return false;
+        return this.state.addBid(this, newBid);
     }
-    if (status != Status.OPEN) {
-        System.err.println("Phiên đấu giá không còn hoạt động, không thể đặt giá");
-        return false;
+    public boolean joinable() {
+        return this.state.canJoin();
     }
-    if (highestBidder == null) {
-        if (newBid.getAmount() < startingPrice) {
-            System.err.println("Giá đặt phải ít nhất bằng giá khởi điểm");
-            return false;
-        }
-    } 
-    else {
-    if (newBid.getBidder().getID() == highestBidder.getID()) {
-        System.err.println("Bạn đã là người đặt giá cao nhất, không thể đặt giá tiếp");
-        return false;
+    public boolean setOpen() {
+        return this.state.open(this);
     }
-    if (newBid.getAmount() <= currentPrice + incrementStep) {
-        System.err.println("Giá đặt phải cao hơn giá hiện tại ít nhất một bước giá (" + incrementStep + ")");
-        return false;
+    public boolean setClose() {
+        return this.state.close(this);
     }
-    }
-    // Thêm bid vào lịch sử
-    bidHistory.add(newBid);
-    // Cập nhật giá hiện tại
-    this.currentPrice = newBid.getAmount();
-    // Cập nhật người đặt giá cao nhất
-    this.highestBidder = newBid.getBidder();
-    System.out.println("Bid mới: " + newBid.getBidder().getUsername()   + " đặt " + newBid.getAmount() + " cho phiên " + sessionID);
-    return true;
+    public boolean settle() {
+        return this.state.settle(this);
     }
 }
