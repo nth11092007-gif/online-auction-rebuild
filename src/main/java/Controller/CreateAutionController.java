@@ -18,11 +18,13 @@ import model.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 
 public class CreateAutionController {
     AuctionSessionDAO auctionSessionDAO = new AuctionSessionDAOImpl();
+    private File selectedImageFile;
     @FXML
     private VBox Container;
     @FXML
@@ -86,47 +88,85 @@ public class CreateAutionController {
     void HandleCreatAution(ActionEvent event) {
         try {
             String itemName = txtItemName.getText();
-            double startPrice = Double.parseDouble(txtStartingPrice.getText());
-            double stepPrice = Double.parseDouble(txtIncrementStep.getText());
-            int openDays = Integer.parseInt(txtOpenDays.getText());
-            String description = txtDescription.getText();
-            if (itemName.isEmpty() || cbItemType == null) {
-                showAlert(Alert.AlertType.ERROR, "Lỗi", "Vui lòng điền đầy đủ tên sản phẩm và loại hàng.");
+            String itemType = cbItemType.getValue();
+
+            // Kiểm tra rỗng trước khi parse dữ liệu
+            if (itemName.isEmpty() || itemType == null || txtStartingPrice.getText().isEmpty() || txtOpenDays.getText().isEmpty()) {
+                showAlert(Alert.AlertType.ERROR, "Lỗi", "Vui lòng điền đầy đủ thông tin bắt buộc.");
                 return;
             }
-            int ItemId;
-            Items initItem;
-            switch (cbItemType.toString()) {
-                case "Vehicles":
-                    ItemId = 2;
-                    initItem = new Vehicles(null, )
-                case "Arts":
-                    ItemId = 1;
-                case "Electronics":
-                    ItemId = 3;
-            } ;
 
+            double startPrice = Double.parseDouble(txtStartingPrice.getText());
+            double stepPrice = Double.parseDouble(txtIncrementStep.getText()); // Hiện tại chưa dùng đến trong model Items, có thể bạn sẽ cần đưa vào AuctionSession
+            int openDays = Integer.parseInt(txtOpenDays.getText());
+            String description = txtDescription.getText();
+
+            // Lấy tên chủ sở hữu. Giả định class Seller có phương thức getOwnerName() hoặc bạn lưu tên trong Session
+            String ownerName = "Unknown Owner";
+            if (ProfileController.currentUser != null) {
+                // Bạn hãy thay thế bằng phương thức lấy tên chính xác từ class Seller của bạn
+                // ví dụ: ownerName = ((Seller) ProfileController.currentUser).getName();
+            }
+
+            int itemId = 0;
+            Items initItem = null;
+
+            // Khởi tạo các Item động dựa theo loại và trích xuất dữ liệu từ các node trong Container
+            switch (itemType) {
+                case "Vehicles":
+                    itemId = 2;
+                    // Lấy các Node từ VehicleDetail.fxml (Lưu ý: Bạn cần đặt fx:id tương ứng cho các trường trong FXML)
+                    TextField txtVehicleBrand = (TextField) Container.lookup("txtBrand");
+                    TextField txtMileage = (TextField) Container.lookup("txtMileage");
+                    TextField txtVehicleID = (TextField) Container.lookup("txtVehicleID");
+
+                    String vBrand = (txtVehicleBrand != null) ? txtVehicleBrand.getText() : "";
+                    int vMileage = (txtMileage != null && !txtMileage.getText().isEmpty()) ? Integer.parseInt(txtMileage.getText()) : 0;
+                    String vIdStr = (txtVehicleID != null) ? txtVehicleID.getText() : "";
+
+                    initItem = new Vehicles(itemId, ownerName, startPrice, description, vBrand, vMileage, vIdStr);
+                    break;
+
+                case "Arts":
+                    itemId = 1;
+                    TextField txtArtistName = (TextField) Container.lookup("txtArtistName");
+                    DatePicker dpReleaseDate = (DatePicker) Container.lookup("txtReleaseDate");
+
+                    String aArtistName = (txtArtistName != null) ? txtArtistName.getText() : "";
+                    LocalDate aReleaseDate = (dpReleaseDate != null && dpReleaseDate.getValue() != null) ? dpReleaseDate.getValue() : LocalDate.now();
+
+                    initItem = new Arts(itemId, ownerName, startPrice, description, aArtistName, aReleaseDate);
+                    break;
+
+                case "Electronics":
+                    itemId = 3;
+                    // Lấy các Node từ ElectronicDetail.fxml
+                    TextField txtElectronicBrand = (TextField) Container.lookup("txtBrand");
+                    TextField txtWarranty = (TextField) Container.lookup("txtWarranty");
+
+                    String eBrand = (txtElectronicBrand != null) ? txtElectronicBrand.getText() : "";
+                    int eWarranty = (txtWarranty != null && !txtWarranty.getText().isEmpty()) ? Integer.parseInt(txtWarranty.getText()) : 0;
+
+                    initItem = new Electronics(itemId, ownerName, startPrice, description, eWarranty, eBrand);
+                    break;
+            }
 
             // 3. Khởi tạo đối tượng AuctionSession
-            AuctionSession auctionSession = new AuctionSession((Seller) ProfileController.currentUser, cbItemType, startPrice);
-            AuctionSessionDAO newSession = new AuctionSessionDAOImpl();
-            newSession.createSession()
-            newSession.
+            AuctionSession auctionSession = new AuctionSession((Seller) ProfileController.currentUser, initItem, startPrice);
 
-                    // Tính toán thời gian bắt đầu và kết thúc
-                    LocalDateTime startTime = LocalDateTime.now();
+            // Tính toán thời gian bắt đầu và kết thúc
+            LocalDateTime startTime = LocalDateTime.now();
             LocalDateTime endTime = startTime.plusDays(openDays);
 
-            newSession.setStartTime(startTime);
-            newSession.setEndTime(endTime);
-            newSession.setStatus(AuctionSession.Status.OPEN); // Mặc định là OPEN khi tạo mới
+            auctionSession.setStartTime(startTime);
+            auctionSession.setEndTime(endTime);
+            auctionSession.setStatus(AuctionSession.Status.OPEN);
 
-            // 4. Gọi DAO để lưu vào database
-            boolean success = auctionSessionDAO.createSession(newSession, dummyItemId);
+            boolean success = auctionSessionDAO.createSession(auctionSession, itemId);
 
             if (success) {
                 showAlert(Alert.AlertType.INFORMATION, "Thành công", "Phiên đấu giá đã được tạo thành công!");
-                HandleClearForm(event); // Xoá form sau khi tạo
+                HandleClearForm(event);
             } else {
                 showAlert(Alert.AlertType.ERROR, "Thất bại", "Không thể tạo phiên đấu giá. Vui lòng kiểm tra lại.");
             }
@@ -148,13 +188,13 @@ public class CreateAutionController {
             Node nodeToAdd = null;
             switch (itemType) {
                 case "Arts":
-                    nodeToAdd = FXMLLoader.load(getClass().getResource("ArtDetail.fxml"));
+                    nodeToAdd = FXMLLoader.load(getClass().getResource("/ArtDetail.fxml"));
                     break;
                 case "Vehicles":
-                    nodeToAdd = FXMLLoader.load(getClass().getResource("VehicleDetail.fxml"));
+                    nodeToAdd = FXMLLoader.load(getClass().getResource("/VehicleDetail.fxml"));
                     break;
                 case "Electronics":
-                    nodeToAdd = FXMLLoader.load(getClass().getResource("ElectronicDetail.fxml"));
+                    nodeToAdd = FXMLLoader.load(getClass().getResource("/ElectronicDetail.fxml"));
                     break;
             }
             //thêm thuouộc tính
@@ -196,7 +236,7 @@ public class CreateAutionController {
         File file = fileChooser.showOpenDialog(stage);
 
         if (file != null) {
-            File selectedImageFile = file;
+            selectedImageFile = file;
             lblImagePath.setText(file.getName());
 
             Image image = new Image(file.toURI().toString());
