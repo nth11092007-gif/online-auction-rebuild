@@ -198,19 +198,6 @@ public class AuctionSessionDAOImpl implements AuctionSessionDAO {
             return pstmt.executeUpdate() > 0;
         }
     }
-    
-    @Override 
-    public boolean updateCurrentPrice(Connection conn, String sessionId, double newPrice) {
-        String sql = "UPDATE auction_sessions SET current_price = ? WHERE session_id = ?";
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setDouble(1, newPrice);
-            pstmt.setString(2, sessionId);
-            return pstmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            logger.error("Lỗi cập nhật giá hiện tại phiên {}: {}", sessionId, e.getMessage(), e);
-        }
-        return false;
-    }
 
     @Override 
     public boolean updateCurrentPrice(Connection conn, String sessionId, double newPrice) {

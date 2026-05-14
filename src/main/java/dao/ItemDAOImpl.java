@@ -100,7 +100,7 @@ public class ItemDAOImpl implements ItemDAO {
     }
 
     @Override
-    public void addItem(Items item) {
+    public void addItem(Item item) {
         try (Connection conn = dataSource.getConnection()) {
             addItem(conn, item);
         } catch (SQLException e) {
@@ -127,7 +127,7 @@ public class ItemDAOImpl implements ItemDAO {
     }
 
     @Override
-    public Items getItemById(int id) {
+    public Item getItemById(int id) {
         try (Connection conn = dataSource.getConnection()) {
             return getItemById(conn, id);
         } catch (SQLException e) {
@@ -192,7 +192,7 @@ public class ItemDAOImpl implements ItemDAO {
         return null;
     }
     @Override
-    public List<Items> getAllItems() {
+    public List<Item> getAllItems() {
         try (Connection conn = dataSource.getConnection()) {
             return getAllItems(conn);
         } catch (SQLException e) {

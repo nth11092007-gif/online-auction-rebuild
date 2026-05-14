@@ -16,7 +16,7 @@ class TypeArtsTest {
                 .build();
 
         ItemsFactory factory = new TypeArts();
-        Items item = factory.createItems(attr);
+        Item item = factory.createItems(attr);
 
         assertInstanceOf(Arts.class, item);
         Arts art = (Arts) item;

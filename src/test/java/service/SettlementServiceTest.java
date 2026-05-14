@@ -6,6 +6,8 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -15,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class SettlementServiceTest {
 
     @Mock private DataSource dataSource;
@@ -26,18 +29,23 @@ class SettlementServiceTest {
 
     private SettlementService settlementService;
     private AuctionSession openSession, closedSession;
+    private Seller sellerMock;
+    private Item genericItemMock;
 
     @BeforeEach
     void setUp() {
         settlementService = new SettlementService(dataSource, sessionDAO, bidDAO, userDAO, itemDAO);
 
-        User seller = new User(1, "sell", "p", "S", "s@t", "0", User.Role.USER, 0, 0);
-        // item mock
-        openSession = new AuctionSession(seller, null, 100, 10, LocalDateTime.now());
-        openSession.status = AuctionSession.Status.OPEN;
+        sellerMock = mock(Seller.class);
+        when(sellerMock.getID()).thenReturn(1);
+        genericItemMock = mock(Item.class);
 
-        closedSession = new AuctionSession(seller, null, 100, 10, LocalDateTime.now());
-        closedSession.status = AuctionSession.Status.CLOSED;
+        openSession = new AuctionSession(sellerMock, genericItemMock, 100.0, 10.0, LocalDateTime.now());
+        openSession.startSession(1); // OPEN
+
+        closedSession = new AuctionSession(sellerMock, genericItemMock, 100.0, 10.0, LocalDateTime.now());
+        closedSession.startSession(1);
+        closedSession.endSession(); // CLOSED
     }
 
     @Test
@@ -46,14 +54,12 @@ class SettlementServiceTest {
         User buyer = new User(2, "buyer", "p", "B", "b@t", "0", User.Role.USER, 500, 100);
         Bid winningBid = new Bid(buyer, 250.0);
 
-        // Stub DataSource
         when(dataSource.getConnection()).thenReturn(connection);
 
-        // Tạo item mock riêng cho success
-        Items item = mock(Items.class);
-        when(item.getItemID()).thenReturn(10);
-        openSession = new AuctionSession(openSession.getSeller(), item, 100, 10, LocalDateTime.now());
-        openSession.status = AuctionSession.Status.OPEN;
+        Item successItem = mock(Item.class);
+        when(successItem.getItemID()).thenReturn(10);
+        openSession = new AuctionSession(sellerMock, successItem, 100.0, 10.0, LocalDateTime.now());
+        openSession.startSession(1);
 
         when(sessionDAO.getSessionById(connection, sessionId)).thenReturn(openSession);
         when(bidDAO.getHighestBid(connection, sessionId)).thenReturn(winningBid);

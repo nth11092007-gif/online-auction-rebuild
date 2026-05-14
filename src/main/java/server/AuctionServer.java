@@ -16,13 +16,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import dao.AuctionSessionDAO;
-import dao.AuctionSessionDAOImpl;
-import dao.BidDAO;
-import dao.BidDAOImpl;
-import dao.ItemDAO;
-import dao.ItemDAOImpl;
-import dao.UserDAO;
 import dao.UserDAOImpl;
 import dto.Message;
 import server.command.Command;
@@ -40,7 +33,7 @@ import service.UserService;
 public class AuctionServer extends WebSocketServer {
     private final Gson gson = new Gson();
     private final Map<String, Set<WebSocket>> sessionSubscribers = new ConcurrentHashMap<>();
-    private AuctionFeedServer feedServer;
+    private final AuctionFeedServer feedServer;
     private final Logger logger = LoggerFactory.getLogger(AuctionServer.class);
     // Các service
     private final AuctionService auctionService;
@@ -52,7 +45,7 @@ public class AuctionServer extends WebSocketServer {
     private final Map<String, Command> commandMap = new HashMap<>();
 
     public AuctionServer(int port) {
-        this(port, new AuctionService(), new SettlementService(), new UserService(), new AuctionFeedServer());
+        this(port, new AuctionService(), new SettlementService(), new UserService(new UserDAOImpl()), new AuctionFeedServer());
     }
 
     public AuctionServer(int port, AuctionService auctionService,
@@ -60,23 +53,18 @@ public class AuctionServer extends WebSocketServer {
                          UserService userService,
                          AuctionFeedServer feedServer) {
         super(new InetSocketAddress(port));
-        // Tạo DAO implementations
-        UserDAO userDAO = new UserDAOImpl();
-        BidDAO bidDAO = new BidDAOImpl();
-        AuctionSessionDAO sessionDAO = new AuctionSessionDAOImpl();
-        ItemDAO itemDAO = new ItemDAOImpl(); // nếu cần
 
         // Inject vào service
-        this.auctionService = new AuctionService(userDAO, bidDAO, sessionDAO);
-        this.userService = new UserService(userDAO);
-        this.settlementService = new SettlementService(sessionDAO, bidDAO, userDAO, itemDAO);
-        this. proxyBiddingService = new ProxyBiddingService(auctionService);
+        this.auctionService = auctionService;
+        this.userService = userService;
+        this.settlementService = settlementService;
+        this.feedServer = feedServer;
     }
 
     @Override
     public void onStart() {
-        this.feedServer = new AuctionFeedServer();
-        System.out.println("🚀 Auction Server đã khởi động thành công trên port: " + getPort());
+        this.auctionService.setFeedServer(this.feedServer);
+        System.out.println("Auction Server đã khởi động thành công trên port: " + getPort());
         this.proxyBiddingService = new ProxyBiddingService(auctionService);
         // Khởi tạo command map (sau khi feedServer đã có)
         commandMap.put("GET_SESSIONS", new GetSessionsCommand(auctionService));
@@ -131,16 +119,4 @@ public class AuctionServer extends WebSocketServer {
             logger.error("❌ Lỗi trên kết nối: " + webSocket.getRemoteSocketAddress(), e);
         }
     }
-<<<<<<<<< Temporary merge branch 1
-
-    @Override
-    public void onStart() {
-        this.feedServer = new AuctionFeedServer();
-        this.auctionService.setFeedServer(this.feedServer);
-        System.out.println("🚀 Auction Server đã khởi động thành công trên port: " + getPort());
-    }
-
 }
-=========
-}
->>>>>>>>> Temporary merge branch 2

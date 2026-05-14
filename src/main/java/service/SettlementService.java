@@ -3,13 +3,10 @@ package service;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import dao.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dao.AuctionSessionDAO;
-import dao.BidDAO;
-import dao.ItemDAO;
-import dao.UserDAO;
 import model.AuctionSession;
 import model.Bid;
 import utils.DBConnection;
@@ -37,13 +34,6 @@ public class SettlementService {
         this.itemDAO = itemDAO;
     }
 
-    public SettlementService(AuctionSessionDAO sessionDAO, BidDAO bidDAO, UserDAO userDAO, ItemDAO itemDAO) {
-        this.sessionDAO = sessionDAO;
-        this.bidDAO = bidDAO;
-        this.userDAO = userDAO;
-        this.itemDAO = itemDAO;
-        this.dataSource = null; // Không dùng DataSource trong constructor này
-    }
     /**
      * Hàm xử lý kết thúc phiên đấu giá
      */
