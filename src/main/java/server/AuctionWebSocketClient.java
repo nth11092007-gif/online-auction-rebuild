@@ -1,0 +1,65 @@
+package server;
+
+import java.net.URI;
+import java.util.function.Consumer;
+
+import org.java_websocket.client.WebSocketClient;
+import org.java_websocket.handshake.ServerHandshake;
+
+import com.google.gson.JsonObject;
+
+public class AuctionWebSocketClient extends WebSocketClient {
+    private static AuctionWebSocketClient instance;
+    private Consumer<String> onMessageCallback;
+
+    private AuctionWebSocketClient(URI serverUri) {
+        super(serverUri);
+    }
+
+    public static AuctionWebSocketClient getInstance() {
+        if (instance == null) {
+            try {
+                instance = new AuctionWebSocketClient(new URI("ws://localhost:8887"));
+                instance.connectBlocking();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return instance;
+    }   
+
+    public void setOnMessageCallback(Consumer<String> callback) {
+        this.onMessageCallback = callback;
+    }
+
+    @Override
+    public void onOpen(ServerHandshake handshake) {
+        System.out.println("WebSocket connected to server");
+    }
+
+    @Override
+    public void onMessage(String message) {
+        if (onMessageCallback != null) {
+            // Đảm bảo cập nhật UI trên JavaFX Application Thread
+            javafx.application.Platform.runLater(() -> onMessageCallback.accept(message));
+        }
+    }
+
+    @Override
+    public void onClose(int code, String reason, boolean remote) {
+        System.out.println("WebSocket closed: " + reason);
+    }
+
+    @Override
+    public void onError(Exception ex) {
+        System.err.println("WebSocket error: " + ex.getMessage());
+    }
+
+    public void sendCommand(String type, JsonObject data) {
+        JsonObject msg = new JsonObject();
+        msg.addProperty("type", type);
+        // Nếu có data thì thêm vào msg (có thể dùng Gson để merge)
+        // Tạm thời, bạn có thể tự tạo chuỗi JSON hoặc dùng Gson
+        // send(msg.toString());
+    }
+}
