@@ -1,11 +1,24 @@
 package dao;
 
 import java.awt.image.BufferedImage;
-import java.io.*;
-import java.sql.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.sql.Blob;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Types;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.imageio.ImageIO;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,8 +28,6 @@ import model.Electronics;
 import model.Items;
 import model.Vehicles;
 import utils.DBConnection;
-
-import javax.imageio.ImageIO;
 
 public class ItemDAOImpl implements ItemDAO {
 
@@ -43,7 +54,8 @@ public class ItemDAOImpl implements ItemDAO {
                 try {
                     ImageIO.write(avatar, "png", baos);
                 } catch (IOException e) {
-                    logger.error("loi khi doc file anh");
+                    logger.error("Lỗi khi chuyển ảnh thành bytes: {}", e.getMessage(), e);
+                    logger.error("Lỗi khi đọc file ảnh: {}", e.getMessage(), e);
                 }
                 byte[] imageBytes = baos.toByteArray();
                 ps.setBytes(11, imageBytes);

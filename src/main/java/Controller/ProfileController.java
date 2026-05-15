@@ -1,5 +1,8 @@
 package Controller;
 
+import java.io.IOException;
+import java.sql.SQLException;
+
 import dao.UserDAO;
 import dao.UserDAOImpl;
 import javafx.event.ActionEvent;
@@ -14,9 +17,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import model.User;
-
-import java.io.IOException;
-import java.sql.SQLException;
+import utils.SessionManager;
 
 public class ProfileController {
     private int currentUserID;
@@ -70,18 +71,19 @@ public class ProfileController {
     }
     @FXML
     private void loadUserData() {
-        System.out.println(currentUser.getUsername());
+        // ✅ Get user from SessionManager
+        User currentUser = SessionManager.getCurrentUser();
         if (currentUser != null) {
             System.out.println(currentUser.getUsername());
             lblRealName.setText(currentUser.getRealName());
             lblEmail.setText(currentUser.getEmail());
             lblPhoneNumber.setText(currentUser.getPhoneNumber());
-            updateBalanceUI();
+            updateBalanceUI(currentUser);
         }
     }
-    private void updateBalanceUI() {
-        lblBalance.setText(String.format("%,.2f VNĐ", currentUser.getBalance()));
-        lblFrozenBalance.setText(String.format("%,.2f VNĐ", currentUser.getFrozenBalance()));
+    private void updateBalanceUI(User user) {
+        lblBalance.setText(String.format("%,.2f VNĐ", user.getBalance()));
+        lblFrozenBalance.setText(String.format("%,.2f VNĐ", user.getFrozenBalance()));
     }
     private void showAlert(String content, Alert.AlertType type){
         Alert alert = new Alert(type);
@@ -100,7 +102,7 @@ public class ProfileController {
             double newBalance = currentUser.getBalance() + amount;
             if (userDAO.updateBalance(currentUserID, newBalance, currentUser.getFrozenBalance())) {
                 currentUser.deposit(amount); // Cập nhật đối tượng Java
-                updateBalanceUI(); // Cập nhật UI
+                updateBalanceUI(currentUser); // Cập nhật UI
                 txtDepositAmount.clear();
                 showAlert("Nạp tiền thành công!", Alert.AlertType.INFORMATION);
             }
@@ -126,7 +128,7 @@ public class ProfileController {
             double newBalance = currentUser.getBalance() - amount;
             if (userDAO.updateBalance(currentUserID, newBalance, currentUser.getFrozenBalance())) {
                 currentUser.withdraw(amount);
-                updateBalanceUI();
+                updateBalanceUI(currentUser);
                 txtWithdrawAmount.clear();
 
                 showAlert("Rút tiền thành công!", Alert.AlertType.INFORMATION);

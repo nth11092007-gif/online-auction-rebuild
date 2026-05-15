@@ -59,6 +59,11 @@
                                 <Font size="14.0" />
                             </font>
                         </Button>
+                  <Button fx:id="btnRegister1" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleBackToLogin" prefHeight="45.0" style="-fx-background-color: #1BF2F2; -fx-text-fill: #3E39BF; -fx-background-radius: 8; -fx-font-weight: bold;" text="Đăng nhập">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                  </Button>
                     </children>
                     <padding>
                         <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />

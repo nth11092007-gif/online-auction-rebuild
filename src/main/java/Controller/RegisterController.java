@@ -1,5 +1,8 @@
 package Controller;
 
+import java.io.IOException;
+
+import Exception.PasswordStrengthCheck;
 import dao.UserDAO;
 import dao.UserDAOImpl;
 import javafx.event.ActionEvent;
@@ -14,8 +17,6 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import model.User;
-import Exception.*;
-import java.io.IOException;
 
 public class RegisterController {
     UserDAO register = new UserDAOImpl();
@@ -126,5 +127,25 @@ public class RegisterController {
         } catch (PasswordStrengthCheck p) {
             p.getMessage();
         }
+    }
+    @FXML
+    void handleBackToLogin(ActionEvent event) {
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource("/Login.fxml"));
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert("Lỗi", "Không thể quay lại màn hình đăng nhập.");
+        }
+    }
+
+    private void showAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 }
