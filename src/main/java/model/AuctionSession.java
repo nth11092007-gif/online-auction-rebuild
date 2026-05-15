@@ -54,6 +54,9 @@ public class AuctionSession {
     public Status getStatus(){
         return this.status;
     }
+    public Bidder getHighestBidder() {
+        return highestBidder;
+    }
     public void startSession(int openDays) {
         this.status = Status.OPEN;
         this.currentPrice = startingPrice; 
@@ -83,7 +86,7 @@ public class AuctionSession {
         System.err.println("Phiên đấu giá không còn hoạt động, không thể đặt giá");
         return false;
     }
-    if (newBid.getAmount() <= currentPrice + incrementStep) {
+    if (newBid.getAmount() < currentPrice + incrementStep) {
         System.err.println("Giá đặt phải cao hơn giá hiện tại");
         return false;
     }

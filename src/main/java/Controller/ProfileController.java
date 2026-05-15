@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 public class ProfileController {
-    private int currentUserID;
     private UserDAO userDAO = new UserDAOImpl();
     static User currentUser;
     @FXML
@@ -49,16 +48,10 @@ public class ProfileController {
     @FXML
     private TextField txtWithdrawAmount;
 
-    // Hàm này phải được gọi sau khi load FXML để truyền ID người dùng
-    public void setUserId(int id) {
-        this.currentUserID = id;
-        loadUserData(); // Tải dữ liệu khi có ID
-    }
-
     @FXML
     void handleGoBack(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/HomeSeller.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Home.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             Scene scene = new Scene(root);
@@ -98,8 +91,8 @@ public class ProfileController {
                 return;
             }
             double newBalance = currentUser.getBalance() + amount;
-            if (userDAO.updateBalance(currentUserID, newBalance, currentUser.getFrozenBalance())) {
-                currentUser.deposit(amount); // Cập nhật đối tượng Java
+            if (userDAO.updateBalance(currentUser.getID(), newBalance, currentUser.getFrozenBalance())) {
+                currentUser.deposit(amount);
                 updateBalanceUI(); // Cập nhật UI
                 txtDepositAmount.clear();
                 showAlert("Nạp tiền thành công!", Alert.AlertType.INFORMATION);
@@ -124,7 +117,7 @@ public class ProfileController {
                 return;
             }
             double newBalance = currentUser.getBalance() - amount;
-            if (userDAO.updateBalance(currentUserID, newBalance, currentUser.getFrozenBalance())) {
+            if (userDAO.updateBalance(currentUser.getID(), newBalance, currentUser.getFrozenBalance())) {
                 currentUser.withdraw(amount);
                 updateBalanceUI();
                 txtWithdrawAmount.clear();

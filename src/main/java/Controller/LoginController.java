@@ -47,7 +47,7 @@ public class LoginController {
             ProfileController.currentUser = user;
             if (user.getRole() == User.Role.USER ) {
                 try {
-                    Parent root = FXMLLoader.load(getClass().getResource("/HomeSeller.fxml"));
+                    Parent root = FXMLLoader.load(getClass().getResource("/Home.fxml"));
                     Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
                     Scene scene = new Scene(root);
                     stage.setScene(scene);
