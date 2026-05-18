@@ -152,113 +152,10 @@ public class AuctionDetailController {
     }
 
     private void updateBidSpinner(int currentPrice) {
-
-    }
-
-    public void setAuctionData(AuctionSession session) {
-        if (session == null || session.getItem() == null) return;
-
-        this.currentItem = session.getItem();
-        this.currentSessionId = session.getSessionID();
-
-        this.stepValue = (int) session.getIncrementStep();
-        txtItemID.setText("ID: " + currentItem.getItemID());
-        txtItemName.setText(currentItem.getClass().getSimpleName());
-        txtDescription.setText(currentItem.getDescription());
-
-        double currentPrice = session.getCurrentPrice();
-        txtCurrentPrice.setText(String.format("%,.0f VNĐ", currentPrice));
-
-        updateBidSpinner((int) currentPrice);
-
-        // Hiển thị người dẫn đầu hiện tại
-        if (session.getHighestBidder() != null) {
-            lblHighestBidder.setText("Người dẫn đầu: " + session.getHighestBidder().getUsername());
-        } else {
-            lblHighestBidder.setText("Chưa có ai đặt giá.");
-        }
-
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-        lblEndTime.setText("Kết thúc: " + session.getEndTime().format(formatter));
-
-        startCountdown(session);
-    }
-
-    private void startCountdown(AuctionSession session) {
-        if (timeline != null) {
-            timeline.stop();
-        }
-
-        timeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
-            LocalDateTime now = LocalDateTime.now();
-            LocalDateTime start = session.getStartTime();
-            LocalDateTime end = session.getEndTime();
-
-            if (now.isBefore(start)) {
-                lblStatus.setText("Sắp diễn ra");
-                lblStatus.setStyle("-fx-background-color: #fbbc04; -fx-text-fill: white; -fx-padding: 8 15; -fx-background-radius: 20;");
-                lblTimeRemaining.setText("Bắt đầu sau: " + formatDuration(now, start));
-                setBiddingEnabled(false);
-
-            } else if (now.isBefore(end)) {
-                lblStatus.setText("Đang đấu giá");
-                lblStatus.setStyle("-fx-background-color: #34a853; -fx-text-fill: white; -fx-padding: 8 15; -fx-background-radius: 20;");
-                lblTimeRemaining.setText("Còn: " + formatDuration(now, end));
-                setBiddingEnabled(true);
-
-            } else {
-                lblStatus.setText("Đã kết thúc");
-                lblStatus.setStyle("-fx-background-color: #ea4335; -fx-text-fill: white; -fx-padding: 8 15; -fx-background-radius: 20;");
-                lblTimeRemaining.setText("Phiên đấu giá đã khép lại");
-                setBiddingEnabled(false);
-
-                if (session.getHighestBidder() != null) {
-                    lblHighestBidder.setText("🏆 Người chiến thắng: " + session.getHighestBidder().getUsername());
-                    lblHighestBidder.setStyle("-fx-text-fill: #d81b60; -fx-font-weight: bold;");
-                } else {
-                    lblHighestBidder.setText("Vật phẩm chưa được bán.");
-                }
-
-                timeline.stop();
-            }
-        }));
-
-        timeline.setCycleCount(Timeline.INDEFINITE);
-        timeline.play();
-    }
-
-    private String formatDuration(LocalDateTime from, LocalDateTime to) {
-        long days = ChronoUnit.DAYS.between(from, to);
-        from = from.plusDays(days);
-
-        long hours = ChronoUnit.HOURS.between(from, to);
-        from = from.plusHours(hours);
-
-        long minutes = ChronoUnit.MINUTES.between(from, to);
-        from = from.plusMinutes(minutes);
-
-        long seconds = ChronoUnit.SECONDS.between(from, to);
-
-        if (days > 0) {
-            return String.format("%d ngày %02d:%02d:%02d", days, hours, minutes, seconds);
-        } else {
-            return String.format("%02d:%02d:%02d", hours, minutes, seconds);
-        }
-    }
-
-    private void setBiddingEnabled(boolean enabled) {
-        if (btnPlaceBid != null) btnPlaceBid.setDisable(!enabled);
-        if (hboxQuickBids != null) hboxQuickBids.setDisable(!enabled);
-        if (bidSpinner != null) bidSpinner.setDisable(!enabled);
-    }
-
-    private void updateBidSpinner(int currentPrice) {
         SpinnerValueFactory<Integer> valueFactory =
                 new SpinnerValueFactory.IntegerSpinnerValueFactory(
                         currentPrice + stepValue,
-                        currentPrice + stepValue,
                         Integer.MAX_VALUE,
-                        currentPrice + stepValue,
                         currentPrice + stepValue,
                         stepValue
                 );
@@ -333,7 +230,6 @@ public class AuctionDetailController {
 
         try {
             Parent root = FXMLLoader.load(getClass().getResource("/Home.fxml"));
-            Parent root = FXMLLoader.load(getClass().getResource("/Home.fxml"));
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.setScene(new Scene(root));
@@ -344,14 +240,6 @@ public class AuctionDetailController {
             e.printStackTrace();
         }
     }
-
-    private void showAlert(String content, Alert.AlertType type) {
-        Alert alert = new Alert(type);
-        alert.setHeaderText(null);
-        alert.setContentText(content);
-        alert.showAndWait();
-    }
-}
     private void showAlert(String content, Alert.AlertType type) {
         Alert alert = new Alert(type);
         alert.setHeaderText(null);

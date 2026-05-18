@@ -9,8 +9,6 @@ import dao.AuctionSessionDAO;
 import dao.AuctionSessionDAOImpl;
 import dao.ItemDAO;
 import dao.ItemDAOImpl;
-import dao.ItemDAO;
-import dao.ItemDAOImpl;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -39,7 +37,7 @@ import server.AuctionWebSocketClient;
 import utils.SessionManager;
 
 
-public class CreateAutionController {
+public class CreateAuctionController {
     private AuctionSessionDAO auctionSessionDAO = new AuctionSessionDAOImpl();
     private  ItemDAO itemDAO = new ItemDAOImpl();
     private File selectedImageFile;
@@ -49,7 +47,7 @@ public class CreateAutionController {
     private Button btnClearForm;
 
     @FXML
-    private Button btnCreateAution;
+    private Button btnCreateAuction;
 
     @FXML
     private ComboBox<String> cbItemType;
@@ -80,7 +78,6 @@ public class CreateAutionController {
     void handleGoBack(ActionEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/Home.fxml"));
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Home.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             Scene scene = new Scene(root);
@@ -104,7 +101,7 @@ public class CreateAutionController {
         imgPreview.setImage(null);
     }
     @FXML
-void HandleCreatAution(ActionEvent event) {
+void HandleCreateAuction(ActionEvent event) {
     try {
         // Lấy seller an toàn từ SessionManager
         Seller seller = (Seller) SessionManager.getCurrentUser();
