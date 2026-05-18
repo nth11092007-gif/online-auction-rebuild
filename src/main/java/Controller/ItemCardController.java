@@ -9,7 +9,7 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import model.AuctionSession;
-import model.Items;
+import model.Item;
 
 public class ItemCardController {
 
@@ -24,7 +24,7 @@ public class ItemCardController {
     @FXML private Label lblType;
     @FXML private Button btnJoin;
 
-    public void setItemData(Items item) {
+    public void setItemData(Item item) {
         lblItemID.setText("ID: " + item.getItemID());
         lblCurrentPrice.setText("Giá hiện tại: " + item.getStartingPrice() + " VND");
         lblType.setText("Phân loại: " + item.getClass().getSimpleName());
@@ -54,7 +54,7 @@ public class ItemCardController {
         System.out.println("setAuctionData OK, sessionId = " + session.getSessionID());
 
         try {
-            Items item = session.getItem();
+            Item item = session.getItem();
             if (item != null) {
                 setItemData(item);
                 lblCurrentPrice.setText("Giá hiện tại: " + session.getCurrentPrice() + " VND");

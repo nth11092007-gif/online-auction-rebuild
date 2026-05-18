@@ -1,15 +1,14 @@
 package model;
 //Lớp trừu tượng đại diện cho một món hàng cơ bản trong hệ thống đấu giá.
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.imageio.ImageIO;
-import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+
+import javax.imageio.ImageIO;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class Item {
     //Tích hợp tự động sinh UUID hoặc lấy ID từ Database sau.
@@ -18,7 +17,7 @@ public abstract class Item {
     protected double startingPrice;
     protected String description;
     protected BufferedImage avatar;
-    private static Logger logger = LoggerFactory.getLogger(Items.class);
+    private static Logger logger = LoggerFactory.getLogger(Item.class);
 
 
     public Item(int itemID, String ownerName, double startingPrice, String description) {

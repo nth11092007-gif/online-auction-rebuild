@@ -1,16 +1,11 @@
 package dao;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
 import model.Item;
-import model.Items;
-
-import java.io.File;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.List;
 
 public interface ItemDAO {
     void addItem(Item item);

@@ -149,7 +149,6 @@ public class AuctionService {
             logger.error("Lỗi khi đóng kết nối: {}", e.getMessage(), e);
         }
     }
-    logger.error("Lỗi chưa xác định.");
     return false;
     }
 }

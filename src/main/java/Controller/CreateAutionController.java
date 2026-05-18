@@ -30,7 +30,7 @@ import javafx.stage.Stage;
 import model.Arts;
 import model.AuctionSession;
 import model.Electronics;
-import model.Items;
+import model.Item;
 import model.Seller;
 import model.Vehicles;
 import server.AuctionWebSocketClient;
@@ -121,7 +121,7 @@ void HandleCreatAution(ActionEvent event) {
         // Lấy tên chủ sở hữu từ seller (giả sử Seller có phương thức getName())
         String ownerName = seller.getUsername(); // nếu không có, dùng seller.getUsername()
         int itemId = 0;
-        Items initItem = null;
+        Item initItem = null;
 
         switch (itemType) {
             case "Vehicles":

@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.imageio.ImageIO;
-
 import javax.sql.DataSource;
 
 import org.slf4j.Logger;
@@ -170,7 +169,7 @@ public class ItemDAOImpl implements ItemDAO {
         }
     }
     @Override
-    public List<Items> getAllItems() {
+    public List<Item> getAllItems() {
         try (Connection conn = DBConnection.getConnection()) {
             return getAllItems(conn);
         } catch (SQLException e) {
@@ -178,7 +177,7 @@ public class ItemDAOImpl implements ItemDAO {
             return new ArrayList<>();
         }
     }
-    public Items getItemById(int id) {
+    public Item getItemById(int id) {
         try (Connection conn = DBConnection.getConnection()) {
             return getItemById(conn, id);
         } catch (SQLException e) {
@@ -239,6 +238,8 @@ public class ItemDAOImpl implements ItemDAO {
                     rs.getString("vehicle_id_plate"));
         }
         // 2. Xử lý kiểu dữ liệu Blob (Avatar)
+        // blob là hình thức lưu trữ ảnh bằng nhị phân trong database, 
+        // khi lấy ra sẽ là một đối tượng Blob, cần chuyển đổi thành BufferedImage để sử dụng trong Java.
         if (item != null) {
             Blob blob = rs.getBlob("avatar");
             if (blob != null) {

@@ -23,7 +23,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import model.AuctionSession;
-import model.Items;
+import model.Item;
 import service.AuctionService;
 import utils.SessionManager;
 
@@ -42,7 +42,7 @@ public class AuctionDetailController {
     @FXML private Button btnPlaceBid;
     @FXML private HBox hboxQuickBids;
 
-    private Items currentItem;
+    private Item currentItem;
     private String currentSessionId;
     private int stepValue;
 
