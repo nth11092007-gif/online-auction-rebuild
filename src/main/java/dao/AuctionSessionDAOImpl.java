@@ -94,7 +94,7 @@ public class AuctionSessionDAOImpl implements AuctionSessionDAO {
                     int extensionCount = rs.getInt("extension_count"); // nếu cột tồn tại
 
                     // Tạo session (constructor có startTime)
-                    AuctionSession session = new AuctionSession(seller, item, startingPrice, stepPrice, startTime);
+                    AuctionSession session = new AuctionSession(seller, item, startingPrice, stepPrice, startTime, sessionId);
                     session.setEndTime(endTime);
                     session.setStatus(AuctionSession.Status.valueOf(rs.getString("status")));
                     // Nếu model có extensionCount, set vào
@@ -223,7 +223,7 @@ public class AuctionSessionDAOImpl implements AuctionSessionDAO {
                     LocalDateTime startTime = startTs != null ? startTs.toLocalDateTime() : null;
                     LocalDateTime endTime = endTs != null ? endTs.toLocalDateTime() : null;
 
-                    AuctionSession session = new AuctionSession(seller, item, startingPrice, stepPrice, startTime);
+                    AuctionSession session = new AuctionSession(seller, item, startingPrice, stepPrice, startTime, sessionId);
                     session.setEndTime(endTime);
                     session.setStatus(AuctionSession.Status.valueOf(rs.getString("status")));
 

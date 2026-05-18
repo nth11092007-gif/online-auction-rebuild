@@ -23,13 +23,12 @@
                 <Font size="14.0" />
             </font>
         </Button>
-        <Label text="Phiên đấu giá" textFill="#1a73e8">
+        <Label text="Chi Tiết Đấu Giá" textFill="#1a73e8">
             <font>
                 <Font name="System Bold" size="28.0" />
             </font>
         </Label>
         <Region HBox.hgrow="ALWAYS" />
-        <Label style="-fx-background-color: #e0e0e0; -fx-background-radius: 5; -fx-padding: 5 10;" text="Preview" textFill="#555555" />
     </HBox>
 
     <Separator />
@@ -47,7 +46,7 @@
                         <Insets left="15.0" top="15.0" />
                     </StackPane.margin>
                 </Label>
-                <Label style="-fx-background-color: #34a853; -fx-text-fill: white; -fx-padding: 8 15; -fx-background-radius: 20;" text="Đang đấu giá" StackPane.alignment="TOP_RIGHT">
+                <Label fx:id="lblStatus" style="-fx-background-color: #34a853; -fx-text-fill: white; -fx-padding: 8 15; -fx-background-radius: 20;" text="Đang đấu giá" StackPane.alignment="TOP_RIGHT">
                     <StackPane.margin>
                         <Insets right="15.0" top="15.0" />
                     </StackPane.margin>
@@ -66,12 +65,6 @@
                     <Font name="System Bold" size="24.0" />
                 </font>
             </Label>
-         <HBox prefHeight="24.0" prefWidth="832.0" spacing="6.0">
-            <children>
-                  <Label text="👤 Người bán:" textFill="#555555" />
-               <Label text="Nguyễn Văn A" textFill="#555555" />
-            </children>
-         </HBox>
 
             <Separator />
 
@@ -109,16 +102,17 @@
                     </Label>
                     <Label text="Thời gian còn lại" textFill="#e65100" />
                 </HBox>
-                <Label text="Còn 2 giờ 30 phút" textFill="#e65100">
+                <Label fx:id="lblTimeRemaining" textFill="#e65100">
                     <font><Font name="System Bold" size="24.0" /></font>
                 </Label>
-                <Label text="Kết thúc: 08/05/2026 18:00" textFill="#666666" />
+                <Label fx:id="lblEndTime" text="Kết thúc: 08/05/2026 18:00" textFill="#666666" />
 
                 <VBox spacing="10.0" style="-fx-background-color: #f4f8ff; -fx-background-radius: 8; -fx-padding: 20;">
                     <Label text="Giá hiện tại" textFill="#555555" />
                     <Label fx:id="txtCurrentPrice" text="25.000.000 đ" textFill="#1a73e8">
                         <font><Font name="System Bold" size="32.0" /></font>
                     </Label>
+               <Label fx:id="lblHighestBidder" style="-fx-text-fill: #888888;" />
                 </VBox>
 
                 <VBox spacing="10.0" style="-fx-border-color: #eeeeee; -fx-border-radius: 8; -fx-padding: 15;">
@@ -145,13 +139,13 @@
 
                     <Spinner fx:id="bidSpinner" editable="true" prefHeight="45.0" prefWidth="1.7976931348623157E308" style="-fx-font-size: 16px;" />
 
-                    <HBox spacing="10.0">
+                    <HBox fx:id="hboxQuickBids" spacing="10.0">
                         <Button maxWidth="1.7976931348623157E308" onAction="#handleQuickBid" prefHeight="40.0" style="-fx-background-color: #f0f0f0; -fx-background-radius: 8;" text="+0.5M" HBox.hgrow="ALWAYS" />
                         <Button maxWidth="1.7976931348623157E308" onAction="#handleQuickBid" prefHeight="40.0" style="-fx-background-color: #f0f0f0; -fx-background-radius: 8;" text="+1.0M" HBox.hgrow="ALWAYS" />
                         <Button maxWidth="1.7976931348623157E308" onAction="#handleQuickBid" prefHeight="40.0" style="-fx-background-color: #f0f0f0; -fx-background-radius: 8;" text="+2.5M" HBox.hgrow="ALWAYS" />
                     </HBox>
 
-                    <Button maxWidth="1.7976931348623157E308" onAction="#HandleBid" prefHeight="50.0" style="-fx-background-color: #2962ff; -fx-text-fill: white; -fx-background-radius: 8; -fx-font-weight: bold; -fx-font-size: 16px;" text="📈 Đặt giá đấu" />
+                    <Button fx:id="btnPlaceBid" maxWidth="1.7976931348623157E308" onAction="#HandleBid" prefHeight="50.0" style="-fx-background-color: #2962ff; -fx-text-fill: white; -fx-background-radius: 8; -fx-font-weight: bold; -fx-font-size: 16px;" text="📈 Đặt giá đấu" />
                 </VBox>
             </VBox>
 

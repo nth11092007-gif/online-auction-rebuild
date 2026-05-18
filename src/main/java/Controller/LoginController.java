@@ -51,10 +51,10 @@ public class LoginController {
             // Lưu user vào SessionManager (quan trọng để các controller khác dùng)
             SessionManager.setCurrentUser(user);
             logger.info("Đăng nhập thành công: {}", user.getUsername());
-
+            
             // Điều hướng theo role
             if (user.getRole() == User.Role.USER) {
-                navigateTo(event, "/HomeBidder.fxml");
+                navigateTo(event, "/Home.fxml");
             } else if (user.getRole() == User.Role.ADMIN) {
                 navigateTo(event, "/HomeAdmin.fxml");
             } else {

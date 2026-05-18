@@ -46,6 +46,12 @@ public class MainApp extends Application {
         }
     }
 
+    // Phương thức chung để hiển thị màn hình chính (có thể dùng cho HomeBidder hoặc HomeSeller)
+    public static void showHome() {
+        // Tùy chỉnh theo logic role, ở đây tạm thời dùng HomeBidder
+        showHomeBidder();
+    }
+
     public static void showAuctionDetail(AuctionSession session) {
         if (primaryStage == null) {
             System.err.println("primaryStage chưa được khởi tạo!");
@@ -55,12 +61,8 @@ public class MainApp extends Application {
             FXMLLoader loader = new FXMLLoader(MainApp.class.getResource("/AuctionDetail.fxml"));
             Parent root = loader.load();
             AuctionDetailController controller = loader.getController();
-            controller.initData(
-                session.getSessionID(),
-                session.getItem().getDescription(),
-                session.getCurrentPrice(),
-                (int) session.getIncrementStep()
-            );
+            // Gọi phương thức setAuctionData thay vì initData
+            controller.setAuctionData(session);
             primaryStage.setScene(new Scene(root));
             primaryStage.show();
         } catch (Exception e) {
@@ -71,6 +73,8 @@ public class MainApp extends Application {
     public static void main(String[] args) {
         launch(args);
     }
+
+    // Các setter dùng cho mục đích test (có thể bỏ nếu không cần)
     public static void setPrimaryStage(Stage stage) { primaryStage = stage; }
     public static void setWebSocketClient(AuctionWebSocketClient client) { webSocketClient = client; }
 }

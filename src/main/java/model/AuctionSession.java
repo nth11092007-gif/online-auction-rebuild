@@ -8,7 +8,7 @@ import utils.IDGenerator;
 public class AuctionSession {
     private Seller seller;
     private Items item;
-    final private String sessionID;
+    private String sessionID = null;
     final private double startingPrice;
     final private double incrementStep;
     private double currentPrice;
@@ -30,6 +30,18 @@ public class AuctionSession {
             this.seller.addCreatedAuctionSession(this); // thêm phiên đấu giá vào lịch sử của người bán
         }
     }
+    public AuctionSession(Seller seller, Items item, double startingPrice, double incrementStep, LocalDateTime startTime, String sessionID){
+        this.seller = seller;
+        this.item = item;
+        this.sessionID = sessionID;
+        this.startingPrice = startingPrice;
+        this.incrementStep = incrementStep;
+        this.startTime = startTime;
+        this.status = Status.PENDING;
+        if (this.seller != null) {
+            this.seller.addCreatedAuctionSession(this); // thêm phiên đấu giá vào lịch sử của người bán
+        }
+    } 
     public AuctionSession(Seller seller, Items item, double startingPrice){
         this(seller, item, startingPrice, 0.1, LocalDateTime.now());
     }
@@ -48,6 +60,7 @@ public class AuctionSession {
     public double getCurrentPrice() { return currentPrice; }
     public LocalDateTime getStartTime() { return startTime; }
     public LocalDateTime getEndTime() { return endTime; }
+    public Bidder getHighestBidder() { return highestBidder;}
     public String getSessionID(){
          return this.sessionID;
     }

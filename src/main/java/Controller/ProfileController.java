@@ -20,77 +20,45 @@ import model.User;
 import utils.SessionManager;
 
 public class ProfileController {
-    private int currentUserID;
+
     private UserDAO userDAO = new UserDAOImpl();
-    static User currentUser;
-    @FXML
-    private Button HandleBack;
+    private User currentUser; // không static, lấy từ SessionManager
+
+    @FXML private Button HandleBack;
+    @FXML private Button HandleWithdrawAmount;
+    @FXML private Label lblBalance;
+    @FXML private Label lblFrozenBalance;
+    @FXML private Label lblEmail;
+    @FXML private Label lblPhoneNumber;
+    @FXML private Label lblRealName;
+    @FXML private TextField txtDepositAmount;
+    @FXML private TextField txtWithdrawAmount;
 
     @FXML
-    private Button HandleWithdrawAmount;
-
-    @FXML
-    private Label lblBalance;
-
-    @FXML
-    private Label lblFrozenBalance;
-
-    @FXML
-    private Label lblEmail;
-
-    @FXML
-    private Label lblPhoneNumber;
-
-    @FXML
-    private Label lblRealName;
-
-    @FXML
-    private TextField txtDepositAmount;
-
-    @FXML
-    private TextField txtWithdrawAmount;
-
-    // Hàm này phải được gọi sau khi load FXML để truyền ID người dùng
-    public void setUserId(int id) {
-        this.currentUserID = id;
-        loadUserData(); // Tải dữ liệu khi có ID
+    public void initialize() {
+        loadUserData();
     }
 
-    @FXML
-    void handleGoBack(ActionEvent event) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/HomeSeller.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            Scene scene = new Scene(root);
-            stage.setScene(scene);
-            stage.show();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-    @FXML
     private void loadUserData() {
-        // ✅ Get user from SessionManager
-        User currentUser = SessionManager.getCurrentUser();
+        currentUser = SessionManager.getCurrentUser();
         if (currentUser != null) {
-            System.out.println(currentUser.getUsername());
             lblRealName.setText(currentUser.getRealName());
             lblEmail.setText(currentUser.getEmail());
             lblPhoneNumber.setText(currentUser.getPhoneNumber());
-            updateBalanceUI(currentUser);
+            updateBalanceUI();
+        } else {
+            // Chưa đăng nhập, có thể chuyển về login
+            showAlert("Vui lòng đăng nhập lại!", Alert.AlertType.WARNING);
         }
     }
-    private void updateBalanceUI(User user) {
-        lblBalance.setText(String.format("%,.2f VNĐ", user.getBalance()));
-        lblFrozenBalance.setText(String.format("%,.2f VNĐ", user.getFrozenBalance()));
+
+    private void updateBalanceUI() {
+        if (currentUser != null) {
+            lblBalance.setText(String.format("%,.2f VNĐ", currentUser.getBalance()));
+            lblFrozenBalance.setText(String.format("%,.2f VNĐ", currentUser.getFrozenBalance()));
+        }
     }
-    private void showAlert(String content, Alert.AlertType type){
-        Alert alert = new Alert(type);
-        alert.setTitle("Thông báo");
-        alert.setContentText(content);
-        alert.showAndWait();
-    }
+
     @FXML
     void HandleDeposit(ActionEvent event) {
         try {
@@ -100,16 +68,16 @@ public class ProfileController {
                 return;
             }
             double newBalance = currentUser.getBalance() + amount;
-            if (userDAO.updateBalance(currentUserID, newBalance, currentUser.getFrozenBalance())) {
-                currentUser.deposit(amount); // Cập nhật đối tượng Java
-                updateBalanceUI(currentUser); // Cập nhật UI
+            if (userDAO.updateBalance(currentUser.getID(), newBalance, currentUser.getFrozenBalance())) {
+                currentUser.deposit(amount);
+                updateBalanceUI();
                 txtDepositAmount.clear();
                 showAlert("Nạp tiền thành công!", Alert.AlertType.INFORMATION);
             }
         } catch (NumberFormatException e) {
             showAlert("Vui lòng nhập số tiền hợp lệ!", Alert.AlertType.WARNING);
         } catch (SQLException e) {
-            showAlert("lỗi lấy thông tin số dư", Alert.AlertType.ERROR);
+            showAlert("Lỗi cập nhật số dư!", Alert.AlertType.ERROR);
         }
     }
 
@@ -122,25 +90,42 @@ public class ProfileController {
                 return;
             }
             if (amount > currentUser.getBalance()) {
-                showAlert("Số dư khả dụng không đủ để thực hiện giao dịch!", Alert.AlertType.ERROR);
+                showAlert("Số dư khả dụng không đủ!", Alert.AlertType.ERROR);
                 return;
             }
             double newBalance = currentUser.getBalance() - amount;
-            if (userDAO.updateBalance(currentUserID, newBalance, currentUser.getFrozenBalance())) {
+            if (userDAO.updateBalance(currentUser.getID(), newBalance, currentUser.getFrozenBalance())) {
                 currentUser.withdraw(amount);
-                updateBalanceUI(currentUser);
+                updateBalanceUI();
                 txtWithdrawAmount.clear();
-
                 showAlert("Rút tiền thành công!", Alert.AlertType.INFORMATION);
             }
         } catch (NumberFormatException e) {
             showAlert("Vui lòng nhập số tiền hợp lệ!", Alert.AlertType.WARNING);
         } catch (SQLException e) {
-            showAlert("lỗi lấy thông tin số dư", Alert.AlertType.ERROR);
+            showAlert("Lỗi cập nhật số dư!", Alert.AlertType.ERROR);
         }
     }
-    public void initialize() {
-        System.out.println("FXML đã load xong, đang gọi loadUserData...");
-        loadUserData();
+
+    @FXML
+    void handleGoBack(ActionEvent event) {
+        // Quay về màn hình chính tùy theo role của user
+        try {
+            Parent root;
+            root = FXMLLoader.load(getClass().getResource("/Home.fxml"));
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert("Không thể quay lại màn hình chính!", Alert.AlertType.ERROR);
+        }
+    }
+
+    private void showAlert(String content, Alert.AlertType type) {
+        Alert alert = new Alert(type);
+        alert.setTitle("Thông báo");
+        alert.setContentText(content);
+        alert.showAndWait();
     }
 }

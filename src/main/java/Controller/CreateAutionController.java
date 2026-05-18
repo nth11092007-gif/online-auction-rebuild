@@ -76,7 +76,7 @@ public class CreateAutionController {
     @FXML
     void handleGoBack(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/HomeSeller.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Home.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             Scene scene = new Scene(root);
@@ -175,9 +175,17 @@ void HandleCreatAution(ActionEvent event) {
         if (success) {
             showAlert(Alert.AlertType.INFORMATION, "Thành công", "Phiên đấu giá đã được tạo thành công!");
             HandleClearForm(event);
+            try {
+            Parent root;
+            root = FXMLLoader.load(getClass().getResource("/Home.fxml"));
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root));
             AuctionWebSocketClient.getInstance().send("{\"action\":\"GET_SESSIONS\"}");
-            Stage stage = (Stage) txtItemName.getScene().getWindow();
-            stage.close();
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+            // showAlert("Không thể quay lại màn hình chính!", Alert.AlertType.ERROR);
+        }
         } else {
             showAlert(Alert.AlertType.ERROR, "Thất bại", "Không thể tạo phiên đấu giá. Vui lòng kiểm tra lại.");
         }
