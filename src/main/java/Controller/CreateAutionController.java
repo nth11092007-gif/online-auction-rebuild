@@ -9,6 +9,8 @@ import dao.AuctionSessionDAO;
 import dao.AuctionSessionDAOImpl;
 import dao.ItemDAO;
 import dao.ItemDAOImpl;
+import dao.ItemDAO;
+import dao.ItemDAOImpl;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -38,7 +40,8 @@ import utils.SessionManager;
 
 
 public class CreateAutionController {
-    AuctionSessionDAO auctionSessionDAO = new AuctionSessionDAOImpl();
+    private AuctionSessionDAO auctionSessionDAO = new AuctionSessionDAOImpl();
+    private  ItemDAO itemDAO = new ItemDAOImpl();
     private File selectedImageFile;
     @FXML
     private VBox Container;
@@ -76,6 +79,7 @@ public class CreateAutionController {
     @FXML
     void handleGoBack(ActionEvent event) {
         try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Home.fxml"));
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/Home.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();

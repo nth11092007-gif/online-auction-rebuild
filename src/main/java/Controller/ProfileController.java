@@ -20,7 +20,6 @@ import model.User;
 import utils.SessionManager;
 
 public class ProfileController {
-
     private UserDAO userDAO = new UserDAOImpl();
     private User currentUser; // không static, lấy từ SessionManager
 
@@ -70,7 +69,7 @@ public class ProfileController {
             double newBalance = currentUser.getBalance() + amount;
             if (userDAO.updateBalance(currentUser.getID(), newBalance, currentUser.getFrozenBalance())) {
                 currentUser.deposit(amount);
-                updateBalanceUI();
+                updateBalanceUI(); // Cập nhật UI
                 txtDepositAmount.clear();
                 showAlert("Nạp tiền thành công!", Alert.AlertType.INFORMATION);
             }

@@ -43,23 +43,23 @@ public class RegisterController {
             return "Trống";
         }
         int score = 0;
-        // 1. Kiểm tra độ dài (ít nhất 8 ký tự)
+        //Kiểm tra độ dài (ít nhất 8 ký tự)
         if (password.length() >= 8) {
             score++;
         }
-        // 2. Kiểm tra có chứa ít nhất một chữ cái viết hoa (A-Z)
+        //Kiểm tra có chứa ít nhất một chữ cái viết hoa (A-Z)
         if (password.matches(".*[A-Z].*")) {
             score++;
         }
-        // 3. Kiểm tra có chứa ít nhất một chữ cái viết thường (a-z)
+        //Kiểm tra có chứa ít nhất một chữ cái viết thường (a-z)
         if (password.matches(".*[a-z].*")) {
             score++;
         }
-        // 4. Kiểm tra có chứa ít nhất một chữ số (0-9)
+        //Kiểm tra có chứa ít nhất một chữ số (0-9)
         if (password.matches(".*\\d.*")) {
             score++;
         }
-        // 5. Kiểm tra có chứa ít nhất một ký tự đặc biệt
+        //Kiểm tra có chứa ít nhất một ký tự đặc biệt
         if (password.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?].*")) {
             score++;
         }
@@ -89,7 +89,7 @@ public class RegisterController {
 
     private void switchToHome(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/HomeSeller.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Home.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             Scene scene = new Scene(root);
@@ -108,24 +108,32 @@ public class RegisterController {
             String email = txtEmail.getText().trim();
             String phone = txtPhoneNumber.getText().trim();
 
-            //Ktra ko dc bỏ trống
             if (username.isEmpty() || password.isEmpty() || realname.isEmpty() || email.isEmpty() || phone.isEmpty()) {
-                showAlert("vui lòng điền đầy đủ thông tin", Alert.AlertType.ERROR);
+                showAlert("Vui lòng điền đầy đủ thông tin", Alert.AlertType.ERROR);
                 return;
             }
 
+            //HÀM KIỂM TRA MẬT KHẨU
+            String strength = checkPasswordStrength(password);
+            // Nếu mật khẩu Yếu hoặc Trống, chủ động ném ra ngoại lệ
+            if (strength.equals("Trống") || strength.equals("Yếu")) {
+                throw new PasswordStrengthCheck();
+            }
+
+            //Tiến hành đăng ký
             User newUser = new User(realname, username, email, password, phone);
             boolean succes = register.register(newUser);
 
-            //Thông báo thành công
+            //Thông báo kết quả
             if (succes) {
                 showAlert("Đăng ký thành công", Alert.AlertType.INFORMATION);
                 switchToHome(event);
             } else {
                 showAlert("Tài khoản đã tồn tại", Alert.AlertType.ERROR);
             }
+
         } catch (PasswordStrengthCheck p) {
-            p.getMessage();
+            showAlert(p.getMessage() + " (Độ mạnh hiện tại: Yếu)", Alert.AlertType.WARNING);
         }
     }
     @FXML
