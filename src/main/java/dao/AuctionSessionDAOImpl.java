@@ -10,21 +10,35 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.sql.DataSource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import model.AuctionSession;
 import model.Bid;
-import model.Items;
+import model.Item;
 import model.User;
 import utils.DBConnection;
 
 public class AuctionSessionDAOImpl implements AuctionSessionDAO {
 
     private static final Logger logger = LoggerFactory.getLogger(AuctionSessionDAOImpl.class);
-    private final UserDAO userDAO = new UserDAOImpl();
-    private final ItemDAO itemDAO = new ItemDAOImpl();
-    private final BidDAO bidDAO = new BidDAOImpl();
+    private final UserDAO userDAO;
+    private final ItemDAO itemDAO;
+    private final BidDAO bidDAO;
+    private final DataSource dataSource;
+
+    public AuctionSessionDAOImpl() {
+        this(DBConnection.getDataSource(), new UserDAOImpl(), new ItemDAOImpl(), new BidDAOImpl());
+    }
+
+    public AuctionSessionDAOImpl(DataSource dataSource, UserDAO userDAO, ItemDAO itemDAO, BidDAO bidDAO) {
+        this.dataSource = dataSource;
+        this.userDAO = userDAO;
+        this.itemDAO = itemDAO;
+        this.bidDAO = bidDAO;
+    }
 
     // =========================================================================
     // 1. TẠO PHIÊN ĐẤU GIÁ
@@ -65,7 +79,7 @@ public class AuctionSessionDAOImpl implements AuctionSessionDAO {
 
     @Override
     public boolean createSession(AuctionSession session, int itemId) {
-        try (Connection conn = DBConnection.getConnection()) {
+        try (Connection conn = dataSource.getConnection()) {
             return createSession(conn, session, itemId);
         } catch (SQLException e) {
             logger.error("❌ Lỗi khi tạo phiên đấu giá: {}", e.getMessage(), e);
@@ -84,7 +98,7 @@ public class AuctionSessionDAOImpl implements AuctionSessionDAO {
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     User seller = userDAO.getUserById(conn, rs.getInt("owner_id"));
-                    Items item = itemDAO.getItemById(conn, rs.getInt("item_id"));
+                    Item item = itemDAO.getItemById(conn, rs.getInt("item_id"));
                     double startingPrice = rs.getDouble("starting_price");
                     double stepPrice = rs.getDouble("step_price");
                     Timestamp startTs = rs.getTimestamp("start_time");
@@ -120,7 +134,7 @@ public class AuctionSessionDAOImpl implements AuctionSessionDAO {
 
     @Override
     public AuctionSession getSessionById(String sessionId) {
-        try (Connection conn = DBConnection.getConnection()) {
+        try (Connection conn = dataSource.getConnection()) {
             return getSessionById(conn, sessionId);
         } catch (SQLException e) {
             logger.error("Lỗi kết nối khi lấy session {}: {}", sessionId, e.getMessage(), e);
@@ -144,7 +158,7 @@ public class AuctionSessionDAOImpl implements AuctionSessionDAO {
 
     @Override
     public List<AuctionSession> getAllSessions() {
-        try (Connection conn = DBConnection.getConnection()) {
+        try (Connection conn = dataSource.getConnection()) {
             return getAllSessions(conn);
         } catch (SQLException e) {
             logger.error("Lỗi khi lấy danh sách tất cả phiên: {}", e.getMessage(), e);
@@ -152,6 +166,54 @@ public class AuctionSessionDAOImpl implements AuctionSessionDAO {
         return new ArrayList<>();
     }
 
+    // =========================================================================
+    // 3. CẬP NHẬT TRẠNG THÁI PHIÊN & GIA HẠN
+    // =========================================================================
+    @Override
+    public boolean updateSessionStatusAtomic(Connection conn, String sessionId, AuctionSession.Status status) throws SQLException {
+        String sql = "UPDATE auction_sessions SET status = ? WHERE session_id = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, status.name());
+            pstmt.setString(2, sessionId);
+            return pstmt.executeUpdate() > 0;
+        }
+    }
+
+    @Override
+    public boolean updateSessionStatusAtomic(String sessionId, AuctionSession.Status status) {
+        try (Connection conn = dataSource.getConnection()) {
+            return updateSessionStatusAtomic(conn, sessionId, status);
+        } catch (SQLException e) {
+            logger.error("Lỗi cập nhật trạng thái phiên {}: {}", sessionId, e.getMessage(), e);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean updateEndTime(Connection conn, String sessionId, Timestamp newEndTime) throws SQLException {
+        String sql = "UPDATE auction_sessions SET end_time = ? WHERE session_id = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setTimestamp(1, newEndTime);
+            pstmt.setString(2, sessionId);
+            return pstmt.executeUpdate() > 0;
+        }
+    }
+
+    @Override 
+    public boolean updateCurrentPrice(Connection conn, String sessionId, double newPrice) {
+        String sql = "UPDATE auction_sessions SET current_price = ? WHERE session_id = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setDouble(1, newPrice);
+            pstmt.setString(2, sessionId);
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            logger.error("Lỗi cập nhật giá hiện tại phiên {}: {}", sessionId, e.getMessage(), e);
+        }
+        return false;
+    }
+    // =========================================================================
+    // 4. LẤY DANH SÁCH PHIÊN THEO THỜI GIAN (CHO SCHEDULER)
+    // =========================================================================
     @Override
     public List<AuctionSession> getSessionsStartBefore(Connection conn, LocalDateTime time, AuctionSession.Status status) throws SQLException {
         List<AuctionSession> list = new ArrayList<>();
@@ -171,7 +233,7 @@ public class AuctionSessionDAOImpl implements AuctionSessionDAO {
 
     @Override
     public List<AuctionSession> getSessionsStartBefore(LocalDateTime time, AuctionSession.Status status) {
-        try (Connection conn = DBConnection.getConnection()) {
+        try (Connection conn = dataSource.getConnection()) {
             return getSessionsStartBefore(conn, time, status);
         } catch (SQLException e) {
             logger.error("Lỗi lấy phiên startBefore: {}", e.getMessage(), e);
@@ -198,7 +260,7 @@ public class AuctionSessionDAOImpl implements AuctionSessionDAO {
 
     @Override
     public List<AuctionSession> getSessionsEndBefore(LocalDateTime time, AuctionSession.Status status) {
-        try (Connection conn = DBConnection.getConnection()) {
+        try (Connection conn = dataSource.getConnection()) {
             return getSessionsEndBefore(conn, time, status);
         } catch (SQLException e) {
             logger.error("Lỗi lấy phiên endBefore: {}", e.getMessage(), e);
@@ -215,7 +277,7 @@ public class AuctionSessionDAOImpl implements AuctionSessionDAO {
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     User seller = userDAO.getUserById(conn, rs.getInt("owner_id"));
-                    Items item = itemDAO.getItemById(conn, rs.getInt("item_id"));
+                    Item item = itemDAO.getItemById(conn, rs.getInt("item_id"));
                     double startingPrice = rs.getDouble("starting_price");
                     double stepPrice = rs.getDouble("step_price");
                     Timestamp startTs = rs.getTimestamp("start_time");
@@ -244,39 +306,23 @@ public class AuctionSessionDAOImpl implements AuctionSessionDAO {
         }
         return null;
     }
-    // =========================================================================
-    // 3. CẬP NHẬT TRẠNG THÁI PHIÊN & GIA HẠN
-    // =========================================================================
     @Override
-    public boolean updateSessionStatusAtomic(Connection conn, String sessionId, AuctionSession.Status status) throws SQLException {
-        String sql = "UPDATE auction_sessions SET status = ? WHERE session_id = ?";
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+    public List<AuctionSession> getSessionsByStatus(AuctionSession.Status status) {
+        List<AuctionSession> list = new ArrayList<>();
+        String sql = "SELECT session_id FROM auction_sessions WHERE status = ?";
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, status.name());
-            pstmt.setString(2, sessionId);
-            return pstmt.executeUpdate() > 0;
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    AuctionSession session = getSessionById(conn, rs.getString("session_id"));
+                    if (session != null) list.add(session);
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Lỗi lấy phiên theo trạng thái {}: {}", status, e.getMessage(), e);
         }
+        return list;
     }
 
-    @Override
-    public boolean updateSessionStatusAtomic(String sessionId, AuctionSession.Status status) {
-        try (Connection conn = DBConnection.getConnection()) {
-            return updateSessionStatusAtomic(conn, sessionId, status);
-        } catch (SQLException e) {
-            logger.error("Lỗi cập nhật trạng thái phiên {}: {}", sessionId, e.getMessage(), e);
-        }
-        return false;
-    }
-
-    @Override
-    public boolean updateCurrentPrice(Connection conn, String sessionId, double newPrice) {
-        String sql = "UPDATE auction_sessions SET current_price = ? WHERE session_id = ?";
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setDouble(1, newPrice);
-            pstmt.setString(2, sessionId);
-            return pstmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            logger.error("Lỗi cập nhật giá hiện tại phiên {}: {}", sessionId, e.getMessage(), e);
-        }
-        return false;
-    }
 }

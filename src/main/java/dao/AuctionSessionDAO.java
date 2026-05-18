@@ -2,6 +2,7 @@ package dao;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -29,6 +30,7 @@ public interface AuctionSessionDAO {
     List<AuctionSession> getSessionsEndBefore(Connection conn, LocalDateTime time, AuctionSession.Status status) throws SQLException;
     List<AuctionSession> getSessionsEndBefore(LocalDateTime time, AuctionSession.Status status);
 
+    List<AuctionSession> getSessionsByStatus(AuctionSession.Status status);
     AuctionSession getSessionForUpdate(Connection conn, String sessionId) throws SQLException; // Lấy phiên đấu giá kèm khoá (dùng khi đặt giá)
     // =========================================================================
     // 3. CẬP NHẬT TRẠNG THÁI PHIÊN (Ví dụ: Chuyển từ OPEN sang CLOSED)
@@ -37,4 +39,7 @@ public interface AuctionSessionDAO {
     boolean updateSessionStatusAtomic(String sessionId, AuctionSession.Status status); // Bản gọi lẹ
 
     boolean updateCurrentPrice(Connection conn, String sessionId, double newPrice);
+
+    // Thêm hàm này để lưu thời gian mới vào DB khi Anti-sniping kích hoạt
+    boolean updateEndTime(Connection conn, String sessionId, Timestamp newEndTime) throws SQLException;
 }

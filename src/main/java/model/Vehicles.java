@@ -1,5 +1,5 @@
 package model;
-public class Vehicles extends Items{
+public class Vehicles extends Item{
     private final String brand;
     private final int mileage;
     private final String vehicleID;

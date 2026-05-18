@@ -19,7 +19,7 @@ import dao.UserDAOImpl;
 import factory.TypeArts;
 import model.AuctionSession;
 import model.Bid;
-import model.Items;
+import model.Item;
 import model.ItemsAttributes;
 import model.User;
 import utils.DBConnection;
@@ -53,7 +53,7 @@ public class AuctionSystemTest {
         // Gọi lệnh build() ở cuối cùng để khóa (đóng gói) object lại
         .build();
         
-        Items artItem = new TypeArts().createItems(artAttr);
+        Item artItem = new TypeArts().createItems(artAttr);
         itemDAO.addItem(artItem);
         // Giả sử sau khi thêm vào DB, ID phải được tạo (khác null hoặc > 0)
         assertNotNull(artItem.getItemID(), "❌ Lỗi: ItemID của bức tranh chưa được tạo.");

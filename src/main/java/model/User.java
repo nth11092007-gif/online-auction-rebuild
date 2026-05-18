@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class User implements Bidder, Seller {
-    protected String realName;
-    protected String username;
-    protected int id;
-    protected String email;
-    protected Role role;
+    private String realName;
+    private String username;
+    private int id;
+    private String email;
+    private Role role;
     private String password;
     private String phoneNumber;
     private double balance = 0;
@@ -109,5 +109,11 @@ public class User implements Bidder, Seller {
 
     public void setID(int id) {
         this.id = id;
+    }
+    public void setUsername(String username) {
+        this.username = username;
+    }
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

@@ -11,7 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
-public abstract class Items {
+public abstract class Item {
     //Tích hợp tự động sinh UUID hoặc lấy ID từ Database sau.
     protected int itemID;
     protected String ownerName;
@@ -21,7 +21,7 @@ public abstract class Items {
     private static Logger logger = LoggerFactory.getLogger(Items.class);
 
 
-    public Items(int itemID, String ownerName, double startingPrice, String description) {
+    public Item(int itemID, String ownerName, double startingPrice, String description) {
         this.itemID = itemID;
         this.ownerName = ownerName;
         this.startingPrice = startingPrice;
@@ -72,4 +72,8 @@ public abstract class Items {
     }
 
     public abstract String showInfo();
+
+    public String getItemType() {
+        return this.getClass().getSimpleName();
+    }
 }

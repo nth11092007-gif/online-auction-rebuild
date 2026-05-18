@@ -16,54 +16,64 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import dao.UserDAOImpl;
 import dto.Message;
 import server.command.Command;
 import server.command.GetSessionsCommand;
 import server.command.GetUserCommand;
 import server.command.JoinSessionCommand;
 import server.command.PlaceBidCommand;
+import server.command.PlaceProxyBidCommand;
 import server.command.SettleSessionCommand;
 import service.AuctionService;
+import service.ProxyBiddingService;
 import service.SettlementService;
 import service.UserService;
 
 public class AuctionServer extends WebSocketServer {
     private final Gson gson = new Gson();
     private final Map<String, Set<WebSocket>> sessionSubscribers = new ConcurrentHashMap<>();
-    private AuctionFeedServer feedServer;
+    private final AuctionFeedServer feedServer;
     private final Logger logger = LoggerFactory.getLogger(AuctionServer.class);
     // Các service
     private final AuctionService auctionService;
     private final UserService userService;
     private final SettlementService settlementService;
+    private ProxyBiddingService proxyBiddingService;
 
     // Command map thay cho switch-case
     private final Map<String, Command> commandMap = new HashMap<>();
 
     public AuctionServer(int port) {
+        this(port, new AuctionService(), new SettlementService(), new UserService(new UserDAOImpl()), AuctionFeedServer.getInstance());
+    }
+
+    public AuctionServer(int port, AuctionService auctionService,
+                         SettlementService settlementService,
+                         UserService userService,
+                         AuctionFeedServer feedServer) {
         super(new InetSocketAddress(port));
-        this.auctionService = new AuctionService();
-        this.userService = new UserService();
-        this.settlementService = new SettlementService();
+
+        // Inject vào service
+        this.auctionService = auctionService;
+        this.userService = userService;
+        this.settlementService = settlementService;
+        this.feedServer = feedServer;
     }
 
     @Override
     public void onStart() {
-    try {
-        feedServer = new AuctionFeedServer();
-
-        System.out.println("🚀 Auction Server đã khởi động thành công trên port: " + getPort());
-
+        this.auctionService.setFeedServer(this.feedServer);
+        System.out.println("Auction Server đã khởi động thành công trên port: " + getPort());
+        this.proxyBiddingService = new ProxyBiddingService(auctionService);
+        // Khởi tạo command map (sau khi feedServer đã có)
         commandMap.put("GET_SESSIONS", new GetSessionsCommand(auctionService));
         commandMap.put("GET_USER", new GetUserCommand(userService));
-        commandMap.put("JOIN", new JoinSessionCommand(sessionSubscribers, feedServer));
-        commandMap.put("BID", new PlaceBidCommand(auctionService, userService));
+        commandMap.put("JOIN", new JoinSessionCommand(sessionSubscribers, feedServer, auctionService, userService));
+        commandMap.put("BID", new PlaceBidCommand(auctionService, userService)); // PlaceBidCommand cần inject cả userService
         commandMap.put("SETTLE", new SettleSessionCommand(settlementService, feedServer));
-
-    } catch (Exception e) {
-        e.printStackTrace();
+        commandMap.put("PLACE_PROXY_BID", new PlaceProxyBidCommand(proxyBiddingService, userService));
     }
-}
 
     @Override
     public void onOpen(WebSocket webSocket, ClientHandshake clientHandshake) {
@@ -76,7 +86,14 @@ public class AuctionServer extends WebSocketServer {
         // Xóa khỏi tất cả các phiên đăng ký
         sessionSubscribers.values().forEach(subscribers -> subscribers.remove(conn));
     }
-
+    /**
+     * onMessage: Khi server nhận được một tin nhắn từ client, phương thức này sẽ được gọi.
+     * @param webSocket: Đối tượng WebSocket đại diện cho kết nối gửi tin nhắn.
+     * @param message: Nội dung tin nhắn nhận được, thường là một chuỗi JSON chứa thông tin về hành động mà client muốn thực hiện (ví dụ: đặt giá, tham gia phiên đấu giá, v.v.).
+     * Phương thức này sẽ phân tích nội dung tin nhắn, xác định loại hành động và gọi các hàm xử lý logic tương ứng trong service của bạn để thực hiện hành động đó. 
+     * Sau khi xử lý, server có thể gửi phản hồi hoặc thông báo đến các client khác nếu cần thiết.
+     * (như vòng main của server để liên tục lắng nghe và xử lý các yêu cầu từ client)
+     */
     @Override
     public void onMessage(WebSocket webSocket, String message) {
         System.out.println("📩 Nhận được tin nhắn từ client: " + message);

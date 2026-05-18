@@ -1,12 +1,12 @@
 package factory;
 
 import model.Arts;
-import model.Items;
+import model.Item;
 import model.ItemsAttributes;
 
 public class TypeArts implements ItemsFactory{
     @Override
-    public Items createItems(ItemsAttributes request) {
+    public Item createItems(ItemsAttributes request) {
         return new Arts(0, request.getOwnerName(), request.getStartingPrice(), request.getDescription(), request.getArtistName(), request.getReleaseDate());
     }
 }

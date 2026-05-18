@@ -20,25 +20,36 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
+import javax.sql.DataSource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import model.Arts;
 import model.Electronics;
-import model.Items;
+import model.Item;
 import model.Vehicles;
 import utils.DBConnection;
 
 public class ItemDAOImpl implements ItemDAO {
 
     private static final Logger logger = LoggerFactory.getLogger(ItemDAOImpl.class);
+    private final DataSource dataSource;
+
+    public ItemDAOImpl() {
+        this(DBConnection.getDataSource());
+    }
+
+    public ItemDAOImpl(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
 
     // =========================================================================
     // 1. THÊM SẢN PHẨM (NẠP CHỒNG)
     // =========================================================================
 
     @Override
-    public void addItem(Connection conn, Items item) throws SQLException {
+    public void addItem(Connection conn, Item item) throws SQLException {
         String sql = "INSERT INTO items (item_type, owner, starting_price, description, " +
                 "artist_name, release_date, warranty, brand, mileage, vehicle_id_plate, avatar) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -112,8 +123,8 @@ public class ItemDAOImpl implements ItemDAO {
         }
     }
     @Override
-    public void addItem(Items item) {
-        try (Connection conn = DBConnection.getConnection()) {
+    public void addItem(Item item) {
+        try (Connection conn = dataSource.getConnection()) {
             addItem(conn, item);
         } catch (SQLException e) {
             logger.error("❌ Lỗi khi thêm item: {}", e.getMessage(), e);
@@ -125,7 +136,7 @@ public class ItemDAOImpl implements ItemDAO {
     // =========================================================================
 
     @Override
-    public Items getItemById(Connection conn, int id) throws SQLException {
+    public Item getItemById(Connection conn, int id) throws SQLException {
         String sql = "SELECT * FROM items WHERE item_id = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, id);
@@ -192,7 +203,7 @@ public class ItemDAOImpl implements ItemDAO {
 
     @Override
     public boolean updateItemOwner(int itemId, int newOwnerId) {
-        try (Connection conn = DBConnection.getConnection()) {
+        try (Connection conn = dataSource.getConnection()) {
             return updateItemOwner(conn, itemId, newOwnerId);
         } catch (SQLException e) {
             logger.error("Lỗi khi cập nhật chủ sở hữu cho item {}: {}", itemId, e.getMessage(), e);
@@ -203,13 +214,13 @@ public class ItemDAOImpl implements ItemDAO {
     // =========================================================================
     // HÀM TIỆN ÍCH (Utility) DÙNG NỘI BỘ TRONG DAO
     // =========================================================================
-    private Items extractItemFromResultSet(ResultSet rs) throws SQLException {
+    private Item extractItemFromResultSet(ResultSet rs) throws SQLException {
         int id = rs.getInt("item_id");
         String type = rs.getString("item_type");
         String owner = rs.getString("owner");
         double startingPrice = rs.getDouble("starting_price");
         String desc = rs.getString("description");
-        Items item = null;
+        Item item = null;
         if ("Arts".equals(type)) {
             Date sqlDate = rs.getDate("release_date");
             item = new Arts(id, owner, startingPrice, desc,
@@ -242,12 +253,12 @@ public class ItemDAOImpl implements ItemDAO {
         return item;
     }
     @Override
-    public List<Items> getAllItems(Connection conn) throws SQLException {
+    public List<Item> getAllItems(Connection conn) throws SQLException {
         String sql = "SELECT * FROM items";
         try (Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
 
-            List<Items> itemList = new ArrayList<>();
+            List<Item> itemList = new ArrayList<>();
             while (rs.next()) {
                 itemList.add(extractItemFromResultSet(rs));
             }

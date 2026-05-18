@@ -6,6 +6,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class AuctionFeedServer {
+    private AuctionFeedServer(){};
+    private static class SingletonHelper {
+        private static final AuctionFeedServer AUCTION_FEED_SERVER = new AuctionFeedServer();
+    }
+    public static AuctionFeedServer getInstance(){
+        return SingletonHelper.AUCTION_FEED_SERVER;
+    }
     private final Map<String, List<Observer>> sessionObservers = new ConcurrentHashMap<>();
     public void subscribe(String sessionId, Observer observer) {
         sessionObservers.computeIfAbsent(sessionId, k -> new CopyOnWriteArrayList<>()).add(observer);

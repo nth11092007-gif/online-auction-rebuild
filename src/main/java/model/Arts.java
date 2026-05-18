@@ -1,7 +1,7 @@
 package model;
 import java.time.LocalDate;
 
-public class Arts extends Items{
+public class Arts extends Item{
     private final String artistName;
     private final LocalDate releaseDate;
 

@@ -156,7 +156,15 @@ ALTER TABLE `users`
 --
 -- AUTO_INCREMENT for dumped tables
 --
-
+CREATE TABLE IF NOT EXISTS proxy_bids (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    session_id VARCHAR(50) NOT NULL,
+    max_amount DECIMAL(15,2) NOT NULL,
+    active BOOLEAN DEFAULT TRUE,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (session_id) REFERENCES auction_sessions(id)
+);
 --
 -- AUTO_INCREMENT for table `bids`
 --

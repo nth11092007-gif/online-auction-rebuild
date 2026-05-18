@@ -3,12 +3,16 @@ package model;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
-import utils.IDGenerator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import model.state.AuctionState;
+import model.state.AuctionStateFactory;
+import utils.IDGenerator;
 public class AuctionSession {
     private Seller seller;
-    private Items item;
-    private String sessionID = null;
+    private Item item;
+    final private String sessionID;
     final private double startingPrice;
     final private double incrementStep;
     private double currentPrice;
@@ -16,9 +20,11 @@ public class AuctionSession {
     final private ArrayList<Bid> bidHistory = new ArrayList<>();
     private LocalDateTime startTime;
     private LocalDateTime endTime;
-    public enum Status { PENDING, OPEN, CLOSED, CANCELLED }; // một nhóm các hằng số
+    public enum Status { PENDING, OPEN, CLOSED, SETTLED }; // một nhóm các hằng số
     private Status status;
-    public AuctionSession(Seller seller, Items item, double startingPrice, double incrementStep, LocalDateTime startTime){
+    private AuctionState state;
+    private final Logger logger = LoggerFactory.getLogger(AuctionSession.class);
+    public AuctionSession(Seller seller, Item item, double startingPrice, double incrementStep, LocalDateTime startTime){
         this.seller = seller;
         this.item = item;
         this.sessionID = IDGenerator.generateSessionId(); // sinh UUID duy nhất cho mỗi phiên đấu giá
@@ -26,11 +32,12 @@ public class AuctionSession {
         this.incrementStep = incrementStep;
         this.startTime = startTime;
         this.status = Status.PENDING;
+        this.state = AuctionStateFactory.fromStatus(this.status);
         if (this.seller != null) {
             this.seller.addCreatedAuctionSession(this); // thêm phiên đấu giá vào lịch sử của người bán
         }
     }
-    public AuctionSession(Seller seller, Items item, double startingPrice, double incrementStep, LocalDateTime startTime, String sessionID){
+    public AuctionSession(Seller seller, Item item, double startingPrice, double incrementStep, LocalDateTime startTime, String sessionID){
         this.seller = seller;
         this.item = item;
         this.sessionID = sessionID;
@@ -38,11 +45,12 @@ public class AuctionSession {
         this.incrementStep = incrementStep;
         this.startTime = startTime;
         this.status = Status.PENDING;
+        this.state = AuctionStateFactory.fromStatus(this.status);
         if (this.seller != null) {
             this.seller.addCreatedAuctionSession(this); // thêm phiên đấu giá vào lịch sử của người bán
         }
     } 
-    public AuctionSession(Seller seller, Items item, double startingPrice){
+    public AuctionSession(Seller seller, Item item, double startingPrice){
         this(seller, item, startingPrice, 0.1, LocalDateTime.now());
     }
     // Bổ sung Setter
@@ -54,56 +62,60 @@ public class AuctionSession {
 
     // Bổ sung các Getter
     public Seller getSeller() { return seller; }
-    public Items getItem() { return item; }
+    public Item getItem() { return item; }
     public double getStartingPrice() { return startingPrice; }
     public double getIncrementStep() { return incrementStep; }
     public double getCurrentPrice() { return currentPrice; }
     public LocalDateTime getStartTime() { return startTime; }
     public LocalDateTime getEndTime() { return endTime; }
-    public Bidder getHighestBidder() { return highestBidder;}
+    public Bidder getHighestBidder() { return highestBidder; }
+    public ArrayList<Bid> getBidHistory() { return bidHistory; }
     public String getSessionID(){
          return this.sessionID;
     }
     public Status getStatus(){
         return this.status;
     }
+    public AuctionState getState(){
+        return this.state;
+    }
+    public void setState(AuctionState state) {
+        this.state = state;
+    }
     public void startSession(int openDays) {
-        this.status = Status.OPEN;
+        this.setOpen();
         this.currentPrice = startingPrice; 
         this.startTime = LocalDateTime.now(); // Lấy giờ bấm nút
         this.endTime = this.startTime.plusDays(openDays); // Tính giờ đóng cửa
-        System.out.println("Phiên đấu giá đã CHÍNH THỨC BẮT ĐẦU! Giá khởi điểm: " + startingPrice);
-        System.out.println("Kết thúc vào: " + this.endTime);
+        logger.info("Phiên đấu giá {} bắt đầu lúc {} và sẽ kết thúc lúc {}", sessionID, startTime, endTime);
+        logger.info("Giá khởi điểm: {}, Bước giá: {}", startingPrice, incrementStep);
     }
     public void endSession() {
-        this.status = Status.CLOSED;
+        this.setClose();
         this.endTime = LocalDateTime.now();
 
-        System.out.println("\n=== PHIÊN ĐẤU GIÁ KẾT THÚC ===");
+        logger.info("Phiên đấu giá {} đã kết thúc lúc {}", sessionID, endTime);
         if (highestBidder != null) {
-            System.out.println("Người chiến thắng: " + highestBidder.getUsername() + " với giá " + currentPrice);
+            logger.info("Người chiến thắng: {} với giá {}", highestBidder.getUsername(), currentPrice);
             // Gợi ý cho sau này: Tại đây bạn có thể gọi Transaction để trừ tiền người thắng
             // và cộng tiền cho seller.
         } else {
-            System.out.println("Không có ai tham gia trả giá. Vật phẩm chưa được bán!");
+            logger.info("Không có ai tham gia trả giá. Vật phẩm chưa được bán!");
         }
     }
     public boolean addBid(Bid newBid) {
-    if (newBid == null) {
-        return false;
+        return this.state.addBid(this, newBid);
     }
-    if (status != Status.OPEN) {
-        System.err.println("Phiên đấu giá không còn hoạt động, không thể đặt giá");
-        return false;
+    public boolean joinable() {
+        return this.state.canJoin();
     }
-    if (newBid.getAmount() <= currentPrice + incrementStep) {
-        System.err.println("Giá đặt phải cao hơn giá hiện tại");
-        return false;
+    public boolean setOpen() {
+        return this.state.open(this);
     }
-    // Thêm bid vào lịch sử
-    bidHistory.add(newBid);
-    // Cập nhật giá hiện tại
-    this.currentPrice = newBid.getAmount();
-    return true;
-}
+    public boolean setClose() {
+        return this.state.close(this);
+    }
+    public boolean settle() {
+        return this.state.settle(this);
+    }
 }
