@@ -62,8 +62,9 @@ public class AuctionDetailController {
 
         this.stepValue = (int) session.getIncrementStep();
         txtItemID.setText("ID: " + currentItem.getItemID());
-        txtItemName.setText(currentItem.getItemName());
+        txtItemName.setText(currentItem.getClass().getSimpleName());
         txtDescription.setText(currentItem.getDescription());
+
 
         double currentPrice = session.getCurrentPrice();
         txtCurrentPrice.setText(String.format("%,.0f VNĐ", currentPrice));

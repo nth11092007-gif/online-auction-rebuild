@@ -18,7 +18,6 @@ public abstract class Item {
     protected String description;
     protected BufferedImage avatar;
     private static Logger logger = LoggerFactory.getLogger(Item.class);
-    protected String itemName;
 
 
     public Item(int itemID, String ownerName, double startingPrice, String description) {
@@ -69,9 +68,6 @@ public abstract class Item {
     }
     public BufferedImage getAvatar() {
         return avatar;
-    }
-    public String getItemName() {
-        return itemName;
     }
 
     public abstract String showInfo();
