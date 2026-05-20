@@ -11,6 +11,8 @@ import javafx.scene.image.ImageView;
 import model.AuctionSession;
 import model.Item;
 
+import java.awt.image.BufferedImage;
+
 public class ItemCardController {
 
     private ItemDAO itemDAO = new ItemDAOImpl();
@@ -68,6 +70,10 @@ public class ItemCardController {
                 lblDescribe.setText(""); // không có item thì không có mô tả
                 System.out.println("Cảnh báo: session " + session.getSessionID()
                         + " không có item — có thể Gson chưa map đúng field.");
+                BufferedImage bImage = session.getItem().getAvatar();
+                Image fxImage = SwingFXUtils.toFXImage(bImage, null);
+                imgItem.setImage(fxImage);
+                
             }
         } catch (Exception e) {
             System.err.println("Lỗi trong setAuctionData (session="

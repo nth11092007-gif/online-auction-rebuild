@@ -17,7 +17,7 @@ public class DBConnection {
         try {
             // Cấu hình HikariCP
             HikariConfig config = new HikariConfig();
-            config.setJdbcUrl("jdbc:mysql://localhost:3306/schema?allowMultiQueries=true&useSSL=false&serverTimezone=Asia/Ho_Chi_Minh");
+            config.setJdbcUrl("jdbc:mysql://localhost:3306/quan_ly_dau_gia?allowMultiQueries=true&useSSL=false&serverTimezone=Asia/Ho_Chi_Minh");
             config.setUsername("root");
             config.setPassword("");
 

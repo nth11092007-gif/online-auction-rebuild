@@ -21,7 +21,7 @@ import utils.SessionManager;
 
 public class ProfileController {
     private UserDAO userDAO = new UserDAOImpl();
-    private User currentUser; // không static, lấy từ SessionManager
+    protected static User currentUser; // không static, lấy từ SessionManager
 
     @FXML private Button HandleBack;
     @FXML private Button HandleWithdrawAmount;
