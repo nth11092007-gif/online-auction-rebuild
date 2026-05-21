@@ -21,7 +21,6 @@
    <content>
       <VBox spacing="0.0" style="-fx-background-color: #f0f4ff;">
 
-         <!-- ═══ HEADER BAR ═══ -->
          <HBox alignment="CENTER_LEFT" prefHeight="64.0" spacing="12.0"
                style="-fx-background-color: white;
                       -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 8, 0, 0, 2);
@@ -49,7 +48,6 @@
             </children>
          </HBox>
 
-         <!-- ═══ FORM CARD ═══ -->
          <VBox alignment="TOP_CENTER">
             <padding>
                <Insets top="32.0" right="320.0" bottom="40.0" left="320.0" />
@@ -64,7 +62,6 @@
                   </padding>
                   <children>
 
-                     <!-- ── SECTION 1: Thông tin cơ bản ── -->
                      <HBox alignment="CENTER_LEFT" spacing="10.0" style="-fx-padding: 0 0 20 0;">
                         <children>
                            <Label text="📦"
@@ -86,7 +83,6 @@
                      <VBox spacing="18.0" style="-fx-padding: 22 0 0 0;">
                         <children>
 
-                           <!-- Loại sản phẩm -->
                            <VBox spacing="6.0">
                               <children>
                                  <Label text="LOẠI SẢN PHẨM"
@@ -102,7 +98,6 @@
                               </children>
                            </VBox>
 
-                           <!-- Tên sản phẩm -->
                            <VBox spacing="6.0">
                               <children>
                                  <Label text="TÊN SẢN PHẨM"
@@ -119,7 +114,6 @@
                               </children>
                            </VBox>
 
-                           <!-- Mô tả -->
                            <VBox spacing="6.0">
                               <children>
                                  <Label text="MÔ TẢ SẢN PHẨM"
@@ -135,7 +129,6 @@
                               </children>
                            </VBox>
 
-                           <!-- Hình ảnh -->
                            <VBox spacing="8.0">
                               <children>
                                  <Label text="HÌNH ẢNH SẢN PHẨM"
@@ -159,7 +152,6 @@
                                               style="-fx-text-fill: #aaa; -fx-font-size: 12;" />
                                     </children>
                                  </HBox>
-                                 <!-- Image preview box -->
                                  <VBox alignment="CENTER" prefHeight="170.0"
                                        style="-fx-background-color: #f8faff;
                                               -fx-border-color: #dce4ff;
@@ -174,13 +166,11 @@
                               </children>
                            </VBox>
 
-                           <!-- Dynamic container -->
                            <VBox fx:id="Container" prefWidth="100.0" spacing="10.0" />
 
                         </children>
                      </VBox>
 
-                     <!-- ── SECTION 2: Cấu hình phiên ── -->
                      <HBox alignment="CENTER_LEFT" spacing="10.0" style="-fx-padding: 28 0 20 0;">
                         <children>
                            <Label text="⚙️"
@@ -201,7 +191,6 @@
 
                      <HBox spacing="16.0" style="-fx-padding: 22 0 0 0;">
                         <children>
-                           <!-- Giá khởi điểm -->
                            <VBox spacing="6.0" HBox.hgrow="ALWAYS">
                               <children>
                                  <Label text="GIÁ KHỞI ĐIỂM (VNĐ)"
@@ -217,7 +206,6 @@
                                                    -fx-font-size: 13;" />
                               </children>
                            </VBox>
-                           <!-- Bước giá -->
                            <VBox spacing="6.0" HBox.hgrow="ALWAYS">
                               <children>
                                  <Label text="BƯỚC GIÁ (VNĐ)"
@@ -233,7 +221,6 @@
                                                    -fx-font-size: 13;" />
                               </children>
                            </VBox>
-                           <!-- Số ngày -->
                            <VBox spacing="6.0" HBox.hgrow="ALWAYS">
                               <children>
                                  <Label text="SỐ NGÀY MỞ"
@@ -252,7 +239,6 @@
                         </children>
                      </HBox>
 
-                     <!-- ── ACTION BUTTONS ── -->
                      <HBox spacing="12.0" style="-fx-padding: 28 0 0 0;">
                         <children>
                            <Button fx:id="btnCreateAution" mnemonicParsing="false"
