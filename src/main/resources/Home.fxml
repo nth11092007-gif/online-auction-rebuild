@@ -7,49 +7,144 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<ScrollPane fitToWidth="true" prefHeight="720.0" prefWidth="1280.0" style="-fx-background-color: #f8f9fa;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.HomeController">
+<ScrollPane fitToWidth="true" prefHeight="720.0" prefWidth="1280.0"
+            style="-fx-background-color: #f0f4ff; -fx-background: #f0f4ff;"
+            xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="Controller.HomeController">
     <content>
-        <VBox spacing="25.0" style="-fx-background-color: #f8f9fa;">
-            <padding>
-                <Insets bottom="40.0" left="40.0" right="40.0" top="20.0" />
-            </padding>
+        <VBox spacing="0.0" style="-fx-background-color: #f0f4ff;">
 
-            <HBox alignment="CENTER_LEFT" spacing="20.0">
-                <Label text="🔨 Đấu Giá Trực Tuyến" textFill="#1a73e8" HBox.hgrow="ALWAYS">
-                    <font><Font name="System Bold" size="24.0" /></font>
-                </Label>
-                <HBox alignment="CENTER_RIGHT" spacing="15.0" HBox.hgrow="ALWAYS">
-                    <Button onAction="#GoToCreateSession" style="-fx-background-color: transparent; -fx-cursor: hand;" text="+ Tạo phiên">
-                        <font><Font size="14.0" /></font>
-                    </Button>
-                    <Button onAction="#GoToProfile" style="-fx-background-color: transparent; -fx-cursor: hand;" text="👤 Tài khoản">
-                        <font><Font size="14.0" /></font>
-                    </Button>
-                </HBox>
+            <HBox alignment="CENTER_LEFT" prefHeight="64.0" spacing="16.0"
+                  style="-fx-background-color: white;
+                         -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 8, 0, 0, 2);
+                         -fx-padding: 0 32 0 32;">
+                <children>
+                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <children>
+                            <Label text="🔨"
+                                   style="-fx-font-size: 22;
+                                          -fx-background-color: #e8efff;
+                                          -fx-padding: 6 8;
+                                          -fx-background-radius: 10;" />
+                            <VBox spacing="1.0">
+                                <children>
+                                    <Label text="Đấu Giá Trực Tuyến"
+                                           style="-fx-font-size: 17; -fx-font-weight: bold; -fx-text-fill: #1a1a2e;" />
+                                    <Label text="Nền tảng đấu giá uy tín"
+                                           style="-fx-font-size: 11; -fx-text-fill: #aaa;" />
+                                </children>
+                            </VBox>
+                        </children>
+                    </HBox>
+
+                    <Region HBox.hgrow="ALWAYS" />
+
+                    <Button onAction="#GoToCreateSession"
+                            style="-fx-background-color: #1a73e8;
+                                   -fx-text-fill: white;
+                                   -fx-font-size: 13;
+                                   -fx-font-weight: bold;
+                                   -fx-background-radius: 9;
+                                   -fx-padding: 8 18;
+                                   -fx-cursor: hand;"
+                            text="＋  Tạo phiên" />
+
+                    <Button onAction="#GoToProfile"
+                            style="-fx-background-color: #f0f4ff;
+                                   -fx-text-fill: #2d6cdf;
+                                   -fx-font-size: 13;
+                                   -fx-font-weight: bold;
+                                   -fx-background-radius: 9;
+                                   -fx-border-color: #d0deff;
+                                   -fx-border-radius: 9;
+                                   -fx-border-width: 1.5;
+                                   -fx-padding: 8 18;
+                                   -fx-cursor: hand;"
+                            text="👤  Tài khoản" />
+                </children>
             </HBox>
 
-            <Label text="Danh Sách Sản Phẩm Đấu Giá">
-                <font><Font name="System Bold" size="20.0" /></font>
-            </Label>
+            <VBox spacing="22.0">
+                <padding>
+                    <Insets top="32.0" right="40.0" bottom="40.0" left="40.0" />
+                </padding>
+                <children>
 
-            <TextField fx:id="txtSearch" prefHeight="45.0" promptText="🔍 Tìm kiếm sản phẩm..." style="-fx-background-color: white; -fx-border-color: #ced4da; -fx-border-radius: 8; -fx-background-radius: 8;">
-                <font><Font size="14.0" /></font>
-            </TextField>
+                    <VBox spacing="4.0">
+                        <children>
+                            <Label text="Danh Sách Sản Phẩm Đấu Giá"
+                                   style="-fx-font-size: 20; -fx-font-weight: bold; -fx-text-fill: #1a1a2e;" />
+                            <Label text="Khám phá các phiên đấu giá đang diễn ra"
+                                   style="-fx-font-size: 13; -fx-text-fill: #888;" />
+                        </children>
+                    </VBox>
 
-            <HBox spacing="10.0">
-                <Button mnemonicParsing="false" onAction="#filterAll" prefHeight="35.0" style="-fx-background-color: #1a73e8; -fx-background-radius: 5; -fx-cursor: hand;" text="Tất cả" textFill="WHITE">
-                    <font><Font name="System Bold" size="13.0" /></font>
-                </Button>
-                <Button mnemonicParsing="false" onAction="#filterElectronics" prefHeight="35.0" style="-fx-background-color: white; -fx-border-color: #e0e0e0; -fx-border-radius: 5; -fx-cursor: hand;" text="Đồ điện tử" textFill="#333333" />
-                <Button mnemonicParsing="false" onAction="#filterVehicles" prefHeight="35.0" style="-fx-background-color: white; -fx-border-color: #e0e0e0; -fx-border-radius: 5; -fx-cursor: hand;" text="Xe cộ" textFill="#333333" />
-                <Button mnemonicParsing="false" onAction="#filterArts" prefHeight="35.0" style="-fx-background-color: white; -fx-border-color: #e0e0e0; -fx-border-radius: 5; -fx-cursor: hand;" text="Tranh nghệ thuật" textFill="#333333" />
-            </HBox>
+                    <TextField fx:id="txtSearch" prefHeight="46.0"
+                               promptText="🔍  Tìm kiếm sản phẩm..."
+                               style="-fx-background-color: white;
+                                      -fx-border-color: #dce4ff;
+                                      -fx-border-radius: 10;
+                                      -fx-background-radius: 10;
+                                      -fx-border-width: 1.5;
+                                      -fx-padding: 0 16;
+                                      -fx-font-size: 14;
+                                      -fx-effect: dropshadow(three-pass-box, rgba(44,108,223,0.08), 8, 0, 0, 2);" />
 
-            <FlowPane fx:id="productContainer" hgap="25.0" vgap="25.0" />
+                    <HBox spacing="10.0" alignment="CENTER_LEFT">
+                        <children>
+                            <Button mnemonicParsing="false" onAction="#filterAll" prefHeight="36.0"
+                                    style="-fx-background-color: #1a73e8;
+                                           -fx-text-fill: white;
+                                           -fx-font-size: 13;
+                                           -fx-font-weight: bold;
+                                           -fx-background-radius: 20;
+                                           -fx-padding: 0 18;
+                                           -fx-cursor: hand;"
+                                    text="Tất cả" />
+                            <Button mnemonicParsing="false" onAction="#filterElectronics" prefHeight="36.0"
+                                    style="-fx-background-color: white;
+                                           -fx-text-fill: #444;
+                                           -fx-font-size: 13;
+                                           -fx-border-color: #dde3f0;
+                                           -fx-border-radius: 20;
+                                           -fx-border-width: 1.5;
+                                           -fx-background-radius: 20;
+                                           -fx-padding: 0 18;
+                                           -fx-cursor: hand;"
+                                    text="💻  Đồ điện tử" />
+                            <Button mnemonicParsing="false" onAction="#filterVehicles" prefHeight="36.0"
+                                    style="-fx-background-color: white;
+                                           -fx-text-fill: #444;
+                                           -fx-font-size: 13;
+                                           -fx-border-color: #dde3f0;
+                                           -fx-border-radius: 20;
+                                           -fx-border-width: 1.5;
+                                           -fx-background-radius: 20;
+                                           -fx-padding: 0 18;
+                                           -fx-cursor: hand;"
+                                    text="🚗  Xe cộ" />
+                            <Button mnemonicParsing="false" onAction="#filterArts" prefHeight="36.0"
+                                    style="-fx-background-color: white;
+                                           -fx-text-fill: #444;
+                                           -fx-font-size: 13;
+                                           -fx-border-color: #dde3f0;
+                                           -fx-border-radius: 20;
+                                           -fx-border-width: 1.5;
+                                           -fx-background-radius: 20;
+                                           -fx-padding: 0 18;
+                                           -fx-cursor: hand;"
+                                    text="🎨  Tranh nghệ thuật" />
+                        </children>
+                    </HBox>
 
+                    <FlowPane fx:id="productContainer" hgap="24.0" vgap="24.0" />
+
+                </children>
+            </VBox>
         </VBox>
     </content>
 </ScrollPane>

@@ -127,4 +127,8 @@ public class ProfileController {
         alert.setContentText(content);
         alert.showAndWait();
     }
+    @FXML
+    void handleLogout() {
+
+    }
 }
