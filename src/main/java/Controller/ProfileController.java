@@ -11,17 +11,14 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.stage.Stage;
 import model.User;
 import utils.SessionManager;
 
 public class ProfileController {
     private UserDAO userDAO = new UserDAOImpl();
-    private User currentUser; // không static, lấy từ SessionManager
+    protected static User currentUser; // không static, lấy từ SessionManager
 
     @FXML private Button HandleBack;
     @FXML private Button HandleWithdrawAmount;
@@ -126,5 +123,37 @@ public class ProfileController {
         alert.setTitle("Thông báo");
         alert.setContentText(content);
         alert.showAndWait();
+    }
+    @FXML
+    void handleLogout(ActionEvent event) {
+        //Hiển thị hộp thoại xác nhận
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Xác nhận đăng xuất");
+        alert.setHeaderText(null);
+        alert.setContentText("Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?");
+
+        if (alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
+            try {
+                //Xóa dữ liệu phiên đăng nhập hiện tại
+                SessionManager.logout();
+
+                //Ngắt kết nối WebSocket
+                if (MainApp.getWebSocketClient() != null) {
+                    MainApp.getWebSocketClient().close();
+                }
+
+                //Chuyển về màn hình Đăng nhập
+                Parent root = FXMLLoader.load(getClass().getResource("/Login.fxml"));
+                Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+                stage.setScene(new Scene(root));
+                stage.show();
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+                errorAlert.setContentText("Đã xảy ra lỗi khi đăng xuất. Vui lòng thử lại!");
+                errorAlert.showAndWait();
+            }
+        }
     }
 }
