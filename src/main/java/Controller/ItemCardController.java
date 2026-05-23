@@ -29,7 +29,7 @@ public class ItemCardController {
 
     public void setItemData(Item item) {
         lblItemID.setText("ID: " + item.getItemID());
-        lblName.setText("Tên sản phẩm: "+item.getItemName());
+        //lblName.setText("Tên sản phẩm: "+item.getItemName());
         lblCurrentPrice.setText("Giá hiện tại: " + item.getStartingPrice() + " VND");
         lblType.setText("Phân loại: " + item.getClass().getSimpleName());
         lblOwner.setText("Người sở hữu: " + item.getOwnerName());
