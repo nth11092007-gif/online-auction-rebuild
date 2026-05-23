@@ -5,8 +5,8 @@ public class Arts extends Item{
     private final String artistName;
     private final LocalDate releaseDate;
 
-    public Arts(int itemID, String ownerName, double startingPrice, String description, String artistName, LocalDate releaseDate) {
-        super(itemID, ownerName, startingPrice, description);
+    public Arts(int itemID, String itemName, String ownerName, double startingPrice, String description, String artistName, LocalDate releaseDate) {
+        super(itemID, ownerName, startingPrice, description, itemName);
         this.artistName = artistName;
         this.releaseDate = releaseDate;
     }

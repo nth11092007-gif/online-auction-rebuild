@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 public abstract class Item {
     //Tích hợp tự động sinh UUID hoặc lấy ID từ Database sau.
     protected int itemID;
+    protected String itemName;
     protected String ownerName;
     protected double startingPrice;
     protected String description;
@@ -20,8 +21,9 @@ public abstract class Item {
     private static Logger logger = LoggerFactory.getLogger(Item.class);
 
 
-    public Item(int itemID, String ownerName, double startingPrice, String description) {
+    public Item(int itemID, String ownerName, double startingPrice, String description, String itemName) {
         this.itemID = itemID;
+        this.itemName = itemName;
         this.ownerName = ownerName;
         this.startingPrice = startingPrice;
         this.description = description;
@@ -57,6 +59,7 @@ public abstract class Item {
         }
     }
     public int getItemID() { return itemID; }
+    public String getItemName() { return itemName;}
     public String getOwnerName() {
         return ownerName;
     }

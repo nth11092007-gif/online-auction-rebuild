@@ -10,6 +10,7 @@ import java.time.LocalDate;
 public class ItemsAttributes {
     // Thuoc tinh chung (Immutable)
     private final User owner;
+    private final String itemName;
     private final double startingPrice;
     private final String description;
 
@@ -26,6 +27,7 @@ public class ItemsAttributes {
     // Private constructor: Chỉ Builder mới có quyền gọi
     private ItemsAttributes(Builder builder) {
         this.owner = builder.owner;
+        this.itemName = builder.itemName;
         this.startingPrice = builder.startingPrice;
         this.description = builder.description;
         this.artistName = builder.artistName;
@@ -38,6 +40,7 @@ public class ItemsAttributes {
 
     // Getters (Không có Setters để đảm bảo an toàn dữ liệu)
     public User getOwner() { return owner; }
+    public String getItemName() { return itemName; }
     public String getOwnerName() { return owner != null ? owner.getUsername() : "Unknown"; }
     public double getStartingPrice() { return startingPrice; }
     public String getDescription() { return description; }
@@ -52,6 +55,7 @@ public class ItemsAttributes {
     public static class Builder {
         // Required parameters (Các thuộc tính bắt buộc)
         private final User owner;
+        private final String itemName;
         private final double startingPrice;
 
         // Optional parameters (Các thuộc tính tùy chọn - khởi tạo giá trị mặc định)
@@ -64,9 +68,10 @@ public class ItemsAttributes {
         private String vehicleID = null;
 
         // Constructor cho các tham số bắt buộc
-        public Builder(User owner, double startingPrice) {
+        public Builder(User owner, double startingPrice, String itemName) {
             this.owner = owner;
             this.startingPrice = startingPrice;
+            this.itemName = itemName;
         }
 
         public Builder description(String description) {

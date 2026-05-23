@@ -126,7 +126,7 @@ public class CreateAuctionController {
                     int vMileage = (txtMileage != null && !txtMileage.getText().isEmpty()) ? Integer.parseInt(txtMileage.getText()) : 0;
                     String vIdStr = (txtVehicleID != null) ? txtVehicleID.getText() : "";
 
-                    initItem = new Vehicles(0, ownerName, startPrice, description, vBrand, vMileage, vIdStr);
+                    initItem = new Vehicles(0, "", ownerName, startPrice, description, vBrand, vMileage, vIdStr);
                     break;
 
                 case "Arts":
@@ -136,7 +136,7 @@ public class CreateAuctionController {
                     String aArtistName = (txtArtistName != null) ? txtArtistName.getText() : "";
                     LocalDate aReleaseDate = (dpReleaseDate != null && dpReleaseDate.getValue() != null) ? dpReleaseDate.getValue() : LocalDate.now();
 
-                    initItem = new Arts(0, ownerName, startPrice, description, aArtistName, aReleaseDate);
+                    initItem = new Arts(0, "",ownerName, startPrice, description, aArtistName, aReleaseDate);
                     break;
 
                 case "Electronics":
@@ -146,7 +146,7 @@ public class CreateAuctionController {
                     String eBrand = (txtElectronicBrand != null) ? txtElectronicBrand.getText() : "";
                     int eWarranty = (txtWarranty != null && !txtWarranty.getText().isEmpty()) ? Integer.parseInt(txtWarranty.getText()) : 0;
 
-                    initItem = new Electronics(0, ownerName, startPrice, description, eWarranty, eBrand);
+                    initItem = new Electronics(0,"", ownerName, startPrice, description, eWarranty, eBrand);
                     break;
             }
 

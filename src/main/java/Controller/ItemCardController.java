@@ -19,6 +19,7 @@ public class ItemCardController {
     private AuctionSession currentSession;
 
     @FXML private Label lblDescribe;
+    @FXML private Label lblName;
     @FXML private ImageView imgItem;
     @FXML private Label lblCurrentPrice;
     @FXML private Label lblItemID;
@@ -28,6 +29,7 @@ public class ItemCardController {
 
     public void setItemData(Item item) {
         lblItemID.setText("ID: " + item.getItemID());
+        lblName.setText("Tên sản phẩm: "+item.getItemName());
         lblCurrentPrice.setText("Giá hiện tại: " + item.getStartingPrice() + " VND");
         lblType.setText("Phân loại: " + item.getClass().getSimpleName());
         lblOwner.setText("Người sở hữu: " + item.getOwnerName());

@@ -3,8 +3,8 @@ public class Electronics extends Item{
     private final int warranty;
     private final String brand;
 
-    public Electronics(int itemID, String ownerName, double startingPrice, String description, int warranty, String brand) {
-        super(itemID, ownerName, startingPrice, description);
+    public Electronics(int itemID, String itemName, String ownerName, double startingPrice, String description, int warranty, String brand) {
+        super(itemID, ownerName, startingPrice, description, itemName);
         this.warranty = warranty;
         this.brand = brand;
     }
