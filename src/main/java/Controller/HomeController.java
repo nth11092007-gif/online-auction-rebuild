@@ -49,7 +49,7 @@ public class HomeController {
     @FXML
     void GoToCreateSession(ActionEvent event) {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource("/CreateAution.fxml"));
+            Parent root = FXMLLoader.load(getClass().getResource("/CreateAuction.fxml"));
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.show();
