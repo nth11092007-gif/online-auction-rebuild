@@ -67,7 +67,7 @@ public class AuctionDetailController {
 
         this.stepValue = (int) session.getIncrementStep();
         txtItemID.setText("ID: " + currentItem.getItemID());
-        txtItemName.setText(currentItem.getClass().getSimpleName());
+        txtItemName.setText(currentItem.getItemName());
         txtDescription.setText(currentItem.getDescription());
         BufferedImage bImage = session.getItem().getAvatar();
         Image fxImage = SwingFXUtils.toFXImage(bImage, null);
