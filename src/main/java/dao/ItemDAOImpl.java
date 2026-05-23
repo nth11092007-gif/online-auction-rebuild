@@ -50,12 +50,13 @@ public class ItemDAOImpl implements ItemDAO {
     @Override
     public void addItem(Connection conn, Item item) throws SQLException {
         String sql = "INSERT INTO items (item_type, owner, starting_price, description, " +
-                "artist_name, release_date, warranty, brand, mileage, vehicle_id_plate, avatar) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "artist_name, release_date, warranty, brand, mileage, vehicle_id_plate, avatar,item_name) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(2, item.getOwnerName());
+            ps.setString(12, item.getItemName());
             ps.setDouble(3, item.getStartingPrice());
             ps.setString(4, item.getDescription());
             BufferedImage avatar = item.getAvatar();
@@ -215,6 +216,7 @@ public class ItemDAOImpl implements ItemDAO {
     // =========================================================================
     private Item extractItemFromResultSet(ResultSet rs) throws SQLException {
         int id = rs.getInt("item_id");
+        String itemName = rs.getString("item_name");
         String type = rs.getString("item_type");
         String owner = rs.getString("owner");
         double startingPrice = rs.getDouble("starting_price");
@@ -222,17 +224,17 @@ public class ItemDAOImpl implements ItemDAO {
         Item item = null;
         if ("Arts".equals(type)) {
             Date sqlDate = rs.getDate("release_date");
-            item = new Arts(id, owner, startingPrice, desc,
+            item = new Arts(id, itemName, owner, startingPrice, desc,
                     rs.getString("artist_name"),
                     sqlDate != null ? sqlDate.toLocalDate() : null);
 
         } else if ("Electronics".equals(type)) {
-            item = new Electronics(id, owner, startingPrice, desc,
+            item = new Electronics(id, itemName, owner, startingPrice, desc,
                     rs.getInt("warranty"),
                     rs.getString("brand"));
 
         } else if ("Vehicles".equals(type)) {
-            item = new Vehicles(id, owner, startingPrice, desc,
+            item = new Vehicles(id, itemName, owner, startingPrice, desc,
                     rs.getString("brand"),
                     rs.getInt("mileage"),
                     rs.getString("vehicle_id_plate"));

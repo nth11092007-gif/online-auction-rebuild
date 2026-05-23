@@ -9,7 +9,7 @@ class TypeArtsTest {
 
     @Test
     void createItems_ReturnsArtsWithCorrectFields() {
-        ItemsAttributes attr = new ItemsAttributes.Builder(new User("Real","u","e","p","0"), 1000.0)
+        ItemsAttributes attr = new ItemsAttributes.Builder(new User("Real","u","e","p","0"), 1000.0,"Bức tranh chân dung")
                 .artistName("Picasso")
                 .releaseDate(LocalDate.of(1907, 7, 1))
                 .description("Les Demoiselles d'Avignon")

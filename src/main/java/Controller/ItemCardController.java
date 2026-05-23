@@ -1,5 +1,7 @@
 package Controller;
 
+import java.awt.image.BufferedImage;
+
 import dao.ItemDAO;
 import dao.ItemDAOImpl;
 import javafx.embed.swing.SwingFXUtils;
@@ -17,6 +19,7 @@ public class ItemCardController {
     private AuctionSession currentSession;
 
     @FXML private Label lblDescribe;
+    @FXML private Label lblName;
     @FXML private ImageView imgItem;
     @FXML private Label lblCurrentPrice;
     @FXML private Label lblItemID;
@@ -26,6 +29,7 @@ public class ItemCardController {
 
     public void setItemData(Item item) {
         lblItemID.setText("ID: " + item.getItemID());
+        lblName.setText("Tên sản phẩm: "+ item.getItemName());
         lblCurrentPrice.setText("Giá hiện tại: " + item.getStartingPrice() + " VND");
         lblType.setText("Phân loại: " + item.getClass().getSimpleName());
         lblOwner.setText("Người sở hữu: " + item.getOwnerName());
@@ -68,6 +72,10 @@ public class ItemCardController {
                 lblDescribe.setText(""); // không có item thì không có mô tả
                 System.out.println("Cảnh báo: session " + session.getSessionID()
                         + " không có item — có thể Gson chưa map đúng field.");
+                BufferedImage bImage = session.getItem().getAvatar();
+                Image fxImage = SwingFXUtils.toFXImage(bImage, null);
+                imgItem.setImage(fxImage);
+                
             }
         } catch (Exception e) {
             System.err.println("Lỗi trong setAuctionData (session="

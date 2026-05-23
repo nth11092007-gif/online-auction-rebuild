@@ -45,7 +45,7 @@ public class AuctionSystemTest {
         assertEquals("admin01", seller.getUsername(), "Tên đăng nhập không khớp.");
 
 
-        ItemsAttributes artAttr = new ItemsAttributes.Builder(seller, 3000.0)
+        ItemsAttributes artAttr = new ItemsAttributes.Builder(seller, 3000.0,"Bức tranh Đêm Đầy Sao")
         // Nối chuỗi các thuộc tính tùy chọn
         .description("Bức tranh Đêm Đầy Sao (Bản sao siêu cấp)")
         .artistName("Vincent van Gogh")

@@ -7,6 +7,6 @@ import model.Vehicles;
 public class TypeVehicles implements ItemsFactory{
     @Override
     public Item createItems(ItemsAttributes request) {
-        return new Vehicles(0, request.getOwnerName(), request.getStartingPrice(), request.getDescription(), request.getBrand(), request.getMileage(), request.getVehicleID());
+        return new Vehicles(0, request.getItemName(), request.getOwnerName(), request.getStartingPrice(), request.getDescription(), request.getBrand(), request.getMileage(), request.getVehicleID());
     }
 }

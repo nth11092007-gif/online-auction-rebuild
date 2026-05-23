@@ -16,7 +16,7 @@ public class MainApp extends Application {
     public void start(Stage stage) throws Exception {
         primaryStage = stage;
         webSocketClient = AuctionWebSocketClient.getInstance();
-        webSocketClient.connect();
+        //webSocketClient.connect();
         showLogin(); // hoặc showHomeBidder nếu muốn test
     }
 

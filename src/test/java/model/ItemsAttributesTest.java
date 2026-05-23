@@ -10,7 +10,7 @@ class ItemsAttributesTest {
 
     @Test
     void build_WithAllFields_HasCorrectValues() {
-        ItemsAttributes attr = new ItemsAttributes.Builder(owner, 500.0)
+        ItemsAttributes attr = new ItemsAttributes.Builder(owner, 500.0,"Bức tranh mặt nươc")
                 .description("desc")
                 .artistName("Van Gogh")
                 .releaseDate(LocalDate.of(2020, 1, 1))
@@ -33,7 +33,7 @@ class ItemsAttributesTest {
 
     @Test
     void build_MinimalAttributes_HasDefaults() {
-        ItemsAttributes attr = new ItemsAttributes.Builder(owner, 100.0).build();
+        ItemsAttributes attr = new ItemsAttributes.Builder(owner, 100.0, "test").build();
         assertEquals("", attr.getDescription());
         assertNull(attr.getArtistName());
         assertEquals(0, attr.getWarranty());

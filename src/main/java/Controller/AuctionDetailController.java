@@ -1,5 +1,6 @@
 package Controller;
 
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -7,6 +8,7 @@ import java.time.temporal.ChronoUnit;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -18,6 +20,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -41,6 +45,7 @@ public class AuctionDetailController {
     @FXML private Label lblHighestBidder;
     @FXML private Button btnPlaceBid;
     @FXML private HBox hboxQuickBids;
+    @FXML private ImageView imgItem;
 
     private Item currentItem;
     private String currentSessionId;
@@ -64,6 +69,10 @@ public class AuctionDetailController {
         txtItemID.setText("ID: " + currentItem.getItemID());
         txtItemName.setText(currentItem.getClass().getSimpleName());
         txtDescription.setText(currentItem.getDescription());
+        BufferedImage bImage = session.getItem().getAvatar();
+        Image fxImage = SwingFXUtils.toFXImage(bImage, null);
+        imgItem.setImage(fxImage);
+
 
         double currentPrice = session.getCurrentPrice();
         txtCurrentPrice.setText(String.format("%,.0f VNĐ", currentPrice));

@@ -6,6 +6,7 @@
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.Spinner?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
@@ -41,11 +42,15 @@
             </padding>
 
             <StackPane prefHeight="350.0" style="-fx-background-color: #fafafa; -fx-border-color: #eeeeee; -fx-border-radius: 8;">
+
+                <ImageView fx:id="imgItem" fitHeight="282.0" fitWidth="832.0" pickOnBounds="true" preserveRatio="true" />
+
                 <Label text="iPhone 15 Pro Max 256GB" textFill="#999999" StackPane.alignment="TOP_LEFT">
                     <StackPane.margin>
                         <Insets left="15.0" top="15.0" />
                     </StackPane.margin>
                 </Label>
+
                 <Label fx:id="lblStatus" style="-fx-background-color: #34a853; -fx-text-fill: white; -fx-padding: 8 15; -fx-background-radius: 20;" text="Đang đấu giá" StackPane.alignment="TOP_RIGHT">
                     <StackPane.margin>
                         <Insets right="15.0" top="15.0" />
