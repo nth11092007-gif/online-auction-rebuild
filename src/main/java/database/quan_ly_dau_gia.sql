@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 23, 2026 at 03:41 AM
+-- Generation Time: May 23, 2026 at 09:49 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -37,17 +37,18 @@ CREATE TABLE `auction_sessions` (
                                     `status` varchar(20) DEFAULT NULL,
                                     `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
                                     `start_time` datetime DEFAULT NULL,
-                                    `end_time` datetime DEFAULT NULL
+                                    `end_time` datetime DEFAULT NULL,
+                                    `extension_count` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `auction_sessions`
 --
 
-INSERT INTO `auction_sessions` (`session_id`, `owner_id`, `item_id`, `starting_price`, `step_price`, `duration_days`, `status`, `created_at`, `start_time`, `end_time`) VALUES
-                                                                                                                                                                            ('2fd6a6f1-0fc6-4545-ae38-0e52bb281235', 3, 1, 1200, 0.1, 4, 'OPEN', '2026-05-15 04:52:22', '2026-05-15 11:52:22', '2026-05-19 11:52:22'),
-                                                                                                                                                                            ('6179c570-b516-4013-8dcd-781e867ac556', 3, 1, 100000, 0.1, 3, 'OPEN', '2026-05-14 10:33:35', '2026-05-14 17:33:35', '2026-05-17 17:33:35'),
-                                                                                                                                                                            ('ac926e4a-5c3f-41a8-bf30-b1f040cb9797', 7, 2, 3000, 0.1, 1, 'OPEN', '2026-05-15 05:20:43', '2026-05-15 12:20:43', '2026-05-16 12:20:43');
+INSERT INTO `auction_sessions` (`session_id`, `owner_id`, `item_id`, `starting_price`, `step_price`, `duration_days`, `status`, `created_at`, `start_time`, `end_time`, `extension_count`) VALUES
+                                                                                                                                                                                               ('2fd6a6f1-0fc6-4545-ae38-0e52bb281235', 3, 1, 1200, 0.1, 4, 'OPEN', '2026-05-15 04:52:22', '2026-05-15 11:52:22', '2026-05-19 11:52:22', NULL),
+                                                                                                                                                                                               ('6179c570-b516-4013-8dcd-781e867ac556', 3, 1, 100000, 0.1, 3, 'OPEN', '2026-05-14 10:33:35', '2026-05-14 17:33:35', '2026-05-17 17:33:35', NULL),
+                                                                                                                                                                                               ('ac926e4a-5c3f-41a8-bf30-b1f040cb9797', 7, 2, 3000, 0.1, 1, 'OPEN', '2026-05-15 05:20:43', '2026-05-15 12:20:43', '2026-05-16 12:20:43', NULL);
 
 -- --------------------------------------------------------
 
