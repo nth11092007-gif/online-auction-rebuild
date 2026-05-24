@@ -131,12 +131,19 @@ public class CreateAuctionController {
 
                 case "Arts":
                     TextField txtArtistName = (TextField) Container.lookup("#txtArtistName");
-                    DatePicker dpReleaseDate = (DatePicker) Container.lookup("#txtReleaseDate");
-
+                    TextField txtReleaseDateInput = (TextField) Container.lookup("#txtReleaseDate");
                     String aArtistName = (txtArtistName != null) ? txtArtistName.getText() : "";
-                    LocalDate aReleaseDate = (dpReleaseDate != null && dpReleaseDate.getValue() != null) ? dpReleaseDate.getValue() : LocalDate.now();
+                    LocalDate aReleaseDate = LocalDate.now();
+                    if (txtReleaseDateInput != null && !txtReleaseDateInput.getText().isEmpty()) {
+                        try {
+                            aReleaseDate = LocalDate.parse(txtReleaseDateInput.getText());
+                        } catch (Exception e) {
+                            showAlert(Alert.AlertType.ERROR, "Lỗi định dạng ngày", "Ngày phát hành phải có định dạng YYYY-MM-DD");
+                            return;
+                        }
+                    }
 
-                    initItem = new Arts(0, "",ownerName, startPrice, description, aArtistName, aReleaseDate);
+                    initItem = new Arts(0, itemName ,ownerName, startPrice, description, aArtistName, aReleaseDate);
                     break;
 
                 case "Electronics":
