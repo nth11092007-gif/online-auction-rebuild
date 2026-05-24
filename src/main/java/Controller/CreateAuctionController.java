@@ -143,7 +143,7 @@ public class CreateAuctionController {
                         }
                     }
 
-                    initItem = new Arts(0, "",ownerName, startPrice, description, aArtistName, aReleaseDate);
+                    initItem = new Arts(0, itemName ,ownerName, startPrice, description, aArtistName, aReleaseDate);
                     break;
 
                 case "Electronics":
