@@ -343,7 +343,7 @@ public class UserDAOImpl implements UserDAO {
     // =========================================================================
     
     private User extractUserFromResultSet(ResultSet rs) throws SQLException {
-        return new User(
+        User user = new User(
                 rs.getInt("id"),
                 rs.getString("username"),
                 rs.getString("password"),
@@ -354,5 +354,20 @@ public class UserDAOImpl implements UserDAO {
                 rs.getDouble("balance"),
                 rs.getDouble("frozen_balance")
         );
+        user.setBanned(rs.getBoolean("is_banned"));
+        return user;
+    }
+    @Override
+    public boolean setBanned(int userId, boolean banned) {
+        String sql = "UPDATE users SET is_banned = ? WHERE id = ?";
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setBoolean(1, banned);
+            ps.setInt(2, userId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            logger.error("Loi setBanned user {}: {}", userId, e.getMessage());
+            return false;
+        }
     }
 }

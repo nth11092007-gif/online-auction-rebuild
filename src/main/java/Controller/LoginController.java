@@ -47,6 +47,11 @@ public class LoginController {
                 showAlert("Đăng nhập thất bại", "Sai tên đăng nhập hoặc mật khẩu.");
                 return;
             }
+            if (user.isBanned()) {
+                showAlert("Đăng nhập thất bại", "Tk của bạn đã bị khoá!");
+                logger.warn("Tai khoan bi ban co gang dang nhap: {}", username);
+                return;
+            }
 
             // Lưu user vào SessionManager (quan trọng để các controller khác dùng)
             SessionManager.setCurrentUser(user);

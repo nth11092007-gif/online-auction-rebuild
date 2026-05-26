@@ -15,6 +15,7 @@ public class User implements Bidder, Seller {
     private double frozenBalance = 0;
     private List<AuctionSession> myCreatedAuctions;
     private List<AuctionSession> myJoinedAuctions;
+    private boolean banned;
 
     public enum Role { USER, ADMIN }
 
@@ -116,4 +117,7 @@ public class User implements Bidder, Seller {
     public void setPassword(String password) {
         this.password = password;
     }
+
+    public boolean isBanned() { return banned; }
+    public void setBanned(boolean banned) { this.banned = banned; }
 }
