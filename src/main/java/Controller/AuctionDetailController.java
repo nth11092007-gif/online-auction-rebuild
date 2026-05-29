@@ -65,6 +65,8 @@ public class AuctionDetailController {
     @FXML private Button btnSetAutoBid;
     @FXML private Button btnCancelAutoBid;
     @FXML private Label lblAutoBidStatus;
+    @FXML private Label lblStartingPrice;
+    @FXML private Label lblIncrementStep;
 
 
     private Item currentItem;
@@ -101,6 +103,8 @@ public class AuctionDetailController {
         txtItemID.setText("ID: " + currentItem.getItemID());
         txtItemName.setText(currentItem.getItemName());
         txtDescription.setText(currentItem.getDescription());
+        lblStartingPrice.setText(Double.toString(session.getStartingPrice()));
+        lblIncrementStep.setText(Double.toString(session.getIncrementStep()));
 
         BufferedImage bImage = session.getItem().getAvatar();
         if (bImage != null) {
@@ -121,124 +125,12 @@ public class AuctionDetailController {
 
         startCountdown(session);
         loadBidHistory();
-        loadAutoBidStatus();
+
     }
 
-    private void loadAutoBidStatus() {
-        if (currentSessionId == null || SessionManager.getCurrentUser() == null) return;
 
-        try (Connection conn = dataSource.getConnection()) {
-            ProxyBid existing = proxyBidDAO.getActiveProxyBid(
-                    conn,
-                    SessionManager.getCurrentUser().getID(),
-                    currentSessionId
-            );
-            updateAutoBidUI(existing);
-        } catch (SQLException e) {
-            logger.error("Loi load auto-bid status: {}", e.getMessage());
-        }
-    }
 
-    private void updateAutoBidUI(ProxyBid existing) {
-        if (existing != null && existing.isActive()) {
-            lblAutoBidStatus.setText("Dang hoat dong — Toi da: "
-                    + String.format("%,.0f d", existing.getMaxAmount()));
-            lblAutoBidStatus.setStyle(
-                    "-fx-font-size: 11; -fx-text-fill: #0f9d58; -fx-font-weight: bold;");
-            btnSetAutoBid.setDisable(true);
-            btnCancelAutoBid.setDisable(false);
-            if (txtMaxBid != null) txtMaxBid.setDisable(true);
-        } else {
-            lblAutoBidStatus.setText("Chua bat auto-bid");
-            lblAutoBidStatus.setStyle("-fx-font-size: 11; -fx-text-fill: #aaa;");
-            btnSetAutoBid.setDisable(false);
-            btnCancelAutoBid.setDisable(true);
-            if (txtMaxBid != null) txtMaxBid.setDisable(false);
-        }
-    }
 
-    @FXML
-    void handleSetAutoBid(ActionEvent event) {
-        if (SessionManager.getCurrentUser() == null) {
-            showAlert("Vui long dang nhap!", Alert.AlertType.WARNING);
-            return;
-        }
-        if (currentSessionId == null) {
-            showAlert("Khong tim thay phien dau gia!", Alert.AlertType.ERROR);
-            return;
-        }
-
-        String input = txtMaxBid.getText().replace(",", "").trim();
-        if (input.isEmpty()) {
-            showAlert("Vui long nhap gia toi da!", Alert.AlertType.WARNING);
-            return;
-        }
-
-        double maxAmount;
-        try {
-            maxAmount = Double.parseDouble(input);
-        } catch (NumberFormatException e) {
-            showAlert("Gia toi da khong hop le!", Alert.AlertType.WARNING);
-            return;
-        }
-
-        try {
-            // ProxyBiddingService tự validate giá, số dư, hủy proxy cũ, kích hoạt ngay
-            proxyBiddingService.placeProxyBid(
-                    SessionManager.getCurrentUser().getID(),
-                    currentSessionId,
-                    maxAmount
-            );
-
-            txtMaxBid.clear();
-
-            // Reload UI sau khi đặt — auto-bid có thể đã kích hoạt ngay
-            loadAutoBidStatus();
-            loadBidHistory();
-
-            // Cập nhật giá hiển thị nếu auto-bid đã kích hoạt ngay
-            refreshCurrentPrice();
-
-            showAlert("Bat auto-bid thanh cong!\nHe thong se tu dong dat gia den "
-                    + String.format("%,.0f d", maxAmount), Alert.AlertType.INFORMATION);
-
-        } catch (IllegalArgumentException e) {
-            // Lỗi validation từ ProxyBiddingService
-            showAlert(e.getMessage(), Alert.AlertType.WARNING);
-        } catch (Exception e) {
-            logger.error("Loi set auto-bid: {}", e.getMessage());
-            showAlert("Loi he thong khi bat auto-bid!", Alert.AlertType.ERROR);
-        }
-    }
-
-    @FXML
-    void handleCancelAutoBid(ActionEvent event) {
-        if (SessionManager.getCurrentUser() == null || currentSessionId == null) return;
-
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("Xac nhan huy");
-        confirm.setHeaderText(null);
-        confirm.setContentText("Ban co chac muon huy auto-bid?");
-        if (confirm.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) return;
-
-        try (Connection conn = dataSource.getConnection()) {
-            ProxyBid existing = proxyBidDAO.getActiveProxyBid(
-                    conn,
-                    SessionManager.getCurrentUser().getID(),
-                    currentSessionId
-            );
-            if (existing != null) {
-                proxyBidDAO.deactivateProxyBid(conn, existing.getId());
-                updateAutoBidUI(null);
-                showAlert("Da huy auto-bid!", Alert.AlertType.INFORMATION);
-            } else {
-                showAlert("Khong co auto-bid nao dang hoat dong!", Alert.AlertType.WARNING);
-            }
-        } catch (SQLException e) {
-            logger.error("Loi cancel auto-bid: {}", e.getMessage());
-            showAlert("Loi he thong khi huy auto-bid!", Alert.AlertType.ERROR);
-        }
-    }
 
     private void refreshCurrentPrice() {
         try {
@@ -287,7 +179,6 @@ public class AuctionDetailController {
 
             loadBidHistory();
             refreshCurrentPrice();
-            loadAutoBidStatus();
 
             showAlert("Dat gia thanh cong!", Alert.AlertType.INFORMATION);
         } else {
@@ -395,19 +286,17 @@ public class AuctionDetailController {
                 setStatus("Sap dien ra", "#fbbc04");
                 lblTimeRemaining.setText("Bat dau sau: " + formatDuration(now, start));
                 setBiddingEnabled(false);
-                setAutoBidEnabled(false);
+
 
             } else if (now.isBefore(end)) {
                 setStatus("Dang dau gia", "#34a853");
                 lblTimeRemaining.setText("Con: " + formatDuration(now, end));
                 setBiddingEnabled(true);
-                setAutoBidEnabled(true);
 
             } else {
                 setStatus("Da ket thuc", "#ea4335");
                 lblTimeRemaining.setText("Phien dau gia da khep lai");
                 setBiddingEnabled(false);
-                setAutoBidEnabled(false); // ← disable auto-bid khi phiên kết thúc
 
                 if (session.getHighestBidder() != null) {
                     lblHighestBidder.setText("Nguoi chien thang: "
@@ -435,14 +324,6 @@ public class AuctionDetailController {
         if (btnPlaceBid != null) btnPlaceBid.setDisable(!enabled);
         if (hboxQuickBids != null) hboxQuickBids.setDisable(!enabled);
         if (bidSpinner != null) bidSpinner.setDisable(!enabled);
-    }
-
-    // Disable toàn bộ section auto-bid khi phiên chưa mở hoặc đã đóng
-    private void setAutoBidEnabled(boolean enabled) {
-        if (txtMaxBid != null) txtMaxBid.setDisable(!enabled);
-        if (btnSetAutoBid != null) btnSetAutoBid.setDisable(!enabled);
-        if (btnCancelAutoBid != null) btnCancelAutoBid.setDisable(!enabled);
-        if (enabled) loadAutoBidStatus();
     }
 
     private String formatDuration(LocalDateTime from, LocalDateTime to) {
