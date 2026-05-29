@@ -9,15 +9,10 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import dao.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dao.AuctionSessionDAO;
-import dao.AuctionSessionDAOImpl;
-import dao.BidDAO;
-import dao.BidDAOImpl;
-import dao.UserDAO;
-import dao.UserDAOImpl;
 import model.AuctionSession;
 import model.Bid;
 import server.AuctionFeedServer;
@@ -32,21 +27,27 @@ public class AuctionService {
     final private AuctionSessionDAO sessionDAO;
     private AuctionFeedServer feedServer;
     private final DataSource dataSource;
+    private final ProxyBidDAOImpl proxyBidDAO;
+    private final ProxyBiddingService proxyBiddingService;
 
     public AuctionService() {
-        this(DBConnection.getDataSource(), new UserDAOImpl(), new BidDAOImpl(), new AuctionSessionDAOImpl());
+        this(DBConnection.getDataSource(), new UserDAOImpl(), new BidDAOImpl(), new AuctionSessionDAOImpl(), new ProxyBidDAOImpl());
     }
-    public AuctionService(DataSource dataSource, UserDAO userDAO, BidDAO bidDAO, AuctionSessionDAO sessionDAO) {
+    public AuctionService(DataSource dataSource, UserDAO userDAO, BidDAO bidDAO, AuctionSessionDAO sessionDAO, ProxyBidDAOImpl proxyBidDAO) {
         this.dataSource = dataSource;
         this.userDAO = userDAO;
         this.bidDAO = bidDAO;
         this.sessionDAO = sessionDAO;
+        this.proxyBidDAO = proxyBidDAO;
+        this.proxyBiddingService = new ProxyBiddingService(this);
     }
-    public AuctionService(UserDAO userDAO, BidDAO bidDAO, AuctionSessionDAO sessionDAO) {
+    public AuctionService(UserDAO userDAO, BidDAO bidDAO, AuctionSessionDAO sessionDAO, ProxyBidDAOImpl proxyBidDAO) {
         this.dataSource = DBConnection.getDataSource();
         this.userDAO = userDAO;
         this.bidDAO = bidDAO;
         this.sessionDAO = sessionDAO;
+        this.proxyBidDAO = proxyBidDAO;
+        this.proxyBiddingService = new ProxyBiddingService(this);
     }
 
     // Cấu hình Anti-sniping

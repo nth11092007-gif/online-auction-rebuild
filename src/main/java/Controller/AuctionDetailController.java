@@ -2,6 +2,8 @@ package Controller;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -9,6 +11,8 @@ import java.util.List;
 
 import dao.BidDAO;
 import dao.BidDAOImpl;
+import dao.ProxyBidDAO;
+import dao.ProxyBidDAOImpl;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.embed.swing.SwingFXUtils;
@@ -19,11 +23,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.Spinner;
-import javafx.scene.control.SpinnerValueFactory;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
@@ -34,14 +34,21 @@ import javafx.util.Duration;
 import model.AuctionSession;
 import model.Bid;
 import model.Item;
+import model.ProxyBid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import service.AuctionService;
+import service.ProxyBiddingService;
+import utils.DBConnection;
 import utils.SessionManager;
+
+import javax.sql.DataSource;
 
 public class AuctionDetailController {
 
     @FXML private VBox Container;
-    @FXML private VBox bidHistoryContainer;   // mới
-    @FXML private Label lblBidCount;          // mới
+    @FXML private VBox bidHistoryContainer;
+    @FXML private Label lblBidCount;
     @FXML private Spinner<Integer> bidSpinner;
     @FXML private Label txtCurrentPrice;
     @FXML private Label txtDescription;
@@ -54,288 +61,303 @@ public class AuctionDetailController {
     @FXML private Button btnPlaceBid;
     @FXML private HBox hboxQuickBids;
     @FXML private ImageView imgItem;
+    @FXML private TextField txtMaxBid;
+    @FXML private Button btnSetAutoBid;
+    @FXML private Button btnCancelAutoBid;
+    @FXML private Label lblAutoBidStatus;
+
 
     private Item currentItem;
     private String currentSessionId;
     private int stepValue;
     private Timeline timeline;
+    private double currentPriceValue = 0;
+    private int creatorId = -1;
 
     private final AuctionService auctionService = new AuctionService();
+    private final ProxyBiddingService proxyBiddingService =
+            new ProxyBiddingService(auctionService);
     private final BidDAO bidDAO = new BidDAOImpl();
-
-
+    private final ProxyBidDAO proxyBidDAO = new ProxyBidDAOImpl();
+    private final DataSource dataSource = DBConnection.getDataSource();
+    private final Logger logger = LoggerFactory.getLogger(AuctionDetailController.class);
 
     @FXML
-    public void initialize() {
+    public void initialize() { }
 
-    }
 
     public void setAuctionData(AuctionSession session) {
         if (session == null || session.getItem() == null) return;
 
         this.currentItem = session.getItem();
         this.currentSessionId = session.getSessionID();
-
         this.stepValue = (int) session.getIncrementStep();
+        this.currentPriceValue = session.getCurrentPrice();
+
+        if (session.getSeller() != null) {
+            this.creatorId = session.getSeller().getID();
+        }
+
         txtItemID.setText("ID: " + currentItem.getItemID());
         txtItemName.setText(currentItem.getItemName());
         txtDescription.setText(currentItem.getDescription());
+
         BufferedImage bImage = session.getItem().getAvatar();
-        Image fxImage = SwingFXUtils.toFXImage(bImage, null);
-        imgItem.setImage(fxImage);
-
-
-        double currentPrice = session.getCurrentPrice();
-        txtCurrentPrice.setText(String.format("%,.0f VNĐ", currentPrice));
-
-        updateBidSpinner((int) currentPrice);
-
-        // Hiển thị người dẫn đầu hiện tại
-        if (session.getHighestBidder() != null) {
-            lblHighestBidder.setText("Người dẫn đầu: " + session.getHighestBidder().getUsername());
-        } else {
-            lblHighestBidder.setText("Chưa có ai đặt giá.");
+        if (bImage != null) {
+            imgItem.setImage(SwingFXUtils.toFXImage(bImage, null));
         }
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-        lblEndTime.setText("Kết thúc: " + session.getEndTime().format(formatter));
+        txtCurrentPrice.setText(String.format("%,.0f VND", currentPriceValue));
+        updateBidSpinner((int) currentPriceValue);
+
+        if (session.getHighestBidder() != null) {
+            lblHighestBidder.setText("Nguoi dan dau: " + session.getHighestBidder().getUsername());
+        } else {
+            lblHighestBidder.setText("Chua co ai dat gia.");
+        }
+
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        lblEndTime.setText("Ket thuc: " + session.getEndTime().format(fmt));
 
         startCountdown(session);
         loadBidHistory();
+        loadAutoBidStatus();
     }
 
-    private void startCountdown(AuctionSession session) {
-        if (timeline != null) {
-            timeline.stop();
+    private void loadAutoBidStatus() {
+        if (currentSessionId == null || SessionManager.getCurrentUser() == null) return;
+
+        try (Connection conn = dataSource.getConnection()) {
+            ProxyBid existing = proxyBidDAO.getActiveProxyBid(
+                    conn,
+                    SessionManager.getCurrentUser().getID(),
+                    currentSessionId
+            );
+            updateAutoBidUI(existing);
+        } catch (SQLException e) {
+            logger.error("Loi load auto-bid status: {}", e.getMessage());
         }
-
-        timeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
-            LocalDateTime now = LocalDateTime.now();
-            LocalDateTime start = session.getStartTime();
-            LocalDateTime end = session.getEndTime();
-
-            if (now.isBefore(start)) {
-                lblStatus.setText("Sắp diễn ra");
-                lblStatus.setStyle("-fx-background-color: #fbbc04; -fx-text-fill: white; -fx-padding: 8 15; -fx-background-radius: 20;");
-                lblTimeRemaining.setText("Bắt đầu sau: " + formatDuration(now, start));
-                setBiddingEnabled(false);
-
-            } else if (now.isBefore(end)) {
-                lblStatus.setText("Đang đấu giá");
-                lblStatus.setStyle("-fx-background-color: #34a853; -fx-text-fill: white; -fx-padding: 8 15; -fx-background-radius: 20;");
-                lblTimeRemaining.setText("Còn: " + formatDuration(now, end));
-                setBiddingEnabled(true);
-
-            } else {
-                lblStatus.setText("Đã kết thúc");
-                lblStatus.setStyle("-fx-background-color: #ea4335; -fx-text-fill: white; -fx-padding: 8 15; -fx-background-radius: 20;");
-                lblTimeRemaining.setText("Phiên đấu giá đã khép lại");
-                setBiddingEnabled(false);
-
-                if (session.getHighestBidder() != null) {
-                    lblHighestBidder.setText("🏆 Người chiến thắng: " + session.getHighestBidder().getUsername());
-                    lblHighestBidder.setStyle("-fx-text-fill: #d81b60; -fx-font-weight: bold;");
-                } else {
-                    lblHighestBidder.setText("Vật phẩm chưa được bán.");
-                }
-
-                timeline.stop();
-            }
-        }));
-
-        timeline.setCycleCount(Timeline.INDEFINITE);
-        timeline.play();
     }
 
-    private String formatDuration(LocalDateTime from, LocalDateTime to) {
-        long days = ChronoUnit.DAYS.between(from, to);
-        from = from.plusDays(days);
-
-        long hours = ChronoUnit.HOURS.between(from, to);
-        from = from.plusHours(hours);
-
-        long minutes = ChronoUnit.MINUTES.between(from, to);
-        from = from.plusMinutes(minutes);
-
-        long seconds = ChronoUnit.SECONDS.between(from, to);
-
-        if (days > 0) {
-            return String.format("%d ngày %02d:%02d:%02d", days, hours, minutes, seconds);
+    private void updateAutoBidUI(ProxyBid existing) {
+        if (existing != null && existing.isActive()) {
+            lblAutoBidStatus.setText("Dang hoat dong — Toi da: "
+                    + String.format("%,.0f d", existing.getMaxAmount()));
+            lblAutoBidStatus.setStyle(
+                    "-fx-font-size: 11; -fx-text-fill: #0f9d58; -fx-font-weight: bold;");
+            btnSetAutoBid.setDisable(true);
+            btnCancelAutoBid.setDisable(false);
+            if (txtMaxBid != null) txtMaxBid.setDisable(true);
         } else {
-            return String.format("%02d:%02d:%02d", hours, minutes, seconds);
+            lblAutoBidStatus.setText("Chua bat auto-bid");
+            lblAutoBidStatus.setStyle("-fx-font-size: 11; -fx-text-fill: #aaa;");
+            btnSetAutoBid.setDisable(false);
+            btnCancelAutoBid.setDisable(true);
+            if (txtMaxBid != null) txtMaxBid.setDisable(false);
         }
     }
-
-    private void setBiddingEnabled(boolean enabled) {
-        if (btnPlaceBid != null) btnPlaceBid.setDisable(!enabled);
-        if (hboxQuickBids != null) hboxQuickBids.setDisable(!enabled);
-        if (bidSpinner != null) bidSpinner.setDisable(!enabled);
-    }
-
-    private void updateBidSpinner(int currentPrice) {
-        SpinnerValueFactory<Integer> valueFactory =
-                new SpinnerValueFactory.IntegerSpinnerValueFactory(
-                        currentPrice + stepValue,
-                        Integer.MAX_VALUE,
-                        currentPrice + stepValue,
-                        stepValue
-                );
-        bidSpinner.setValueFactory(valueFactory);
-    }
-
 
     @FXML
-    void handleQuickBid(ActionEvent event) {
-        Button btn = (Button) event.getSource();
-        int amountToAdd = 0;
-        switch (btn.getText()) {
-            case "+0.5M":
-                amountToAdd = 500000;
-                break;
-            case "+1.0M":
-                amountToAdd = 1000000;
-                break;
-            case "+2.5M":
-                amountToAdd = 2500000;
-                break;
-            default:
-                amountToAdd = 0;
-}
+    void handleSetAutoBid(ActionEvent event) {
+        if (SessionManager.getCurrentUser() == null) {
+            showAlert("Vui long dang nhap!", Alert.AlertType.WARNING);
+            return;
+        }
+        if (currentSessionId == null) {
+            showAlert("Khong tim thay phien dau gia!", Alert.AlertType.ERROR);
+            return;
+        }
 
-        int newBid = bidSpinner.getValue() + amountToAdd;
-        bidSpinner.getValueFactory().setValue(newBid);
+        String input = txtMaxBid.getText().replace(",", "").trim();
+        if (input.isEmpty()) {
+            showAlert("Vui long nhap gia toi da!", Alert.AlertType.WARNING);
+            return;
+        }
+
+        double maxAmount;
+        try {
+            maxAmount = Double.parseDouble(input);
+        } catch (NumberFormatException e) {
+            showAlert("Gia toi da khong hop le!", Alert.AlertType.WARNING);
+            return;
+        }
+
+        try {
+            // ProxyBiddingService tự validate giá, số dư, hủy proxy cũ, kích hoạt ngay
+            proxyBiddingService.placeProxyBid(
+                    SessionManager.getCurrentUser().getID(),
+                    currentSessionId,
+                    maxAmount
+            );
+
+            txtMaxBid.clear();
+
+            // Reload UI sau khi đặt — auto-bid có thể đã kích hoạt ngay
+            loadAutoBidStatus();
+            loadBidHistory();
+
+            // Cập nhật giá hiển thị nếu auto-bid đã kích hoạt ngay
+            refreshCurrentPrice();
+
+            showAlert("Bat auto-bid thanh cong!\nHe thong se tu dong dat gia den "
+                    + String.format("%,.0f d", maxAmount), Alert.AlertType.INFORMATION);
+
+        } catch (IllegalArgumentException e) {
+            // Lỗi validation từ ProxyBiddingService
+            showAlert(e.getMessage(), Alert.AlertType.WARNING);
+        } catch (Exception e) {
+            logger.error("Loi set auto-bid: {}", e.getMessage());
+            showAlert("Loi he thong khi bat auto-bid!", Alert.AlertType.ERROR);
+        }
+    }
+
+    @FXML
+    void handleCancelAutoBid(ActionEvent event) {
+        if (SessionManager.getCurrentUser() == null || currentSessionId == null) return;
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Xac nhan huy");
+        confirm.setHeaderText(null);
+        confirm.setContentText("Ban co chac muon huy auto-bid?");
+        if (confirm.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) return;
+
+        try (Connection conn = dataSource.getConnection()) {
+            ProxyBid existing = proxyBidDAO.getActiveProxyBid(
+                    conn,
+                    SessionManager.getCurrentUser().getID(),
+                    currentSessionId
+            );
+            if (existing != null) {
+                proxyBidDAO.deactivateProxyBid(conn, existing.getId());
+                updateAutoBidUI(null);
+                showAlert("Da huy auto-bid!", Alert.AlertType.INFORMATION);
+            } else {
+                showAlert("Khong co auto-bid nao dang hoat dong!", Alert.AlertType.WARNING);
+            }
+        } catch (SQLException e) {
+            logger.error("Loi cancel auto-bid: {}", e.getMessage());
+            showAlert("Loi he thong khi huy auto-bid!", Alert.AlertType.ERROR);
+        }
+    }
+
+    private void refreshCurrentPrice() {
+        try {
+            AuctionSession latest = auctionService.getSessionById(currentSessionId);
+            if (latest != null) {
+                currentPriceValue = latest.getCurrentPrice();
+                txtCurrentPrice.setText(String.format("%,.0f VND", currentPriceValue));
+                updateBidSpinner((int) currentPriceValue);
+
+                if (latest.getHighestBidder() != null) {
+                    lblHighestBidder.setText("Nguoi dan dau: "
+                            + latest.getHighestBidder().getUsername());
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Loi refresh current price: {}", e.getMessage());
+        }
     }
 
     @FXML
     void HandleBid(ActionEvent event) {
         if (SessionManager.getCurrentUser() == null) {
-            showAlert("Vui lòng đăng nhập để đặt giá!", Alert.AlertType.WARNING);
+            showAlert("Vui long dang nhap de dat gia!", Alert.AlertType.WARNING);
             return;
         }
-
+        if (SessionManager.getCurrentUser().getID() == creatorId ) {
+            showAlert("Lỗi: Bạn không thể tự đặt giá cho phiên đấu giá của chính mình!", Alert.AlertType.WARNING);
+            return;
+        }
         if (currentSessionId == null) {
-            showAlert("Lỗi: Không tìm thấy thông tin phiên đấu giá!", Alert.AlertType.ERROR);
+            showAlert("Loi: Khong tim thay thong tin phien dau gia!", Alert.AlertType.ERROR);
             return;
         }
 
         int bidAmount = bidSpinner.getValue();
         int currentUserId = SessionManager.getCurrentUser().getID();
-        System.out.println("Bid on session: " + currentSessionId + " amount: " + bidAmount);
         boolean isSuccess = auctionService.placeBid(currentUserId, currentSessionId, bidAmount);
 
         if (isSuccess) {
-            txtCurrentPrice.setText(String.format("%,d VNĐ", bidAmount));
+            currentPriceValue = bidAmount;
+            txtCurrentPrice.setText(String.format("%,d VND", bidAmount));
             updateBidSpinner(bidAmount);
-            double currentBalance = SessionManager.getCurrentUser().getBalance();
-            double currentFrozen = SessionManager.getCurrentUser().getFrozenBalance();
             SessionManager.getCurrentUser().withdraw(bidAmount);
+            lblHighestBidder.setText("Nguoi dan dau: "
+                    + SessionManager.getCurrentUser().getUsername());
 
-            // Cập nhật người dẫn đầu ngay lập tức trên giao diện
-            lblHighestBidder.setText("Người dẫn đầu: " + SessionManager.getCurrentUser().getUsername());
+            loadBidHistory();
+            refreshCurrentPrice();
+            loadAutoBidStatus();
 
-            showAlert("Đặt giá thành công!", Alert.AlertType.INFORMATION);
+            showAlert("Dat gia thanh cong!", Alert.AlertType.INFORMATION);
         } else {
-            showAlert("Đặt giá thất bại! Vui lòng kiểm tra lại số dư hoặc đã có người trả giá cao hơn.", Alert.AlertType.ERROR);
+            showAlert("Dat gia that bai! Kiem tra lai so du hoac da co nguoi tra gia cao hon.",
+                    Alert.AlertType.ERROR);
         }
     }
 
     @FXML
-    void HandleGoBack(ActionEvent event) {
-        if (timeline != null) {
-            timeline.stop();
-        }
-
-        if (timeline != null) {
-            timeline.stop();
-        }
-
-        try {
-            Parent root = FXMLLoader.load(getClass().getResource("/Home.fxml"));
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setScene(new Scene(root));
-            stage.show();
-        } catch (IOException e) {
-            System.err.println("Không thể quay lại màn hình Home.fxml");
-            System.err.println("Không thể quay lại màn hình Home.fxml");
-            e.printStackTrace();
-        }
+    void handleQuickBid(ActionEvent event) {
+        Button btn = (Button) event.getSource();
+        int add = switch (btn.getText()) {
+            case "+0.5M" -> 500_000;
+            case "+1.0M" -> 1_000_000;
+            case "+2.5M" -> 2_500_000;
+            default      -> 0;
+        };
+        bidSpinner.getValueFactory().setValue(bidSpinner.getValue() + add);
     }
-    private void showAlert(String content, Alert.AlertType type) {
-        Alert alert = new Alert(type);
-        alert.setHeaderText(null);
-        alert.setContentText(content);
-        alert.showAndWait();
-    }
+
     private void loadBidHistory() {
         if (bidHistoryContainer == null || currentSessionId == null) return;
         bidHistoryContainer.getChildren().clear();
 
-        List<Bid> bids = bidDAO.getBidsBySession(currentSessionId); // ← bỏ limit
-        int total = bids.size(); // ← đếm trực tiếp từ list, không cần query thêm
-
-        if (lblBidCount != null) {
-            lblBidCount.setText(total + " luot");
-        }
+        List<Bid> bids = bidDAO.getBidsBySession(currentSessionId);
+        if (lblBidCount != null) lblBidCount.setText(bids.size() + " luot");
 
         if (bids.isEmpty()) {
-            Label empty = new Label("Chua co ai dat gia trong phien nay");
-            empty.setStyle("-fx-font-size: 13; -fx-text-fill: #bbb; -fx-padding: 12 0;");
-            bidHistoryContainer.getChildren().add(empty);
+            bidHistoryContainer.getChildren().add(buildBidEmptyState());
             return;
         }
-
         for (int i = 0; i < bids.size(); i++) {
             bidHistoryContainer.getChildren().add(buildBidRow(bids.get(i), i));
         }
     }
+
     private HBox buildBidRow(Bid bid, int rank) {
         HBox row = new HBox(0);
         row.setAlignment(Pos.CENTER_LEFT);
-
-        // Top 1 nổi bật hơn
         boolean isTop = rank == 0;
-        row.setStyle(isTop
-                ? """
-              -fx-background-color: #f0f7ff;
-              -fx-background-radius: 10;
-              -fx-border-color: #b3d1ff;
-              -fx-border-radius: 10;
-              -fx-border-width: 1.5;
-              -fx-padding: 10 14;
-              """
-                : """
-              -fx-background-color: white;
-              -fx-background-radius: 10;
-              -fx-border-color: #f0f4ff;
-              -fx-border-radius: 10;
-              -fx-border-width: 1.5;
-              -fx-padding: 10 14;
-              """);
+        row.setStyle(isTop ? """
+                -fx-background-color: #f0f7ff;
+                -fx-background-radius: 10;
+                -fx-border-color: #b3d1ff;
+                -fx-border-radius: 10;
+                -fx-border-width: 1.5;
+                -fx-padding: 10 14;
+                """ : """
+                -fx-background-color: white;
+                -fx-background-radius: 10;
+                -fx-border-color: #f0f4ff;
+                -fx-border-radius: 10;
+                -fx-border-width: 1.5;
+                -fx-padding: 10 14;
+                """);
 
-        // Tên người đặt
-        String username = (bid.getBidder() != null)
-                ? bid.getBidder().getUsername() : "An danh";
+        String username = (bid.getBidder() != null) ? bid.getBidder().getUsername() : "An danh";
         Label name = new Label(username);
         name.setStyle(isTop
                 ? "-fx-font-size: 13; -fx-text-fill: #1a1a2e; -fx-font-weight: bold;"
                 : "-fx-font-size: 13; -fx-text-fill: #444;");
         HBox.setHgrow(name, Priority.ALWAYS);
 
-        // Số tiền
         Label amount = new Label(String.format("%,.0f d", bid.getAmount()));
         amount.setPrefWidth(150);
         amount.setStyle(isTop
                 ? "-fx-font-size: 14; -fx-text-fill: #1a73e8; -fx-font-weight: bold;"
                 : "-fx-font-size: 13; -fx-text-fill: #555;");
 
-        // Hạng
-        String rankText = switch (rank) {
-            case 0 -> "#1";
-            case 1 -> "#2";
-            case 2 -> "#3";
-            default -> "#" + (rank + 1);
-        };
+        String rankText  = rank < 3 ? "#" + (rank + 1) : "#" + (rank + 1);
         String rankStyle = switch (rank) {
             case 0 -> "-fx-background-color: #ffd700; -fx-text-fill: #7a5c00;";
             case 1 -> "-fx-background-color: #e0e0e0; -fx-text-fill: #555;";
@@ -357,5 +379,107 @@ public class AuctionDetailController {
         Label empty = new Label("Chua co ai dat gia trong phien nay");
         empty.setStyle("-fx-font-size: 13; -fx-text-fill: #bbb; -fx-padding: 16 0;");
         return empty;
+    }
+
+    // ─── COUNTDOWN ───────────────────────────────────────────────────
+
+    private void startCountdown(AuctionSession session) {
+        if (timeline != null) timeline.stop();
+
+        timeline = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
+            LocalDateTime now   = LocalDateTime.now();
+            LocalDateTime start = session.getStartTime();
+            LocalDateTime end   = session.getEndTime();
+
+            if (now.isBefore(start)) {
+                setStatus("Sap dien ra", "#fbbc04");
+                lblTimeRemaining.setText("Bat dau sau: " + formatDuration(now, start));
+                setBiddingEnabled(false);
+                setAutoBidEnabled(false);
+
+            } else if (now.isBefore(end)) {
+                setStatus("Dang dau gia", "#34a853");
+                lblTimeRemaining.setText("Con: " + formatDuration(now, end));
+                setBiddingEnabled(true);
+                setAutoBidEnabled(true);
+
+            } else {
+                setStatus("Da ket thuc", "#ea4335");
+                lblTimeRemaining.setText("Phien dau gia da khep lai");
+                setBiddingEnabled(false);
+                setAutoBidEnabled(false); // ← disable auto-bid khi phiên kết thúc
+
+                if (session.getHighestBidder() != null) {
+                    lblHighestBidder.setText("Nguoi chien thang: "
+                            + session.getHighestBidder().getUsername());
+                    lblHighestBidder.setStyle("-fx-text-fill: #d81b60; -fx-font-weight: bold;");
+                } else {
+                    lblHighestBidder.setText("Vat pham chua duoc ban.");
+                }
+                timeline.stop();
+            }
+        }));
+
+        timeline.setCycleCount(Timeline.INDEFINITE);
+        timeline.play();
+    }
+
+    private void setStatus(String text, String color) {
+        lblStatus.setText(text);
+        lblStatus.setStyle("-fx-background-color: " + color
+                + "; -fx-text-fill: white; -fx-padding: 6 14; -fx-background-radius: 20;"
+                + "-fx-font-size: 12; -fx-font-weight: bold;");
+    }
+
+    private void setBiddingEnabled(boolean enabled) {
+        if (btnPlaceBid != null) btnPlaceBid.setDisable(!enabled);
+        if (hboxQuickBids != null) hboxQuickBids.setDisable(!enabled);
+        if (bidSpinner != null) bidSpinner.setDisable(!enabled);
+    }
+
+    // Disable toàn bộ section auto-bid khi phiên chưa mở hoặc đã đóng
+    private void setAutoBidEnabled(boolean enabled) {
+        if (txtMaxBid != null) txtMaxBid.setDisable(!enabled);
+        if (btnSetAutoBid != null) btnSetAutoBid.setDisable(!enabled);
+        if (btnCancelAutoBid != null) btnCancelAutoBid.setDisable(!enabled);
+        if (enabled) loadAutoBidStatus();
+    }
+
+    private String formatDuration(LocalDateTime from, LocalDateTime to) {
+        long days    = ChronoUnit.DAYS.between(from, to);   from = from.plusDays(days);
+        long hours   = ChronoUnit.HOURS.between(from, to);  from = from.plusHours(hours);
+        long minutes = ChronoUnit.MINUTES.between(from, to); from = from.plusMinutes(minutes);
+        long seconds = ChronoUnit.SECONDS.between(from, to);
+        return days > 0
+                ? String.format("%d ngay %02d:%02d:%02d", days, hours, minutes, seconds)
+                : String.format("%02d:%02d:%02d", hours, minutes, seconds);
+    }
+
+    private void updateBidSpinner(int currentPrice) {
+        bidSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(
+                currentPrice + stepValue, Integer.MAX_VALUE,
+                currentPrice + stepValue, stepValue));
+    }
+
+
+    @FXML
+    void HandleGoBack(ActionEvent event) {
+        if (timeline != null) timeline.stop();
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource("/Home.fxml"));
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (IOException e) {
+            showAlert("Khong the quay lai man hinh chinh!", Alert.AlertType.ERROR);
+        }
+    }
+
+
+    private void showAlert(String content, Alert.AlertType type) {
+        Alert alert = new Alert(type);
+        alert.setHeaderText(null);
+        alert.setContentText(content);
+        alert.showAndWait();
     }
 }

@@ -103,7 +103,6 @@ public class ProfileController {
 
     @FXML
     void handleGoBack(ActionEvent event) {
-        // Quay về màn hình chính tùy theo role của user
         try {
             Parent root;
             root = FXMLLoader.load(getClass().getResource("/Home.fxml"));

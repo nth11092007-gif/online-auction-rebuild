@@ -103,7 +103,6 @@ public class HomeAdminController {
             private final Button btnToggle = new Button();
 
             {
-                // Xử lý click một lần, tái sử dụng cho mọi dòng
                 btnToggle.setOnAction(e -> {
                     User user = getTableView().getItems().get(getIndex());
                     handleToggleBan(user);
@@ -162,7 +161,6 @@ public class HomeAdminController {
                 if (empty || user == null) {
                     setStyle("");
                 } else if (user.isBanned()) {
-                    // Dòng bị ban: nền đỏ rất nhạt
                     setStyle("-fx-background-color: #fff8f7;");
                 } else if (getIndex() % 2 == 0) {
                     setStyle("-fx-background-color: white;");
@@ -194,8 +192,8 @@ public class HomeAdminController {
 
         boolean success = userDAO.setBanned(user.getID(), willBan);
         if (success) {
-            user.setBanned(willBan); // cập nhật object local
-            userTable.refresh();     // re-render toàn bộ bảng
+            user.setBanned(willBan);
+            userTable.refresh();
             showAlert(willBan ? "Da ban nguoi dung thanh cong!"
                             : "Da go ban nguoi dung thanh cong!",
                     Alert.AlertType.INFORMATION);

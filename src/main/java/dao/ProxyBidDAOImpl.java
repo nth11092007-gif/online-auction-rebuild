@@ -8,8 +8,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 import model.ProxyBid;
+import utils.DBConnection;
+
+import javax.sql.DataSource;
 
 public class ProxyBidDAOImpl implements ProxyBidDAO {
+    private final DataSource dataSource;
+    public ProxyBidDAOImpl() {
+        this(DBConnection.getDataSource());
+    }
+
+    public ProxyBidDAOImpl(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
 
     @Override
     public void addProxyBid(Connection conn, ProxyBid proxyBid) throws SQLException {
