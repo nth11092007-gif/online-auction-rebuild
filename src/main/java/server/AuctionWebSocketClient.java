@@ -71,8 +71,20 @@ public class AuctionWebSocketClient extends WebSocketClient {
 
     public void joinSession(String sessionId) {
         JsonObject msg = new JsonObject();
-        msg.addProperty("type", "JOIN");
-        msg.addProperty("sessionId", sessionId);
-        sendJson(msg);
+        msg.addProperty("type", type);
+
+        // Gộp các thuộc tính từ data vào msg
+        if (data != null) {
+            for (String key : data.keySet()) {
+                msg.add(key, data.get(key));
+            }
+        }
+
+        // Gửi chuỗi JSON qua WebSocket
+        if (this.isOpen()) {
+            send(msg.toString());
+        } else {
+            System.err.println("WebSocket chưa mở, không thể gửi lệnh: " + type);
+        }
     }
 }

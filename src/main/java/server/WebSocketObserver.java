@@ -14,5 +14,6 @@ public class WebSocketObserver implements Observer{
         if (conn != null && conn.isOpen()) {
             conn.send(message);
         }
+
     }
 }

@@ -45,6 +45,10 @@ import service.AuctionService;
 import service.ProxyBiddingService;
 import utils.DBConnection;
 import utils.SessionManager;
+import server.AuctionWebSocketClient;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import javafx.application.Platform;
 
 public class AuctionDetailController {
 
@@ -129,12 +133,9 @@ public class AuctionDetailController {
 
         startCountdown(session);
         loadBidHistory();
+        setupWebSocket();
 
     }
-
-
-
-
 
     private void refreshCurrentPrice() {
         try {
@@ -350,6 +351,7 @@ public class AuctionDetailController {
     @FXML
     void HandleGoBack(ActionEvent event) {
         if (timeline != null) timeline.stop();
+        AuctionWebSocketClient.getInstance().setOnMessageCallback(null);
         try {
             Parent root = FXMLLoader.load(getClass().getResource("/Home.fxml"));
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
@@ -366,5 +368,44 @@ public class AuctionDetailController {
         alert.setHeaderText(null);
         alert.setContentText(content);
         alert.showAndWait();
+    }
+
+    private void setupWebSocket() {
+        AuctionWebSocketClient wsClient = AuctionWebSocketClient.getInstance();
+
+        // Đăng ký xử lý tin nhắn từ Server
+        wsClient.setOnMessageCallback(message -> {
+            try {
+                JsonObject json = JsonParser.parseString(message).getAsJsonObject();
+                if (!json.has("type")) return;
+
+                String type = json.get("type").getAsString();
+
+                if ("BID_UPDATE".equals(type) || "UPDATE".equals(type)) {
+                    // Có thể kiểm tra thêm sessionId nếu server gửi kèm để chắc chắn
+                    if (json.has("sessionId") && !json.get("sessionId").getAsString().equals(currentSessionId)) {
+                        return;
+                    }
+
+                    // Cập nhật lại giao diện (giá hiện tại và lịch sử đấu giá)
+                    refreshCurrentPrice();
+                    loadBidHistory();
+                }
+                else if ("SESSION_SETTLED".equals(type)) {
+                    // Cập nhật giao diện khi phiên đấu giá kết thúc
+                    setStatus("Đã kết thúc", "#ea4335");
+                    setBiddingEnabled(false);
+                    if (timeline != null) timeline.stop();
+                }
+
+            } catch (Exception e) {
+                logger.error("Lỗi khi xử lý tin nhắn WebSocket: {}", e.getMessage());
+            }
+        });
+
+        // Báo cho Server biết client này muốn theo dõi phiên đấu giá currentSessionId
+        JsonObject joinData = new JsonObject();
+        joinData.addProperty("sessionId", currentSessionId);
+        wsClient.sendCommand("JOIN", joinData);
     }
 }
