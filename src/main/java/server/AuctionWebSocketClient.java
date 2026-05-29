@@ -55,11 +55,24 @@ public class AuctionWebSocketClient extends WebSocketClient {
         System.err.println("WebSocket error: " + ex.getMessage());
     }
 
-    public void sendCommand(String type, JsonObject data) {
+    public void sendJson(JsonObject msg) {
+        if (msg != null && isOpen()) {
+            send(msg.toString());
+        }
+    }
+
+    public void login(String username, String password) {
         JsonObject msg = new JsonObject();
-        msg.addProperty("type", type);
-        // Nếu có data thì thêm vào msg (có thể dùng Gson để merge)
-        // Tạm thời, bạn có thể tự tạo chuỗi JSON hoặc dùng Gson
-        // send(msg.toString());
+        msg.addProperty("type", "LOGIN");
+        msg.addProperty("username", username);
+        msg.addProperty("password", password);
+        sendJson(msg);
+    }
+
+    public void joinSession(String sessionId) {
+        JsonObject msg = new JsonObject();
+        msg.addProperty("type", "JOIN");
+        msg.addProperty("sessionId", sessionId);
+        sendJson(msg);
     }
 }

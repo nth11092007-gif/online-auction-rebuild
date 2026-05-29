@@ -34,6 +34,7 @@ public class ProfileController {
     }
 
     private void loadUserData() {
+        SessionManager.refreshCurrentUserFromDb();
         currentUser = SessionManager.getCurrentUser();
         if (currentUser != null) {
             lblRealName.setText(currentUser.getRealName());

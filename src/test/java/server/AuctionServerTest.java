@@ -12,7 +12,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import model.AuctionSession;
+import model.User;
 import service.AuctionService;
 import service.SettlementService;
 import service.UserService;
@@ -30,7 +30,6 @@ class AuctionServerTest {
 
     @BeforeEach
     void setUp() {
-        // Sử dụng constructor 5 tham số, inject tất cả mock
         server = new AuctionServer(8080, auctionService, settlementService, userService, feedServer);
     }
 
@@ -43,9 +42,12 @@ class AuctionServerTest {
 
     @Test
     void onMessage_BID_PlaceBidCalled() {
-        String msg = "{\"type\":\"BID\", \"userId\":2, \"sessionId\":\"SS001\", \"bidAmount\":150.0}";
+        String msg = "{\"type\":\"BID\", \"auctionId\":\"SS001\", \"amount\":150.0}";
+        when(webSocket.getAttachment()).thenReturn("bidder1");
+        User bidder = mock(User.class);
+        when(bidder.getID()).thenReturn(2);
+        when(userService.getUserByUsername("bidder1")).thenReturn(bidder);
         when(auctionService.placeBid(2, "SS001", 150.0)).thenReturn(true);
-        when(auctionService.getSessionById("SS001")).thenReturn(mock(AuctionSession.class));
 
         server.onMessage(webSocket, msg);
         verify(auctionService).placeBid(2, "SS001", 150.0);
@@ -54,13 +56,11 @@ class AuctionServerTest {
     @Test
     void onMessage_InvalidJson_NoCrash() {
         server.onMessage(webSocket, "not a json");
-        // Server phải không thrown exception
     }
 
     @Test
     void onMessage_MissingType_NoCrash() {
         server.onMessage(webSocket, "{\"userId\":1}");
-        // Không crash, không gọi gì
     }
 
     @Test

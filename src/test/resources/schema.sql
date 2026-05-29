@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS auction_sessions (
     end_time DATETIME,
     duration_days INT,
     extension_count INT DEFAULT 0,
+    current_price DOUBLE,
     status VARCHAR(20),
     FOREIGN KEY (owner_id) REFERENCES users(id),
     FOREIGN KEY (item_id) REFERENCES items(item_id)
@@ -57,7 +58,7 @@ CREATE TABLE IF NOT EXISTS proxy_bids (
     user_id INT,
     max_amount DOUBLE NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    is_active BOOLEAN DEFAULT TRUE,
+    active TINYINT(1) DEFAULT 1,
     FOREIGN KEY (session_id) REFERENCES auction_sessions(session_id),
     FOREIGN KEY (user_id) REFERENCES users(id)
 );

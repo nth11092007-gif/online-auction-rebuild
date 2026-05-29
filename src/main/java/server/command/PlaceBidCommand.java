@@ -8,16 +8,24 @@ import com.google.gson.JsonObject;
 import dto.Message;
 import model.Bidder;
 import service.AuctionService;
+import service.ProxyBiddingService;
 import service.UserService;
 
 public class PlaceBidCommand implements Command {
     private final AuctionService auctionService;
     private final UserService userService;
+    private final ProxyBiddingService proxyBiddingService;
     private final Gson gson = new Gson();
 
     public PlaceBidCommand(AuctionService auctionService, UserService userService) {
+        this(auctionService, userService, null);
+    }
+
+    public PlaceBidCommand(AuctionService auctionService, UserService userService,
+                           ProxyBiddingService proxyBiddingService) {
         this.auctionService = auctionService;
         this.userService = userService;
+        this.proxyBiddingService = proxyBiddingService;
     }
 
     @Override
@@ -37,7 +45,10 @@ public class PlaceBidCommand implements Command {
         }
         int userId = bidder.getID();
 
-        boolean isSuccessful = auctionService.placeBid(userId, auctionID, amount); 
+        boolean isSuccessful = auctionService.placeBid(userId, auctionID, amount);
+        if (isSuccessful && proxyBiddingService != null) {
+            proxyBiddingService.processProxyBids(auctionID);
+        }
         conn.send(gson.toJson(new Message("PLACE_BID_RESULT", isSuccessful ? "Đặt giá thành công!" : "Đặt giá thất bại!")));
     }
 }

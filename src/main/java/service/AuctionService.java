@@ -19,8 +19,8 @@ import dao.BidDAOImpl;
 import dao.UserDAO;
 import dao.UserDAOImpl;
 import model.AuctionSession;
+import model.AuctionSession.Status;
 import model.Bid;
-import server.AuctionFeedServer;
 import utils.DBConnection;
 
 public class AuctionService {
@@ -30,7 +30,7 @@ public class AuctionService {
     final private UserDAO userDAO;
     final private BidDAO bidDAO;
     final private AuctionSessionDAO sessionDAO;
-    private AuctionFeedServer feedServer;
+    private AuctionEventPublisher eventPublisher;
     private final DataSource dataSource;
 
     public AuctionService() {
@@ -53,8 +53,8 @@ public class AuctionService {
     private static final int SNIPING_THRESHOLD_MS = 3 * 60 * 1000;
     private static final int EXTENSION_TIME_MINUTES = 3;
 
-    public void setFeedServer(AuctionFeedServer feedServer) {
-        this.feedServer = feedServer;
+    public void setEventPublisher(AuctionEventPublisher eventPublisher) {
+        this.eventPublisher = eventPublisher;
     }
 
     public List<AuctionSession> getAllSessions() {
@@ -88,8 +88,8 @@ public class AuctionService {
         }
 
         // 2. Kiểm tra trạng thái session và các điều kiện khác
-        if (!session.joinable()) {
-            logger.warn("Session {} không ở trạng thái có thể đặt giá", sessionId);
+        if (session.getStatus() != Status.OPEN || !session.joinable()) {
+            logger.warn("Session {} không ở trạng thái OPEN hoặc không thể đặt giá", sessionId);
             // Hoàn tiền vì đã freeze rồi
             userDAO.refundMoneyAtomic(conn, currentUserId, bidAmount);
             conn.rollback();
@@ -130,16 +130,23 @@ public class AuctionService {
         sessionDAO.updateCurrentPrice(conn, sessionId, bidAmount); // Bạn cần thêm method này
         conn.commit();
 
-            if (feedServer != null) {
+            if (eventPublisher != null) {
                 String msg = String.format("{\"type\":\"NEW_BID\",\"sessionId\":\"%s\",\"newPrice\":%f,\"endTime\":\"%s\"}",
                         sessionId, bidAmount, session.getEndTime().toString());
-                feedServer.notifyObservers(sessionId, msg);
+                eventPublisher.notifyObservers(sessionId, msg);
             }
 
         logger.info("Đặt giá thành công: user {}, session {}, amount {}", currentUserId, sessionId, bidAmount);
         return true;
     } catch (SQLException e) {
         logger.error("Lỗi khi đặt giá: user {}, session {}, amount {}: {}", currentUserId, sessionId, bidAmount, e.getMessage());
+        if (conn != null) {
+            try {
+                conn.rollback();
+            } catch (SQLException rollbackEx) {
+                logger.error("Lỗi khi rollback: {}", rollbackEx.getMessage(), rollbackEx);
+            }
+        }
     } finally {
         try {
             if (conn != null) {

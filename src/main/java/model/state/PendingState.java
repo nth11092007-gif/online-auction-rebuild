@@ -18,5 +18,5 @@ public class PendingState implements AuctionState {
         return close(session);
     }
     @Override public AuctionSession.Status getStatus() { return AuctionSession.Status.PENDING; }
-    @Override public boolean canJoin() { return true; }
+    @Override public boolean canJoin() { return false; }
 }

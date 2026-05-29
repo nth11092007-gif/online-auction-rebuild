@@ -107,6 +107,14 @@ public class User implements Bidder, Seller {
         balance -= amount;
     }
 
+    public void setBalance(double balance) {
+        this.balance = balance;
+    }
+
+    public void setFrozenBalance(double frozenBalance) {
+        this.frozenBalance = frozenBalance;
+    }
+
     public void setID(int id) {
         this.id = id;
     }

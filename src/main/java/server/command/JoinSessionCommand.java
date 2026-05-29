@@ -19,16 +19,19 @@ import service.UserService;
 
 public class JoinSessionCommand implements Command {
     private final Map<String, Set<WebSocket>> sessionSubscribers;
+    private final Map<WebSocket, Map<String, WebSocketObserver>> connectionObservers;
     private final AuctionFeedServer feedServer;
     private final AuctionService auctionService;
     private final UserService userService;
     private final Gson gson = new Gson();
 
     public JoinSessionCommand(Map<String, Set<WebSocket>> sessionSubscribers,
+                              Map<WebSocket, Map<String, WebSocketObserver>> connectionObservers,
                               AuctionFeedServer feedServer,
                               AuctionService auctionService,
                               UserService userService) {
         this.sessionSubscribers = sessionSubscribers;
+        this.connectionObservers = connectionObservers;
         this.feedServer = feedServer;
         this.auctionService = auctionService;
         this.userService = userService;
@@ -39,7 +42,11 @@ public class JoinSessionCommand implements Command {
         String sessionId = jsonData.get("sessionId").getAsString();
         sessionSubscribers.computeIfAbsent(sessionId, k -> ConcurrentHashMap.newKeySet()).add(conn);
         if (feedServer != null) {
-            feedServer.subscribe(sessionId, new WebSocketObserver(conn));
+            WebSocketObserver observer = new WebSocketObserver(conn);
+            feedServer.subscribe(sessionId, observer);
+            connectionObservers
+                    .computeIfAbsent(conn, k -> new ConcurrentHashMap<>())
+                    .put(sessionId, observer);
         }
 
         String username = (String) conn.getAttachment();

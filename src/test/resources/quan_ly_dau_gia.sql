@@ -163,7 +163,7 @@ CREATE TABLE IF NOT EXISTS proxy_bids (
     max_amount DECIMAL(15,2) NOT NULL,
     active BOOLEAN DEFAULT TRUE,
     FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (session_id) REFERENCES auction_sessions(id)
+    FOREIGN KEY (session_id) REFERENCES auction_sessions(session_id)
 );
 --
 -- AUTO_INCREMENT for table `bids`

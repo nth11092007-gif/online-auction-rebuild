@@ -14,6 +14,5 @@ public class WebSocketObserver implements Observer{
         if (conn != null && conn.isOpen()) {
             conn.send(message);
         }
-        // TODO: Đẩy tin nhắn tới client qua kết nối WebSocket
     }
 }

@@ -17,6 +17,7 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import model.User;
+import server.AuctionWebSocketClient;
 import utils.SessionManager;
 
 public class LoginController {
@@ -51,7 +52,9 @@ public class LoginController {
             // Lưu user vào SessionManager (quan trọng để các controller khác dùng)
             SessionManager.setCurrentUser(user);
             logger.info("Đăng nhập thành công: {}", user.getUsername());
-            
+
+            syncWebSocketLogin(username, password);
+
             // Điều hướng theo role
             if (user.getRole() == User.Role.USER) {
                 navigateTo(event, "/Home.fxml");
@@ -81,6 +84,17 @@ public class LoginController {
         } catch (IOException e) {
             logger.error("Không thể chuyển đến {}", fxmlPath, e);
             showAlert("Lỗi", "Không thể mở màn hình.");
+        }
+    }
+
+    private void syncWebSocketLogin(String username, String password) {
+        try {
+            AuctionWebSocketClient client = MainApp.getWebSocketClient();
+            if (client != null && client.isOpen()) {
+                client.login(username, password);
+            }
+        } catch (Exception e) {
+            logger.debug("WebSocket chưa sẵn sàng, bỏ qua đồng bộ LOGIN: {}", e.getMessage());
         }
     }
 

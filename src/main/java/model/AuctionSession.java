@@ -58,7 +58,10 @@ public class AuctionSession {
     public void setHighestBidder(Bidder bidder) { this.highestBidder = bidder; }
     public void setStartTime(LocalDateTime time) { this.startTime = time; }
     public void setEndTime(LocalDateTime time) { this.endTime = time; }
-    public void setStatus(Status status) { this.status = status; }
+    public void setStatus(Status status) {
+        this.status = status;
+        this.state = AuctionStateFactory.fromStatus(status);
+    }
 
     // Bổ sung các Getter
     public Seller getSeller() { return seller; }
@@ -83,7 +86,9 @@ public class AuctionSession {
         this.state = state;
     }
     public void startSession(int openDays) {
-        this.setOpen();
+        if (this.setOpen()) {
+            this.setStatus(Status.OPEN);
+        }
         this.currentPrice = startingPrice; 
         this.startTime = LocalDateTime.now(); // Lấy giờ bấm nút
         this.endTime = this.startTime.plusDays(openDays); // Tính giờ đóng cửa
@@ -91,7 +96,9 @@ public class AuctionSession {
         logger.info("Giá khởi điểm: {}, Bước giá: {}", startingPrice, incrementStep);
     }
     public void endSession() {
-        this.setClose();
+        if (this.setClose()) {
+            this.setStatus(Status.CLOSED);
+        }
         this.endTime = LocalDateTime.now();
 
         logger.info("Phiên đấu giá {} đã kết thúc lúc {}", sessionID, endTime);

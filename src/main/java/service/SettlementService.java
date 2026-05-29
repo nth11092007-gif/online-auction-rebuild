@@ -79,9 +79,9 @@ public class SettlementService {
             } else {
                 logger.info("Phiên đấu giá {} kết thúc. Không có ai đặt giá.", sessionId);
             }
-            
-            session.settle();
+
             sessionDAO.updateSessionStatusAtomic(conn, sessionId, AuctionSession.Status.CLOSED);
+            session.setStatus(AuctionSession.Status.CLOSED);
             conn.commit();
             return true;
 

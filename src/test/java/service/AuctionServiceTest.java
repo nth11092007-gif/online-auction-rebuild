@@ -8,7 +8,7 @@ import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import server.AuctionFeedServer;
+import service.AuctionEventPublisher;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -26,7 +26,7 @@ class AuctionServiceTest {
     @Mock private UserDAO userDAO;
     @Mock private BidDAO bidDAO;
     @Mock private AuctionSessionDAO sessionDAO;
-    @Mock private AuctionFeedServer feedServer;
+    @Mock private AuctionEventPublisher eventPublisher;
 
     private AuctionService auctionService;
     private AuctionSession openSession, closedSession, pendingSession;
@@ -37,7 +37,7 @@ class AuctionServiceTest {
     @BeforeEach
     void setUp() throws Exception {
         auctionService = new AuctionService(dataSource, userDAO, bidDAO, sessionDAO);
-        auctionService.setFeedServer(feedServer);
+        auctionService.setEventPublisher(eventPublisher);
         when(dataSource.getConnection()).thenReturn(connection);
 
         sellerMock = mock(Seller.class);
@@ -77,7 +77,7 @@ class AuctionServiceTest {
         assertTrue(result);
         verify(bidDAO).addBid(eq(connection), eq(sessionId), any(Bid.class));
         verify(connection).commit();
-        verify(feedServer).notifyObservers(eq(sessionId), contains("NEW_BID"));
+        verify(eventPublisher).notifyObservers(eq(sessionId), contains("NEW_BID"));
     }
 
     // TC2: Sai giá (thấp hơn giá hiện tại + bước giá)
@@ -124,31 +124,29 @@ class AuctionServiceTest {
         verify(connection).rollback();
     }
 
-    // TC5: Sai trạng thái – do state chưa được cập nhật, canJoin() luôn true, nên bid vẫn thành công.
+    // TC5: Phiên đã đóng (ClosedState) không cho đặt giá
     @Test
-    void placeBid_ClosedSessionStillWorks() throws Exception {
+    void placeBid_ClosedSessionRejected() throws Exception {
         when(sessionDAO.getSessionById(connection, "SS002")).thenReturn(closedSession);
         when(userDAO.freezeMoneyAtomic(connection, 2, 150.0)).thenReturn(true);
-        when(userDAO.getUserById(connection, 2)).thenReturn(bidder);
-        when(bidDAO.getHighestBid(connection, "SS002")).thenReturn(null);
-        when(bidDAO.addBid(any(), any(), any())).thenReturn(true);
-        when(sessionDAO.updateCurrentPrice(any(), anyString(), anyDouble())).thenReturn(true);
+        when(userDAO.refundMoneyAtomic(connection, 2, 150.0)).thenReturn(true);
 
         boolean result = auctionService.placeBid(2, "SS002", 150.0);
-        assertTrue(result, "State pattern chưa đồng bộ, cần sửa startSession/endSession");
+        assertFalse(result);
+        verify(bidDAO, never()).addBid(any(), any(), any());
+        verify(connection).rollback();
     }
 
     @Test
-    void placeBid_PendingSessionAlsoWorks() throws Exception {
+    void placeBid_PendingSessionRejected() throws Exception {
         when(sessionDAO.getSessionById(connection, "SS003")).thenReturn(pendingSession);
         when(userDAO.freezeMoneyAtomic(connection, 2, 150.0)).thenReturn(true);
-        when(userDAO.getUserById(connection, 2)).thenReturn(bidder);
-        when(bidDAO.getHighestBid(connection, "SS003")).thenReturn(null);
-        when(bidDAO.addBid(any(), any(), any())).thenReturn(true);
-        when(sessionDAO.updateCurrentPrice(any(), anyString(), anyDouble())).thenReturn(true);
+        when(userDAO.refundMoneyAtomic(connection, 2, 150.0)).thenReturn(true);
 
         boolean result = auctionService.placeBid(2, "SS003", 150.0);
-        assertTrue(result, "Pending state vẫn cho phép bid (canJoin=true)");
+        assertFalse(result);
+        verify(bidDAO, never()).addBid(any(), any(), any());
+        verify(connection).rollback();
     }
 
     // TC6: Anti-sniping

@@ -3,6 +3,7 @@ package service;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -31,12 +32,11 @@ public class ProxyBiddingService {
         this.auctionService = auctionService;
     }
 
-    // Đặt proxy bid
     public void placeProxyBid(int userId, String sessionId, double maxAmount) throws Exception {
         try (Connection conn = DBConnection.getConnection()) {
             conn.setAutoCommit(false);
             AuctionSession session = sessionDAO.getSessionById(conn, sessionId);
-            if (session == null || !session.getState().canJoin()) {
+            if (session == null || !session.joinable()) {
                 throw new IllegalArgumentException("Phiên không tồn tại hoặc không thể tham gia");
             }
             Bid highestBid = bidDAO.getHighestBid(conn, sessionId);
@@ -45,12 +45,10 @@ public class ProxyBiddingService {
             if (maxAmount <= currentPrice + increment) {
                 throw new IllegalArgumentException("Mức tối đa phải cao hơn giá hiện tại ít nhất một bước giá");
             }
-            // Kiểm tra số dư (tối thiểu phải đủ một bước)
             User user = userDAO.getUserById(conn, userId);
             if (user.getBalance() < currentPrice + increment) {
                 throw new IllegalArgumentException("Số dư không đủ để đặt proxy");
             }
-            // Vô hiệu proxy cũ nếu có
             ProxyBid oldProxy = proxyBidDAO.getActiveProxyBid(conn, userId, sessionId);
             if (oldProxy != null) {
                 proxyBidDAO.deactivateProxyBid(conn, oldProxy.getId());
@@ -59,68 +57,69 @@ public class ProxyBiddingService {
             proxyBidDAO.addProxyBid(conn, newProxy);
             conn.commit();
         }
-        // Kích hoạt xử lý proxy ngay sau khi đặt
         processProxyBids(sessionId);
     }
 
-    // Xử lý tất cả proxy cho một phiên (gọi sau khi có bid mới hoặc khi kích hoạt)
+    /**
+     * Xử lý proxy: đọc DB trong transaction ngắn, mỗi lần đặt giá qua placeBid() dùng connection riêng.
+     */
     public void processProxyBids(String sessionId) {
-        Connection conn = null;
-        try {
-            conn = DBConnection.getConnection();
-            conn.setAutoCommit(false);
+        List<ProxyBid> proxyBids;
+        double increment;
 
-            // Lấy thông tin phiên và giá cao nhất hiện tại
+        try (Connection conn = DBConnection.getConnection()) {
             AuctionSession session = sessionDAO.getSessionById(conn, sessionId);
-            if (session == null || !session.getState().canJoin()) {
+            if (session == null || !session.joinable()) {
                 return;
             }
-            Bid highestBid = bidDAO.getHighestBid(conn, sessionId);
-            double currentPrice = (highestBid != null) ? highestBid.getAmount() : session.getStartingPrice();
-            double increment = session.getIncrementStep();
+            increment = session.getIncrementStep();
+            proxyBids = new ArrayList<>(proxyBidDAO.getActiveProxyBidsBySession(conn, sessionId));
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return;
+        }
 
-            // Lấy danh sách proxy active, sắp xếp theo maxAmount giảm dần
-            List<ProxyBid> proxyBids = proxyBidDAO.getActiveProxyBidsBySession(conn, sessionId);
-            proxyBids.sort(Comparator.comparingDouble(ProxyBid::getMaxAmount).reversed());
+        proxyBids.sort(Comparator.comparingDouble(ProxyBid::getMaxAmount).reversed());
 
-            int currentHighestUserId = (highestBid != null) ? highestBid.getBidder().getID() : -1;
+        for (ProxyBid proxy : proxyBids) {
+            double bidAmount;
+            try (Connection conn = DBConnection.getConnection()) {
+                AuctionSession session = sessionDAO.getSessionById(conn, sessionId);
+                if (session == null || !session.joinable()) {
+                    return;
+                }
+                Bid highestBid = bidDAO.getHighestBid(conn, sessionId);
+                double currentPrice = (highestBid != null) ? highestBid.getAmount() : session.getStartingPrice();
+                int currentHighestUserId = (highestBid != null) ? highestBid.getBidder().getID() : -1;
 
-            for (ProxyBid proxy : proxyBids) {
-                // Bỏ qua nếu user này đang giữ giá cao nhất
-                if (proxy.getUserId() == currentHighestUserId) continue;
+                if (proxy.getUserId() == currentHighestUserId) {
+                    continue;
+                }
 
                 double proxyMax = proxy.getMaxAmount();
-                if (proxyMax >= currentPrice + increment) {
-                    double bidAmount = currentPrice + increment;
-                    User user = userDAO.getUserById(conn, proxy.getUserId());
-                    if (user != null && user.getBalance() >= bidAmount) {
-                        // Gọi placeBid – phương thức này tự lo transaction và sẽ tự động freeze/unfreeze
-                        boolean success = auctionService.placeBid(proxy.getUserId(), sessionId, bidAmount);
-                        if (success) {
-                            // Cập nhật giá hiện tại và người cao nhất cho vòng lặp
-                            currentPrice = bidAmount;
-                            currentHighestUserId = proxy.getUserId();
-                        } else {
-                            // Nếu thất bại (không đủ tiền sau khi freeze?) => vô hiệu proxy
-                            proxyBidDAO.deactivateProxyBid(conn, proxy.getId());
-                        }
-                    } else {
-                        proxyBidDAO.deactivateProxyBid(conn, proxy.getId());
-                    }
-                } else {
-                    // Proxy không còn khả năng vượt giá => vô hiệu
+                if (proxyMax < currentPrice + increment) {
                     proxyBidDAO.deactivateProxyBid(conn, proxy.getId());
+                    continue;
                 }
+
+                bidAmount = currentPrice + increment;
+                User user = userDAO.getUserById(conn, proxy.getUserId());
+                if (user == null || user.getBalance() < bidAmount) {
+                    proxyBidDAO.deactivateProxyBid(conn, proxy.getId());
+                    continue;
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                continue;
             }
-            conn.commit();
-        } catch (Exception e) {
-            if (conn != null) {
-                try { conn.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
-            }
-            e.printStackTrace();
-        } finally {
-            if (conn != null) {
-                try { conn.setAutoCommit(true); conn.close(); } catch (SQLException e) { e.printStackTrace(); }
+
+            boolean success = auctionService.placeBid(proxy.getUserId(), sessionId, bidAmount);
+            if (!success) {
+                try (Connection conn = DBConnection.getConnection()) {
+                    proxyBidDAO.deactivateProxyBid(conn, proxy.getId());
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
