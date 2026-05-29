@@ -17,9 +17,9 @@ public class DBConnection {
         try {
             // Cấu hình HikariCP
             HikariConfig config = new HikariConfig();
-            config.setJdbcUrl("jdbc:mysql://auction-db-01-auctionsystem1.f.aivencloud.com:26764/defaultdb?sslMode=REQUIRED");
-            config.setUsername("avnadmin");
-            config.setPassword("AVNS_ULXrtrBGv69ar_pPpPZ");
+            config.setJdbcUrl("jdbc:mysql://0.tcp.ap.ngrok.io:16488/quan_ly_dau_gia?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh");
+            config.setUsername("root");
+            config.setPassword("");
 
             // Tối ưu pool
             config.setMaximumPoolSize(10);
