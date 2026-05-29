@@ -58,8 +58,19 @@ public class AuctionWebSocketClient extends WebSocketClient {
     public void sendCommand(String type, JsonObject data) {
         JsonObject msg = new JsonObject();
         msg.addProperty("type", type);
-        // Nếu có data thì thêm vào msg (có thể dùng Gson để merge)
-        // Tạm thời, bạn có thể tự tạo chuỗi JSON hoặc dùng Gson
-        // send(msg.toString());
+
+        // Gộp các thuộc tính từ data vào msg
+        if (data != null) {
+            for (String key : data.keySet()) {
+                msg.add(key, data.get(key));
+            }
+        }
+
+        // Gửi chuỗi JSON qua WebSocket
+        if (this.isOpen()) {
+            send(msg.toString());
+        } else {
+            System.err.println("WebSocket chưa mở, không thể gửi lệnh: " + type);
+        }
     }
 }
