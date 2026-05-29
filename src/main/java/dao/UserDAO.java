@@ -65,4 +65,5 @@ public interface UserDAO {
     boolean addMoneyAtomic(Connection conn, int userId, double amount) throws SQLException;
     boolean addMoneyAtomic(int userId, double amount) throws SQLException; // Bản gọi lẹ
 
+    boolean setBanned(int userId, boolean banned);
 }

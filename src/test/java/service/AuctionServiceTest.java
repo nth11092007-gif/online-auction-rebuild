@@ -26,7 +26,8 @@ class AuctionServiceTest {
     @Mock private UserDAO userDAO;
     @Mock private BidDAO bidDAO;
     @Mock private AuctionSessionDAO sessionDAO;
-    @Mock private AuctionEventPublisher eventPublisher;
+    @Mock private ProxyBidDAOImpl proxyBidDAO;
+    @Mock private AuctionFeedServer feedServer;
 
     private AuctionService auctionService;
     private AuctionSession openSession, closedSession, pendingSession;
@@ -36,8 +37,8 @@ class AuctionServiceTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        auctionService = new AuctionService(dataSource, userDAO, bidDAO, sessionDAO);
-        auctionService.setEventPublisher(eventPublisher);
+        auctionService = new AuctionService(dataSource, userDAO, bidDAO, sessionDAO, proxyBidDAO);
+        auctionService.setFeedServer(feedServer);
         when(dataSource.getConnection()).thenReturn(connection);
 
         sellerMock = mock(Seller.class);

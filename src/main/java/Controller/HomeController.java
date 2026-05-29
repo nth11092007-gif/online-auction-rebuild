@@ -33,17 +33,38 @@ public class HomeController {
 
     @FXML
     void filterArts(ActionEvent event) {
-        // Logic filter sau này...
+        List<AuctionSession> allSessions = auctionService.getAllSessions();
+
+        // Lọc trực tiếp các phiên có vật phẩm thuộc class Arts
+        List<AuctionSession> filteredSessions = allSessions.stream()
+                .filter(session -> session.getItem() instanceof model.Arts)
+                .toList();
+
+        loadSessions(filteredSessions);
     }
 
     @FXML
     void filterElectronics(ActionEvent event) {
-        // Logic filter sau này...
+        List<AuctionSession> allSessions = auctionService.getAllSessions();
+
+        // Lọc trực tiếp các phiên có vật phẩm thuộc class Electronics
+        List<AuctionSession> filteredSessions = allSessions.stream()
+                .filter(session -> session.getItem() instanceof model.Electronics)
+                .toList();
+
+        loadSessions(filteredSessions);
     }
 
     @FXML
     void filterVehicles(ActionEvent event) {
-        // Logic filter sau này...
+        List<AuctionSession> allSessions = auctionService.getAllSessions();
+
+        // Lọc trực tiếp các phiên có vật phẩm thuộc class Vehicles
+        List<AuctionSession> filteredSessions = allSessions.stream()
+                .filter(session -> session.getItem() instanceof model.Vehicles)
+                .toList();
+
+        loadSessions(filteredSessions);
     }
 
     @FXML
