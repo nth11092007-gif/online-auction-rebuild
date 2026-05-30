@@ -2,8 +2,6 @@ package Controller;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -11,8 +9,6 @@ import java.util.List;
 
 import dao.BidDAO;
 import dao.BidDAOImpl;
-import dao.ProxyBidDAO;
-import dao.ProxyBidDAOImpl;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.embed.swing.SwingFXUtils;
@@ -24,7 +20,6 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -34,17 +29,14 @@ import javafx.util.Duration;
 import model.AuctionSession;
 import model.Bid;
 import model.Item;
-import model.ProxyBid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import service.AuctionService;
-import service.ProxyBiddingService;
 import utils.DBConnection;
 import utils.SessionManager;
 import server.AuctionWebSocketClient;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import javafx.application.Platform;
 
 import javax.sql.DataSource;
 
@@ -66,9 +58,6 @@ public class AuctionDetailController {
     @FXML private HBox hboxQuickBids;
     @FXML private ImageView imgItem;
     @FXML private TextField txtMaxBid;
-    @FXML private Button btnSetAutoBid;
-    @FXML private Button btnCancelAutoBid;
-    @FXML private Label lblAutoBidStatus;
     @FXML private Label lblStartingPrice;
     @FXML private Label lblIncrementStep;
 
@@ -81,10 +70,7 @@ public class AuctionDetailController {
     private int creatorId = -1;
 
     private final AuctionService auctionService = new AuctionService();
-    private final ProxyBiddingService proxyBiddingService =
-            new ProxyBiddingService(auctionService);
     private final BidDAO bidDAO = new BidDAOImpl();
-    private final ProxyBidDAO proxyBidDAO = new ProxyBidDAOImpl();
     private final DataSource dataSource = DBConnection.getDataSource();
     private final Logger logger = LoggerFactory.getLogger(AuctionDetailController.class);
 

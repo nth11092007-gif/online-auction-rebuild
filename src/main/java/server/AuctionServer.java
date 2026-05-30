@@ -23,10 +23,8 @@ import server.command.GetSessionsCommand;
 import server.command.GetUserCommand;
 import server.command.JoinSessionCommand;
 import server.command.PlaceBidCommand;
-import server.command.PlaceProxyBidCommand;
 import server.command.SettleSessionCommand;
 import service.AuctionService;
-import service.ProxyBiddingService;
 import service.SettlementService;
 import service.UserService;
 
@@ -39,7 +37,6 @@ public class AuctionServer extends WebSocketServer {
     private final AuctionService auctionService;
     private final UserService userService;
     private final SettlementService settlementService;
-    private ProxyBiddingService proxyBiddingService;
 
     // Command map thay cho switch-case
     private final Map<String, Command> commandMap = new HashMap<>();
@@ -65,14 +62,12 @@ public class AuctionServer extends WebSocketServer {
     public void onStart() {
         this.auctionService.setFeedServer(this.feedServer);
         System.out.println("Auction Server đã khởi động thành công trên port: " + getPort());
-        this.proxyBiddingService = new ProxyBiddingService(auctionService);
         // Khởi tạo command map (sau khi feedServer đã có)
         commandMap.put("GET_SESSIONS", new GetSessionsCommand(auctionService));
         commandMap.put("GET_USER", new GetUserCommand(userService));
         commandMap.put("JOIN", new JoinSessionCommand(sessionSubscribers, feedServer, auctionService, userService));
         commandMap.put("BID", new PlaceBidCommand(auctionService, userService)); // PlaceBidCommand cần inject cả userService
         commandMap.put("SETTLE", new SettleSessionCommand(settlementService, feedServer));
-        commandMap.put("PLACE_PROXY_BID", new PlaceProxyBidCommand(proxyBiddingService, userService));
     }
 
     @Override

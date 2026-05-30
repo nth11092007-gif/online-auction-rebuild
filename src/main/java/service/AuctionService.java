@@ -27,27 +27,21 @@ public class AuctionService {
     final private AuctionSessionDAO sessionDAO;
     private AuctionFeedServer feedServer;
     private final DataSource dataSource;
-    private final ProxyBidDAOImpl proxyBidDAO;
-    private final ProxyBiddingService proxyBiddingService;
 
     public AuctionService() {
-        this(DBConnection.getDataSource(), new UserDAOImpl(), new BidDAOImpl(), new AuctionSessionDAOImpl(), new ProxyBidDAOImpl());
+        this(DBConnection.getDataSource(), new UserDAOImpl(), new BidDAOImpl(), new AuctionSessionDAOImpl());
     }
-    public AuctionService(DataSource dataSource, UserDAO userDAO, BidDAO bidDAO, AuctionSessionDAO sessionDAO, ProxyBidDAOImpl proxyBidDAO) {
+    public AuctionService(DataSource dataSource, UserDAO userDAO, BidDAO bidDAO, AuctionSessionDAO sessionDAO) {
         this.dataSource = dataSource;
         this.userDAO = userDAO;
         this.bidDAO = bidDAO;
         this.sessionDAO = sessionDAO;
-        this.proxyBidDAO = proxyBidDAO;
-        this.proxyBiddingService = new ProxyBiddingService(this);
     }
-    public AuctionService(UserDAO userDAO, BidDAO bidDAO, AuctionSessionDAO sessionDAO, ProxyBidDAOImpl proxyBidDAO) {
+    public AuctionService(UserDAO userDAO, BidDAO bidDAO, AuctionSessionDAO sessionDAO) {
         this.dataSource = DBConnection.getDataSource();
         this.userDAO = userDAO;
         this.bidDAO = bidDAO;
         this.sessionDAO = sessionDAO;
-        this.proxyBidDAO = proxyBidDAO;
-        this.proxyBiddingService = new ProxyBiddingService(this);
     }
 
     // Cấu hình Anti-sniping
@@ -79,15 +73,6 @@ public class AuctionService {
             logger.warn("Session {} not found", sessionId);
             return false;
         }
-
-        // 1. Freeze tiền NGAY LẬP TỨC (atomic trong DB)
-        boolean isDeducted = userDAO.freezeMoneyAtomic(conn, currentUserId, bidAmount);
-        if (!isDeducted) {
-            logger.warn("Không thể đóng băng {} từ user {}", bidAmount, currentUserId);
-            conn.rollback();
-            return false;
-        }
-
         // 2. Kiểm tra trạng thái session và các điều kiện khác
         if (!session.joinable()) {
             logger.warn("Session {} không ở trạng thái có thể đặt giá", sessionId);
@@ -96,6 +81,18 @@ public class AuctionService {
             conn.rollback();
             return false;
         }
+        if (session.getSeller().getID() == currentUserId) {
+            logger.warn("Người bán không được tự đấu giá");
+            return false;
+        }
+        // 1. Freeze tiền NGAY LẬP TỨC (atomic trong DB)
+        boolean isDeducted = userDAO.freezeMoneyAtomic(conn, currentUserId, bidAmount);
+        if (!isDeducted) {
+            logger.warn("Không thể đóng băng {} từ user {}", bidAmount, currentUserId);
+            conn.rollback();
+            return false;
+        }
+
 
         Bid highestBid = bidDAO.getHighestBid(conn, sessionId);
         double minValidBid = (highestBid == null) ? session.getStartingPrice() 
@@ -141,6 +138,13 @@ public class AuctionService {
         return true;
     } catch (SQLException e) {
         logger.error("Lỗi khi đặt giá: user {}, session {}, amount {}: {}", currentUserId, sessionId, bidAmount, e.getMessage());
+        if (conn != null) {
+            try {
+                conn.rollback();
+            } catch (SQLException rollbackEx) {
+                logger.error("Lỗi rollback", rollbackEx);
+            }
+        }
     } finally {
         try {
             if (conn != null) {

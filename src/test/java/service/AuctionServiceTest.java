@@ -26,7 +26,6 @@ class AuctionServiceTest {
     @Mock private UserDAO userDAO;
     @Mock private BidDAO bidDAO;
     @Mock private AuctionSessionDAO sessionDAO;
-    @Mock private ProxyBidDAOImpl proxyBidDAO;
     @Mock private AuctionFeedServer feedServer;
 
     private AuctionService auctionService;
@@ -37,7 +36,7 @@ class AuctionServiceTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        auctionService = new AuctionService(dataSource, userDAO, bidDAO, sessionDAO, proxyBidDAO);
+        auctionService = new AuctionService(dataSource, userDAO, bidDAO, sessionDAO);
         auctionService.setFeedServer(feedServer);
         when(dataSource.getConnection()).thenReturn(connection);
 
@@ -102,15 +101,13 @@ class AuctionServiceTest {
     @Test
     void placeBid_SellerCurrentlyAllowed() throws Exception {
         when(sessionDAO.getSessionById(connection, "SS001")).thenReturn(openSession);
-        when(userDAO.freezeMoneyAtomic(connection, 1, 150.0)).thenReturn(true);
-        when(userDAO.getUserById(connection, 1)).thenReturn(mock(User.class)); // seller cũng là user
-        when(bidDAO.getHighestBid(connection, "SS001")).thenReturn(null);
-        when(bidDAO.addBid(any(), any(), any())).thenReturn(true);
-        when(sessionDAO.updateCurrentPrice(any(), anyString(), anyDouble())).thenReturn(true);
 
-        // Hiện tại seller vẫn đặt được giá
         boolean result = auctionService.placeBid(1, "SS001", 150.0);
-        assertTrue(result, "Seller hiện chưa bị chặn, cần sửa logic placeBid");
+        assertFalse(result, "Người bán phải bị cấm đấu giá trên phiên của mình");
+
+        // Đảm bảo không hề thực hiện đóng băng tiền hay thêm bid
+        verify(userDAO, never()).freezeMoneyAtomic(any(), anyInt(), anyDouble());
+        verify(bidDAO, never()).addBid(any(), any(), any());
     }
 
     // TC4: Hết tiền (freeze thất bại)
@@ -125,18 +122,14 @@ class AuctionServiceTest {
         verify(connection).rollback();
     }
 
-    // TC5: Sai trạng thái – do state chưa được cập nhật, canJoin() luôn true, nên bid vẫn thành công.
+    // TC5:
     @Test
     void placeBid_ClosedSessionStillWorks() throws Exception {
         when(sessionDAO.getSessionById(connection, "SS002")).thenReturn(closedSession);
-        when(userDAO.freezeMoneyAtomic(connection, 2, 150.0)).thenReturn(true);
-        when(userDAO.getUserById(connection, 2)).thenReturn(bidder);
-        when(bidDAO.getHighestBid(connection, "SS002")).thenReturn(null);
-        when(bidDAO.addBid(any(), any(), any())).thenReturn(true);
-        when(sessionDAO.updateCurrentPrice(any(), anyString(), anyDouble())).thenReturn(true);
 
         boolean result = auctionService.placeBid(2, "SS002", 150.0);
-        assertTrue(result, "State pattern chưa đồng bộ, cần sửa startSession/endSession");
+        assertFalse(result, "Phiên đã đóng phải bị từ chối");
+        verify(bidDAO, never()).addBid(any(), any(), any());
     }
 
     @Test
@@ -195,8 +188,26 @@ class AuctionServiceTest {
         when(userDAO.getUserById(connection, 2)).thenReturn(bidder);
         doThrow(new SQLException("DB error")).when(bidDAO).addBid(any(), any(), any());
 
-        boolean result = auctionService.placeBid(2, sessionId, 150.0);
+        boolean result = auctionService.placeBid(2, "SS006", 150.0);
         assertFalse(result);
         verify(connection, never()).commit();
+        verify(connection, times(1)).rollback();
+    }
+    @Test
+    void placeBid_WhenEndTimePassed_NoExtension() throws Exception {
+        // endTime đã qua 1 phút, joinable vẫn true (do state chưa đồng bộ)
+        openSession.setEndTime(LocalDateTime.now().minusMinutes(1));
+        when(sessionDAO.getSessionById(connection, "SS_PAST")).thenReturn(openSession);
+        when(userDAO.freezeMoneyAtomic(connection, 2, 150.0)).thenReturn(true);
+        when(userDAO.getUserById(connection, 2)).thenReturn(bidder);
+        when(bidDAO.getHighestBid(connection, "SS_PAST")).thenReturn(null);
+        when(bidDAO.addBid(any(), any(), any())).thenReturn(true);
+        when(sessionDAO.updateCurrentPrice(any(), anyString(), anyDouble())).thenReturn(true);
+
+        boolean result = auctionService.placeBid(2, "SS_PAST", 150.0);
+        assertTrue(result);
+        // Vì timeDiff <= 0, không được gọi updateEndTime
+        verify(sessionDAO, never()).updateEndTime(any(), any(), any());
+        verify(connection).commit();
     }
 }
