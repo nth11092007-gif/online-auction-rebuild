@@ -19,7 +19,7 @@ public class DBConnection {
     try {
       // Cấu hình HikariCP
       HikariConfig config = new HikariConfig();
-      String jdbcUrl = "jdbc:mysql://localhost:3307/quan_ly_dau_gia"
+      String jdbcUrl = "jdbc:mysql://localhost:3306/quan_ly_dau_gia"
           + "?useSSL=false"
           + "&serverTimezone=UTC"
           + "&connectionTimeZone=UTC"
