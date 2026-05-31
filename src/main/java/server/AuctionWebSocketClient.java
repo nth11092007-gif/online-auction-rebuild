@@ -1,12 +1,14 @@
 package server;
 
-import com.google.gson.JsonObject;
 import java.net.URI;
 import java.util.function.Consumer;
+
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.gson.JsonObject;
 
 /** AuctionWebSocketClient - WebSocket client for connecting to the auction server. */
 public class AuctionWebSocketClient extends WebSocketClient {
@@ -14,7 +16,7 @@ public class AuctionWebSocketClient extends WebSocketClient {
   private static final Logger logger =
       LoggerFactory.getLogger(AuctionWebSocketClient.class);
 
-  private static final String DEFAULT_URI = "ws://0.tcp.ap.ngrok.io:17148";
+  private static final String DEFAULT_URI = "ws://localhost:8887";
 
   private Consumer<String> onMessageCallback;
 

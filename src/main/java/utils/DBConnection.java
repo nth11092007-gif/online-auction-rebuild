@@ -1,11 +1,13 @@
 package utils;
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 
 /** DBConnection - manages the HikariCP database connection pool. */
 public class DBConnection {
@@ -17,12 +19,7 @@ public class DBConnection {
     try {
       // Cấu hình HikariCP
       HikariConfig config = new HikariConfig();
-      // String jdbcUrl = "jdbc:mysql://0.tcp.ap.ngrok.io:16488/quan_ly_dau_gia"
-      // + "?useSSL=false"
-      // + "&serverTimezone=UTC"
-      // + "&connectionTimeZone=UTC"
-      // + "&forceConnectionTimeZoneToSession=true";
-      String jdbcUrl = "jdbc:mysql://0.tcp.ap.ngrok.io:27977/quan_ly_dau_gia"
+      String jdbcUrl = "jdbc:mysql://localhost:3307/quan_ly_dau_gia"
           + "?useSSL=false"
           + "&serverTimezone=UTC"
           + "&connectionTimeZone=UTC"
