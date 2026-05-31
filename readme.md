@@ -17,7 +17,7 @@ Phạm vi:
 - **Ngôn ngữ**: Java (JDK 17+)
 - **Giao diện**: JavaFX (OpenJFX 17)
 - **Giao tiếp mạng**: Java Socket, JSON (Gson)
-- **Cơ sở dữ liệu**: MySQL (có script khởi tạo trong thư mục `tests\resources`)
+- **Cơ sở dữ liệu**: MySQL (có script khởi tạo)
 - **Build tool**: Sử dụng Maven
 - **Môi trường chạy**:
   - JDK 17 có tích hợp JavaFX (hoặc đã cấu hình JavaFX SDK riêng)
