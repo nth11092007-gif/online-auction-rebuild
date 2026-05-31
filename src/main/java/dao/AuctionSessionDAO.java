@@ -29,6 +29,10 @@ public interface AuctionSessionDAO {
 
   AuctionSession getSessionById(String sessionId);
 
+  /** Read-only fetch without FOR UPDATE lock (for UI display). */
+  AuctionSession getSessionByIdReadOnly(
+      Connection conn, String sessionId) throws SQLException;
+
   // Batch fetch: lấy nhiều session theo danh sách ID (tránh N+1 query)
   Map<String, AuctionSession> getSessionsByIds(
       Connection conn, List<String> sessionIds) throws SQLException;

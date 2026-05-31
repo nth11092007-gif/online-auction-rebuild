@@ -202,10 +202,77 @@ public class AuctionSessionDAOImpl
       String sessionId) {
     try (Connection conn =
         dataSource.getConnection()) {
-      return getSessionById(conn, sessionId);
+      return getSessionByIdReadOnly(conn, sessionId);
     } catch (SQLException e) {
       logger.error(
           "Lỗi kết nối khi lấy session {}: {}",
+          sessionId, e.getMessage(), e);
+    }
+    return null;
+  }
+
+  @Override
+  public AuctionSession getSessionByIdReadOnly(
+      Connection conn, String sessionId)
+      throws SQLException {
+    String sql = "SELECT * FROM auction_sessions"
+        + " WHERE session_id = ?";
+    try (PreparedStatement pstmt =
+        conn.prepareStatement(sql)) {
+      pstmt.setString(1, sessionId);
+      try (ResultSet rs = pstmt.executeQuery()) {
+        if (rs.next()) {
+          User seller = userDao.getUserById(
+              conn, rs.getInt("owner_id"));
+          Item item = itemDao.getItemById(
+              conn, rs.getInt("item_id"));
+          double startingPrice =
+              rs.getDouble("starting_price");
+          double stepPrice =
+              rs.getDouble("step_price");
+          Timestamp startTs =
+              rs.getTimestamp("start_time");
+          LocalDateTime startTime =
+              startTs != null
+                  ? startTs.toLocalDateTime()
+                  : null;
+          Timestamp endTs =
+              rs.getTimestamp("end_time");
+          LocalDateTime endTime =
+              endTs != null
+                  ? endTs.toLocalDateTime()
+                  : null;
+          int extensionCount =
+              rs.getInt("extension_count");
+
+          AuctionSession session =
+              new AuctionSession(seller, item,
+                  startingPrice, stepPrice,
+                  startTime, sessionId);
+          session.setEndTime(endTime);
+          session.setStatus(
+              AuctionSession.Status.valueOf(
+                  rs.getString("status")));
+
+          List<Bid> bids =
+              bidDao.getBidsBySession(
+                  conn, sessionId);
+          if (bids != null && !bids.isEmpty()) {
+            Bid highestBid = bids.get(0);
+            session.setCurrentPrice(
+                highestBid.getAmount());
+            session.setHighestBidder(
+                highestBid.getBidder());
+          } else {
+            session.setCurrentPrice(startingPrice);
+          }
+          return session;
+        }
+      }
+    } catch (SQLException e) {
+      logger.error(
+          "Lỗi khi lấy phiên đấu giá theo ID"
+          + " {}: {}",
           sessionId, e.getMessage(), e);
     }
     return null;

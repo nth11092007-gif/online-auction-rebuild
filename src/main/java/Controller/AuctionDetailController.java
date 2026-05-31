@@ -498,6 +498,12 @@ public class AuctionDetailController {
                           setBiddingEnabled(false);
                           if (timeline != null) timeline.stop();
                       }
+
+                      case "JOIN_FAILURE" -> {
+                          String joinMsg = json.has("message") ? json.get("message").getAsString() : "Không thể tham gia phiên";
+                          showAlert(joinMsg, Alert.AlertType.WARNING);
+                          setBiddingEnabled(false);
+                      }
                   }
               } catch (Exception e) {
                   logger.error("Lỗi khi xử lý tin nhắn WebSocket: {}", e.getMessage());

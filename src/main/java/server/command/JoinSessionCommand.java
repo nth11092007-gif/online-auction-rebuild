@@ -55,8 +55,51 @@ public class JoinSessionCommand implements Command {
 
   @Override
   public void execute(WebSocket conn, JsonObject jsonData) {
+    // 1. Validate sessionId
+    if (!jsonData.has("sessionId")
+        || jsonData.get("sessionId").isJsonNull()) {
+      conn.send(gson.toJson(
+          new Message("JOIN_FAILURE",
+              "Thiếu thông tin phiên đấu giá")));
+      return;
+    }
     String sessionId =
         jsonData.get("sessionId").getAsString();
+    if (sessionId.isEmpty()) {
+      conn.send(gson.toJson(
+          new Message("JOIN_FAILURE",
+              "Thiếu thông tin phiên đấu giá")));
+      return;
+    }
+
+    // 2. Validate user đã đăng nhập WebSocket
+    String username = (String) conn.getAttachment();
+    if (username == null) {
+      conn.send(gson.toJson(
+          new Message("JOIN_FAILURE",
+              "Bạn chưa đăng nhập. "
+                  + "Vui lòng đăng nhập lại!")));
+      return;
+    }
+
+    // 3. Validate session tồn tại và joinable
+    AuctionSession session =
+        auctionService.getSessionById(sessionId);
+    if (session == null) {
+      conn.send(gson.toJson(
+          new Message("JOIN_FAILURE",
+              "Không tìm thấy phiên đấu giá")));
+      return;
+    }
+    if (!session.joinable()) {
+      conn.send(gson.toJson(
+          new Message("JOIN_FAILURE",
+              "Phiên đấu giá không còn "
+                  + "nhận tham gia")));
+      return;
+    }
+
+    // 4. Thêm vào subscribers
     sessionSubscribers
         .computeIfAbsent(
             sessionId, k -> ConcurrentHashMap.newKeySet())
@@ -71,18 +114,13 @@ public class JoinSessionCommand implements Command {
           .put(sessionId, observer);
     }
 
-    String username = (String) conn.getAttachment();
-    if (username != null) {
-      Bidder bidder =
-          userService.getUserByUsername(username);
-      if (bidder != null) {
-        AuctionSession session =
-            auctionService.getSessionById(sessionId);
-        if (session != null) {
-          bidder.addJoinedAuctionSession(session);
-        }
-      }
+    // 5. Ghi nhận bidder đã join
+    Bidder bidder =
+        userService.getUserByUsername(username);
+    if (bidder != null) {
+      bidder.addJoinedAuctionSession(session);
     }
+
     conn.send(gson.toJson(
         new Message("JOIN_SUCCESS",
             "Đã tham gia phiên " + sessionId)));
