@@ -168,7 +168,7 @@ public class AuctionServer extends WebSocketServer {
         });
       } else {
         webSocket.send(gson.toJson(
-            new Message("ERROR", "Command Unknown")));
+            new Message("ERROR", "Lệnh không xác định")));
       }
     } catch (Exception e) {
       logger.error(

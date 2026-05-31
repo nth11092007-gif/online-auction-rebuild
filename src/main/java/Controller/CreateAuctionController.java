@@ -339,7 +339,7 @@ public class CreateAuctionController {
 
     fileChooser.getExtensionFilters().addAll(
         new FileChooser.ExtensionFilter(
-            "Image Files", "*.png", "*.jpg", "*.jpeg")
+            "Tệp hình ảnh", "*.png", "*.jpg", "*.jpeg")
     );
 
     Stage stage =

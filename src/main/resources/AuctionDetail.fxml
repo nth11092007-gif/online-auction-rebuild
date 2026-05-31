@@ -15,11 +15,11 @@
 <VBox prefHeight="720.0" prefWidth="1280.0" spacing="0.0" style="-fx-background-color: #f0f4ff;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.AuctionDetailController">
 
     <HBox alignment="CENTER_LEFT" prefHeight="64.0" spacing="12.0" style="-fx-background-color: white;                  -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 8, 0, 0, 2);                  -fx-padding: 0 32 0 20;">
-        <Button onAction="#handleGoBack" style="-fx-background-color: #f0f4ff;                        -fx-text-fill: #2d6cdf;                        -fx-font-size: 13;                        -fx-font-weight: bold;                        -fx-background-radius: 8;                        -fx-padding: 7 14;                        -fx-cursor: hand;" text="← Quay lai" />
+        <Button onAction="#handleGoBack" style="-fx-background-color: #f0f4ff;                        -fx-text-fill: #2d6cdf;                        -fx-font-size: 13;                        -fx-font-weight: bold;                        -fx-background-radius: 8;                        -fx-padding: 7 14;                        -fx-cursor: hand;" text="← Quay lại" />
         <Label style="-fx-font-size: 20; -fx-background-color: #e8efff;                       -fx-padding: 6 8; -fx-background-radius: 10;" text="🔨" />
         <VBox spacing="1.0">
-            <Label style="-fx-font-size: 17; -fx-font-weight: bold; -fx-text-fill: #1a1a2e;" text="Chi Tiet Dau Gia" />
-            <Label style="-fx-font-size: 11; -fx-text-fill: #aaa;" text="Xem thong tin va dat gia san pham" />
+            <Label style="-fx-font-size: 17; -fx-font-weight: bold; -fx-text-fill: #1a1a2e;" text="Chi tiết Đấu giá" />
+            <Label style="-fx-font-size: 11; -fx-text-fill: #aaa;" text="Xem thông tin và đặt giá sản phẩm" />
         </VBox>
         <Region HBox.hgrow="ALWAYS" />
     </HBox>
@@ -34,7 +34,7 @@
             <StackPane prefHeight="300.0" style="-fx-background-color: #f8faff;                               -fx-background-radius: 16 16 0 0;                               -fx-border-color: transparent transparent #f0f4ff transparent;                               -fx-border-width: 0 0 1.5 0;">
                 <ImageView fx:id="imgItem" fitHeight="270.0" fitWidth="780.0" pickOnBounds="true" preserveRatio="true" />
 
-                <Label fx:id="lblStatus" style="-fx-background-color: #34a853;                               -fx-text-fill: white;                               -fx-padding: 6 14;                               -fx-background-radius: 20;                               -fx-font-size: 12;                               -fx-font-weight: bold;" text="Dang dau gia" StackPane.alignment="TOP_RIGHT">
+                <Label fx:id="lblStatus" style="-fx-background-color: #34a853;                               -fx-text-fill: white;                               -fx-padding: 6 14;                               -fx-background-radius: 20;                               -fx-font-size: 12;                               -fx-font-weight: bold;" text="Đang đấu giá" StackPane.alignment="TOP_RIGHT">
                     <StackPane.margin>
                         <Insets right="16.0" top="16.0" />
                     </StackPane.margin>
@@ -43,7 +43,7 @@
 
             <VBox spacing="10.0" style="-fx-padding: 20 24 16 24;">
                 <HBox alignment="CENTER_LEFT" spacing="8.0">
-                    <Label style="-fx-background-color: #e8f0fe;                                   -fx-text-fill: #1a73e8;                                   -fx-padding: 4 12;                                   -fx-background-radius: 20;                                   -fx-font-size: 12;                                   -fx-font-weight: bold;" text="Do dien tu" />
+                    <Label style="-fx-background-color: #e8f0fe;                                   -fx-text-fill: #1a73e8;                                   -fx-padding: 4 12;                                   -fx-background-radius: 20;                                   -fx-font-size: 12;                                   -fx-font-weight: bold;" text="Đồ điện tử" />
                     <Label fx:id="txtItemID" style="-fx-font-size: 12; -fx-text-fill: #aaa;" text="ID: #1001" />
                 </HBox>
                 <Label fx:id="txtItemName" style="-fx-font-size: 20; -fx-font-weight: bold; -fx-text-fill: #1a1a2e;" text="iPhone 15 Pro Max 256GB" />
@@ -58,9 +58,9 @@
                         <VBox spacing="8.0">
                             <HBox alignment="CENTER_LEFT" spacing="8.0">
                                 <Label style="-fx-font-size: 15; -fx-background-color: #e8efff;                                               -fx-padding: 4 6; -fx-background-radius: 8;" text="📋" />
-                                <Label style="-fx-font-size: 14; -fx-font-weight: bold; -fx-text-fill: #1a1a2e;" text="Mo ta san pham" />
+                                <Label style="-fx-font-size: 14; -fx-font-weight: bold; -fx-text-fill: #1a1a2e;" text="Mô tả sản phẩm" />
                             </HBox>
-                            <Label fx:id="txtDescription" style="-fx-font-size: 13; -fx-text-fill: #555;                                           -fx-line-spacing: 4; -fx-padding: 0 0 0 4;" text="May moi 99%, con nguyen seal..." wrapText="true" />
+                            <Label fx:id="txtDescription" style="-fx-font-size: 13; -fx-text-fill: #555;                                           -fx-line-spacing: 4; -fx-padding: 0 0 0 4;" text="Máy mới 99%, còn nguyên seal..." wrapText="true" />
                         </VBox>
 
                         <VBox fx:id="Container" spacing="10.0" />
@@ -70,17 +70,17 @@
                             <HBox alignment="CENTER_LEFT" spacing="10.0" style="-fx-border-color: transparent transparent #f0f4ff transparent;                                          -fx-border-width: 0 0 1.5 0; -fx-padding: 0 0 12 0;">
                                 <Label style="-fx-font-size: 16; -fx-background-color: #e8efff;                                               -fx-padding: 5 7; -fx-background-radius: 9;" text="📈" />
                                 <VBox spacing="2.0">
-                                    <Label style="-fx-font-size: 14; -fx-font-weight: bold; -fx-text-fill: #1a1a2e;" text="Lich su dat gia" />
-                                    <Label style="-fx-font-size: 11; -fx-text-fill: #aaa;" text="Cac luot dat gia trong phien nay" />
+                                    <Label style="-fx-font-size: 14; -fx-font-weight: bold; -fx-text-fill: #1a1a2e;" text="Lịch sử đặt giá" />
+                                    <Label style="-fx-font-size: 11; -fx-text-fill: #aaa;" text="Các lượt đặt giá trong phiên này" />
                                 </VBox>
                                 <Region HBox.hgrow="ALWAYS" />
-                                <Label fx:id="lblBidCount" style="-fx-font-size: 12; -fx-text-fill: #1a73e8;                                               -fx-font-weight: bold;                                               -fx-background-color: #e8efff;                                               -fx-background-radius: 20;                                               -fx-padding: 3 10;" text="0 luot" />
+                                <Label fx:id="lblBidCount" style="-fx-font-size: 12; -fx-text-fill: #1a73e8;                                               -fx-font-weight: bold;                                               -fx-background-color: #e8efff;                                               -fx-background-radius: 20;                                               -fx-padding: 3 10;" text="0 lượt" />
                             </HBox>
 
                             <HBox style="-fx-padding: 0 4;">
-                                <Label style="-fx-font-size: 11; -fx-font-weight: bold; -fx-text-fill: #aaa;" text="Nguoi dau gia" HBox.hgrow="ALWAYS" />
-                                <Label prefWidth="150.0" style="-fx-font-size: 11; -fx-font-weight: bold; -fx-text-fill: #aaa;" text="So tien dat" />
-                                <Label prefWidth="60.0" style="-fx-font-size: 11; -fx-font-weight: bold; -fx-text-fill: #aaa;" text="Hang" />
+                                <Label style="-fx-font-size: 11; -fx-font-weight: bold; -fx-text-fill: #aaa;" text="Người đấu giá" HBox.hgrow="ALWAYS" />
+                                <Label prefWidth="150.0" style="-fx-font-size: 11; -fx-font-weight: bold; -fx-text-fill: #aaa;" text="Số tiền đặt" />
+                                <Label prefWidth="60.0" style="-fx-font-size: 11; -fx-font-weight: bold; -fx-text-fill: #aaa;" text="Hạng" />
                             </HBox>
 
                             <VBox fx:id="bidHistoryContainer" spacing="6.0" />
@@ -101,11 +101,11 @@
                         <Label style="-fx-font-size: 12; -fx-font-weight: bold; -fx-text-fill: #e65100;" text="Thời gian còn lại" />
                     </HBox>
                     <Label fx:id="lblTimeRemaining" style="-fx-font-size: 26; -fx-font-weight: bold; -fx-text-fill: #e65100;" />
-                    <Label fx:id="lblEndTime" style="-fx-font-size: 12; -fx-text-fill: #aaa;" text="Ket thuc: 08/05/2026 18:00" />
+                    <Label fx:id="lblEndTime" style="-fx-font-size: 12; -fx-text-fill: #aaa;" text="Kết thúc: 08/05/2026 18:00" />
                 </VBox>
 
                 <VBox spacing="6.0" style="-fx-background-color: #f0f7ff;                              -fx-padding: 18 20 16 20;                              -fx-border-color: transparent transparent #e8efff transparent;                              -fx-border-width: 0 0 1.5 0;">
-                    <Label style="-fx-font-size: 11; -fx-font-weight: bold; -fx-text-fill: #888;" text="Gia hien tai" />
+                    <Label style="-fx-font-size: 11; -fx-font-weight: bold; -fx-text-fill: #888;" text="Giá hiện tại" />
                     <Label fx:id="txtCurrentPrice" style="-fx-font-size: 28; -fx-font-weight: bold; -fx-text-fill: #1a73e8;" text="25,000,000 d" />
                     <Label fx:id="lblHighestBidder" style="-fx-font-size: 12; -fx-text-fill: #888;" />
                 </VBox>

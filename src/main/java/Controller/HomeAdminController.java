@@ -111,7 +111,7 @@ public class HomeAdminController {
         }
 
         Label badge = new Label(
-            banned ? "Đã ban" : "Hoạt động");
+            banned ? "Đã khóa" : "Hoạt động");
         badge.setStyle(banned
             ? """
               -fx-background-color: #fff0f0;
@@ -215,7 +215,7 @@ public class HomeAdminController {
     allUsers = FXCollections.observableArrayList(users);
     userTable.setItems(allUsers);
     lblTotalUsers.setText(
-        allUsers.size() + " nguoi dung");
+        allUsers.size() + " người dùng");
   }
 
   private void handleToggleBan(User user) {
@@ -223,12 +223,12 @@ public class HomeAdminController {
 
     Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
     confirm.setTitle(
-        willBan ? "Xac nhan ban" : "Xac nhan go ban");
+        willBan ? "Xác nhận khóa" : "Xác nhận gỡ khóa");
     confirm.setHeaderText(null);
     confirm.setContentText(willBan
-        ? "Ban co chac muon BAN nguoi dung: "
+        ? "Bạn có chắc muốn KHÓA người dùng: "
             + user.getUsername() + "?"
-        : "Ban co chac muon GO BAN nguoi dung: "
+        : "Bạn có chắc muốn GỠ KHÓA người dùng: "
             + user.getUsername() + "?");
 
     if (confirm.showAndWait().orElse(ButtonType.CANCEL)
@@ -242,12 +242,12 @@ public class HomeAdminController {
       user.setBanned(willBan);
       userTable.refresh();
       showAlert(
-          willBan ? "Da ban nguoi dung thanh cong!"
-              : "Da go ban nguoi dung thanh cong!",
+          willBan ? "Đã khóa người dùng thành công!"
+              : "Đã gỡ khóa người dùng thành công!",
           Alert.AlertType.INFORMATION);
     } else {
       showAlert(
-          "That bai! Vui long thu lai.",
+          "Thất bại! Vui lòng thử lại.",
           Alert.AlertType.ERROR);
     }
   }
@@ -255,9 +255,9 @@ public class HomeAdminController {
   @FXML
   void handleLogout(ActionEvent event) {
     Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-    confirm.setTitle("Xac nhan dang xuat");
+    confirm.setTitle("Xác nhận đăng xuất");
     confirm.setHeaderText(null);
-    confirm.setContentText("Ban co chac muon dang xuat?");
+    confirm.setContentText("Bạn có chắc muốn đăng xuất?");
 
     if (confirm.showAndWait().orElse(ButtonType.CANCEL)
         == ButtonType.OK) {
@@ -271,7 +271,7 @@ public class HomeAdminController {
         stage.show();
       } catch (IOException e) {
         showAlert(
-            "Loi chuyen man hinh!", Alert.AlertType.ERROR);
+            "Lỗi chuyển màn hình!", Alert.AlertType.ERROR);
       }
     }
   }
@@ -279,7 +279,7 @@ public class HomeAdminController {
   private void showAlert(
       String content, Alert.AlertType type) {
     Alert alert = new Alert(type);
-    alert.setTitle("Thong bao");
+    alert.setTitle("Thông báo");
     alert.setHeaderText(null);
     alert.setContentText(content);
     alert.showAndWait();

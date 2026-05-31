@@ -46,15 +46,15 @@ public class AuctionWebSocketClient extends WebSocketClient {
   public boolean connectWithRetry(int maxRetries, long delayMs) {
     for (int i = 0; i < maxRetries; i++) {
       try {
-        logger.info("Dang ket noi WebSocket (lan {}/{})...",
+        logger.info("Đang kết nối WebSocket (lần {}/{})...",
             i + 1, maxRetries);
         connectBlocking();
         if (isOpen()) {
-          logger.info("WebSocket da ket noi thanh cong.");
+          logger.info("WebSocket đã kết nối thành công.");
           return true;
         }
       } catch (Exception e) {
-        logger.warn("Ket noi WebSocket that bai (lan {}): {}",
+        logger.warn("Kết nối WebSocket thất bại (lần {}): {}",
             i + 1, e.getMessage());
       }
       if (i < maxRetries - 1) {
@@ -62,19 +62,19 @@ public class AuctionWebSocketClient extends WebSocketClient {
           Thread.sleep(delayMs);
         } catch (InterruptedException ie) {
           Thread.currentThread().interrupt();
-          logger.warn("Bi gian doan trong khi doi ket noi lai.");
+          logger.warn("Bị gián đoạn trong khi đợi kết nối lại.");
           return false;
         }
       }
     }
     logger.error(
-        "Khong the ket noi WebSocket sau {} lan thu.", maxRetries);
+        "Không thể kết nối WebSocket sau {} lần thử.", maxRetries);
     return false;
   }
 
   @Override
   public void onOpen(ServerHandshake handshake) {
-    logger.info("WebSocket connected to server");
+    logger.info("WebSocket đã kết nối đến máy chủ");
   }
 
   @Override
@@ -88,12 +88,12 @@ public class AuctionWebSocketClient extends WebSocketClient {
 
   @Override
   public void onClose(int code, String reason, boolean remote) {
-    logger.info("WebSocket closed: {}", reason);
+    logger.info("WebSocket đã đóng: {}", reason);
   }
 
   @Override
   public void onError(Exception ex) {
-    logger.error("WebSocket error: {}", ex.getMessage(), ex);
+    logger.error("WebSocket lỗi: {}", ex.getMessage(), ex);
   }
 
   /**

@@ -136,16 +136,16 @@ public class AuctionDetailController {
     updateBidSpinner((int) currentPriceValue);
 
     if (session.getHighestBidder() != null) {
-      lblHighestBidder.setText("Nguoi dan dau: "
+      lblHighestBidder.setText("Người dẫn đầu: "
           + session.getHighestBidder().getUsername());
     } else {
-      lblHighestBidder.setText("Chua co ai dat gia.");
+      lblHighestBidder.setText("Chưa có ai đặt giá.");
     }
 
     DateTimeFormatter fmt =
         DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
     lblEndTime.setText(
-        "Ket thuc: " + session.getEndTime().format(fmt));
+        "Kết thúc: " + session.getEndTime().format(fmt));
 
     startCountdown(session);
     loadBidHistory();
@@ -163,7 +163,7 @@ public class AuctionDetailController {
         updateBidSpinner((int) currentPriceValue);
 
         if (latest.getHighestBidder() != null) {
-          lblHighestBidder.setText("Nguoi dan dau: "
+          lblHighestBidder.setText("Người dẫn đầu: "
               + latest.getHighestBidder().getUsername());
         }
       }
@@ -176,7 +176,7 @@ public class AuctionDetailController {
   @FXML
   void handleBid(ActionEvent event) {
     if (SessionManager.getCurrentUser() == null) {
-      showAlert("Vui long dang nhap de dat gia!",
+      showAlert("Vui lòng đăng nhập để đặt giá!",
           Alert.AlertType.WARNING);
       return;
     }
@@ -190,13 +190,13 @@ public class AuctionDetailController {
     }
     if (currentSessionId == null) {
       showAlert(
-          "Loi: Khong tim thay thong tin phien dau gia!",
+          "Lỗi: Không tìm thấy thông tin phiên đấu giá!",
           Alert.AlertType.ERROR);
       return;
     }
 
     btnPlaceBid.setDisable(true);
-    btnPlaceBid.setText("Dang dat gia...");
+    btnPlaceBid.setText("Đang đặt giá...");
 
     int bidAmount = bidSpinner.getValue();
     JsonObject bidData = new JsonObject();
@@ -240,7 +240,7 @@ public class AuctionDetailController {
     List<Bid> bids =
         auctionService.getBidsBySession(currentSessionId);
     if (lblBidCount != null) {
-      lblBidCount.setText(bids.size() + " luot");
+      lblBidCount.setText(bids.size() + " lượt");
     }
 
     if (bids.isEmpty()) {
@@ -275,7 +275,7 @@ public class AuctionDetailController {
             """);
 
     String username = (bid.getBidder() != null)
-        ? bid.getBidder().getUsername() : "An danh";
+        ? bid.getBidder().getUsername() : "Ẩn danh";
     Label name = new Label(username);
     name.setStyle(isTop
         ? "-fx-font-size: 13; -fx-text-fill: #1a1a2e;"
@@ -319,7 +319,7 @@ public class AuctionDetailController {
 
   private Label buildBidEmptyState() {
     Label empty = new Label(
-        "Chua co ai dat gia trong phien nay");
+        "Chưa có ai đặt giá trong phiên này");
     empty.setStyle(
         "-fx-font-size: 13; -fx-text-fill: #bbb;"
         + " -fx-padding: 16 0;");
@@ -341,14 +341,14 @@ public class AuctionDetailController {
           LocalDateTime now = LocalDateTime.now();
 
           if (now.isBefore(endTime)) {
-            setStatus("Dang dau gia", "#34a853");
+            setStatus("Đang đấu giá", "#34a853");
             lblTimeRemaining.setText(
-                "Con: " + formatDuration(now, endTime));
+                "Còn: " + formatDuration(now, endTime));
             setBiddingEnabled(true);
           } else {
-            setStatus("Da ket thuc", "#ea4335");
+            setStatus("Đã kết thúc", "#ea4335");
             lblTimeRemaining.setText(
-                "Phien dau gia da khep lai");
+                "Phiên đấu giá đã kết thúc");
             setBiddingEnabled(false);
             timeline.stop();
           }
@@ -392,7 +392,7 @@ public class AuctionDetailController {
     long seconds = ChronoUnit.SECONDS.between(from, to);
     return days > 0
         ? String.format(
-            "%d ngay %02d:%02d:%02d",
+            "%d ngày %02d:%02d:%02d",
             days, hours, minutes, seconds)
         : String.format(
             "%02d:%02d:%02d",
@@ -428,7 +428,7 @@ public class AuctionDetailController {
       stage.show();
     } catch (IOException e) {
       showAlert(
-          "Khong the quay lai man hinh chinh!",
+          "Không thể quay lại màn hình chính!",
           Alert.AlertType.ERROR);
     }
   }
@@ -474,7 +474,7 @@ public class AuctionDetailController {
                               if (newEnd.isAfter(currentEndTime)) {
                                   currentEndTime = newEnd;
                                   DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-                                  lblEndTime.setText("Ket thuc: " + newEnd.format(fmt));
+                                  lblEndTime.setText("Kết thúc: " + newEnd.format(fmt));
                                   startCountdown(newEnd);
                               }
                           }
@@ -485,9 +485,9 @@ public class AuctionDetailController {
                           String msg = json.has("message") ? json.get("message").getAsString() : "";
 
                           if ("SUCCESS".equals(status)) {
-                              showAlert("Dat gia thanh cong!", Alert.AlertType.INFORMATION);
+                              showAlert("Đặt giá thành công!", Alert.AlertType.INFORMATION);
                           } else {
-                              showAlert(msg.isEmpty() ? "Dat gia that bai!" : msg, Alert.AlertType.ERROR);
+                              showAlert(msg.isEmpty() ? "Đặt giá thất bại!" : msg, Alert.AlertType.ERROR);
                           }
                           btnPlaceBid.setDisable(false);
                           btnPlaceBid.setText("Đặt giá");

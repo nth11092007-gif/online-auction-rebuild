@@ -98,7 +98,7 @@ public class ItemCardController {
         lblOwner.setText("Người bán: "
             + (session.getSeller() != null
                 ? session.getSeller().getUsername()
-                : "Unknown"));
+                : "Không xác định"));
         lblDescribe.setText("");
         logger.info("Cảnh báo: session {} không có item "
             + "— có thể Gson chưa map đúng field.",

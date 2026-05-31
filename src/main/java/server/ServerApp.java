@@ -20,8 +20,8 @@ public class ServerApp {
   public static void main(String[] args) {
     Scanner scanner = new Scanner(System.in);
 
-    System.out.println("=== Auction Server ===");
-    System.out.println("Port: " + DEFAULT_PORT);
+    System.out.println("=== Máy chủ Đấu giá ===");
+    System.out.println("Cổng: " + DEFAULT_PORT);
     System.out.println("Đang khởi động...");
 
     AuctionServer server = new AuctionServer(DEFAULT_PORT);

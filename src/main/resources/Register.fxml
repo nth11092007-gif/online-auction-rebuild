@@ -69,7 +69,7 @@
                         <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
                     </padding>
                 </VBox>
-                <Label text="Make by Huy" textFill="#8d8d8d">
+                <Label text="Tạo bởi Huy" textFill="#8d8d8d">
                     <font>
                         <Font size="10.0" />
                     </font>
