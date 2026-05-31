@@ -26,7 +26,7 @@
 //     @Mock private UserDAO userDAO;
 //     @Mock private BidDAO bidDAO;
 //     @Mock private AuctionSessionDAO sessionDAO;
-//     @Mock private ProxyBidDAOImpl proxyBidDAO;
+
 //     @Mock private AuctionFeedServer feedServer;
 
 //     private AuctionService auctionService;
@@ -37,7 +37,7 @@
 
 //     @BeforeEach
 //     void setUp() throws Exception {
-//         auctionService = new AuctionService(dataSource, userDAO, bidDAO, sessionDAO, proxyBidDAO);
+//         auctionService = new AuctionService(dataSource, userDAO, bidDAO, sessionDAO);
 //         auctionService.setFeedServer(feedServer);
 //         when(dataSource.getConnection()).thenReturn(connection);
 

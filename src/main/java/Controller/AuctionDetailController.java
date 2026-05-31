@@ -1,21 +1,13 @@
 package Controller;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-
-import javax.sql.DataSource;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import dao.BidDAO;
-import dao.BidDAOImpl;
-import dao.ProxyBidDAO;
-import dao.ProxyBidDAOImpl;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.embed.swing.SwingFXUtils;
@@ -31,7 +23,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
-import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -41,371 +32,506 @@ import javafx.util.Duration;
 import model.AuctionSession;
 import model.Bid;
 import model.Item;
-import service.AuctionService;
-import service.ProxyBiddingService;
-import utils.DBConnection;
-import utils.SessionManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import server.AuctionWebSocketClient;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import javafx.application.Platform;
+import service.AuctionService;
+import service.ServiceFactory;
+import utils.SessionManager;
 
+/** AuctionDetailController - controls the auction detail view with bidding and countdown. */
 public class AuctionDetailController {
 
-    @FXML private VBox Container;
-    @FXML private VBox bidHistoryContainer;
-    @FXML private Label lblBidCount;
-    @FXML private Spinner<Integer> bidSpinner;
-    @FXML private Label txtCurrentPrice;
-    @FXML private Label txtDescription;
-    @FXML private Label txtItemID;
-    @FXML private Label txtItemName;
-    @FXML private Label lblStatus;
-    @FXML private Label lblTimeRemaining;
-    @FXML private Label lblEndTime;
-    @FXML private Label lblHighestBidder;
-    @FXML private Label lblStartingPrice;
-    @FXML private Label lblIncrementStep;
-    @FXML private Button btnPlaceBid;
-    @FXML private HBox hboxQuickBids;
-    @FXML private ImageView imgItem;
-    @FXML private TextField txtMaxBid;
-    @FXML private Button btnSetAutoBid;
-    @FXML private Button btnCancelAutoBid;
-    @FXML private Label lblAutoBidStatus;
+  @FXML
+  private VBox Container;
+  @FXML
+  private VBox bidHistoryContainer;
+  @FXML
+  private Label lblBidCount;
+  @FXML
+  private Spinner<Integer> bidSpinner;
+  @FXML
+  private Label txtCurrentPrice;
+  @FXML
+  private Label txtDescription;
+  @FXML
+  private Label txtItemID;
+  @FXML
+  private Label txtItemName;
+  @FXML
+  private Label lblStatus;
+  @FXML
+  private Label lblTimeRemaining;
+  @FXML
+  private Label lblEndTime;
+  @FXML
+  private Label lblHighestBidder;
+  @FXML
+  private Button btnPlaceBid;
+  @FXML
+  private HBox hboxQuickBids;
+  @FXML
+  private ImageView imgItem;
+  @FXML
+  private Label lblStartingPrice;
+  @FXML
+  private Label lblIncrementStep;
 
+  private Item currentItem;
+  private String currentSessionId;
+  private int stepValue;
+  private Timeline timeline;
+  private double currentPriceValue = 0;
+  private int creatorId = -1;
+  private LocalDateTime currentEndTime;
 
-    private Item currentItem;
-    private String currentSessionId;
-    private int stepValue;
-    private LocalDateTime countdownStart;
-    private LocalDateTime countdownEnd;
-    private Timeline timeline;
-    private double currentPriceValue = 0;
-    private int creatorId = -1;
+  private final AuctionService auctionService =
+      ServiceFactory.getInstance().getAuctionService();
+  private final Logger logger =
+      LoggerFactory.getLogger(AuctionDetailController.class);
 
-    private final AuctionService auctionService = new AuctionService();
-    private final ProxyBiddingService proxyBiddingService =
-            new ProxyBiddingService(auctionService);
-    private final BidDAO bidDAO = new BidDAOImpl();
-    private final ProxyBidDAO proxyBidDAO = new ProxyBidDAOImpl();
-    private final DataSource dataSource = DBConnection.getDataSource();
-    private final Logger logger = LoggerFactory.getLogger(AuctionDetailController.class);
+  @FXML
+  public void initialize() { }
 
-    @FXML
-    public void initialize() { }
+  /**
+   * Populates the view with auction session data and starts the countdown.
+   *
+   * @param session the auction session to display
+   */
+  public void setAuctionData(AuctionSession session) {
+    if (session == null || session.getItem() == null) {
+      return;
+    }
 
+    this.currentItem = session.getItem();
+    this.currentSessionId = session.getSessionId();
+    this.stepValue = (int) session.getIncrementStep();
+    this.currentPriceValue = session.getCurrentPrice();
 
-    public void setAuctionData(AuctionSession session) {
-        if (session == null || session.getItem() == null) return;
+    if (session.getSeller() != null) {
+      this.creatorId = session.getSeller().getId();
+    }
 
-        this.currentItem = session.getItem();
-        this.currentSessionId = session.getSessionID();
-        this.stepValue = (int) session.getIncrementStep();
-        this.currentPriceValue = session.getCurrentPrice();
+    txtItemID.setText(
+        "ID: " + currentItem.getItemId());
+    txtItemName.setText(currentItem.getItemName());
+    txtDescription.setText(currentItem.getDescription());
+    lblStartingPrice.setText(
+        Double.toString(session.getStartingPrice()));
+    lblIncrementStep.setText(
+        Double.toString(session.getIncrementStep()));
 
-        if (session.getSeller() != null) {
-            this.creatorId = session.getSeller().getID();
-        }
+    BufferedImage bufferedImage = session.getItem().getAvatar();
+    if (bufferedImage != null) {
+      imgItem.setImage(
+          SwingFXUtils.toFXImage(bufferedImage, null));
+    }
 
-        txtItemID.setText("ID: " + currentItem.getItemID());
-        txtItemName.setText(currentItem.getItemName());
-        txtDescription.setText(currentItem.getDescription());
-        lblStartingPrice.setText(Double.toString(session.getStartingPrice()));
-        lblIncrementStep.setText(Double.toString(session.getIncrementStep()));
+    txtCurrentPrice.setText(
+        String.format("%,.0f VND", currentPriceValue));
+    updateBidSpinner((int) currentPriceValue);
 
-        BufferedImage bImage = session.getItem().getAvatar();
-        if (bImage != null) {
-            imgItem.setImage(SwingFXUtils.toFXImage(bImage, null));
-        }
+    if (session.getHighestBidder() != null) {
+      lblHighestBidder.setText("Nguoi dan dau: "
+          + session.getHighestBidder().getUsername());
+    } else {
+      lblHighestBidder.setText("Chua co ai dat gia.");
+    }
 
-        txtCurrentPrice.setText(String.format("%,.0f VND", currentPriceValue));
+    DateTimeFormatter fmt =
+        DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+    lblEndTime.setText(
+        "Ket thuc: " + session.getEndTime().format(fmt));
+
+    startCountdown(session);
+    loadBidHistory();
+    setupWebSocket();
+  }
+
+  private void refreshCurrentPrice() {
+    try {
+      AuctionSession latest =
+          auctionService.getSessionById(currentSessionId);
+      if (latest != null) {
+        currentPriceValue = latest.getCurrentPrice();
+        txtCurrentPrice.setText(
+            String.format("%,.0f VND", currentPriceValue));
         updateBidSpinner((int) currentPriceValue);
 
-        if (session.getHighestBidder() != null) {
-            lblHighestBidder.setText("Nguoi dan dau: " + session.getHighestBidder().getUsername());
-        } else {
-            lblHighestBidder.setText("Chua co ai dat gia.");
+        if (latest.getHighestBidder() != null) {
+          lblHighestBidder.setText("Nguoi dan dau: "
+              + latest.getHighestBidder().getUsername());
         }
+      }
+    } catch (Exception e) {
+      logger.error(
+          "Loi refresh current price: {}", e.getMessage());
+    }
+  }
 
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-        lblEndTime.setText("Ket thuc: " + session.getEndTime().format(fmt));
-
-        startCountdown(session);
-        loadBidHistory();
-        setupWebSocket();
-
+  @FXML
+  void handleBid(ActionEvent event) {
+    if (SessionManager.getCurrentUser() == null) {
+      showAlert("Vui long dang nhap de dat gia!",
+          Alert.AlertType.WARNING);
+      return;
+    }
+    if (SessionManager.getCurrentUser().getId()
+        == creatorId) {
+      showAlert(
+          "Lỗi: Bạn không thể tự đặt giá cho "
+          + "phiên đấu giá của chính mình!",
+          Alert.AlertType.WARNING);
+      return;
+    }
+    if (currentSessionId == null) {
+      showAlert(
+          "Loi: Khong tim thay thong tin phien dau gia!",
+          Alert.AlertType.ERROR);
+      return;
     }
 
-    private void refreshCurrentPrice() {
-        try {
-            AuctionSession latest = auctionService.getSessionById(currentSessionId);
-            if (latest != null) {
-                currentPriceValue = latest.getCurrentPrice();
-                txtCurrentPrice.setText(String.format("%,.0f VND", currentPriceValue));
-                updateBidSpinner((int) currentPriceValue);
+    btnPlaceBid.setDisable(true);
+    btnPlaceBid.setText("Dang dat gia...");
 
-                if (latest.getHighestBidder() != null) {
-                    lblHighestBidder.setText("Nguoi dan dau: "
-                            + latest.getHighestBidder().getUsername());
-                }
-            }
-        } catch (Exception e) {
-            logger.error("Loi refresh current price: {}", e.getMessage());
-        }
+    int bidAmount = bidSpinner.getValue();
+    JsonObject bidData = new JsonObject();
+    bidData.addProperty("auctionId", currentSessionId);
+    bidData.addProperty("amount", bidAmount);
+
+    AuctionWebSocketClient wsClient =
+        MainApp.getWebSocketClient();
+    if (wsClient == null || !wsClient.isOpen()) {
+      showAlert(
+          "Không thể kết nối đến server đấu giá. "
+          + "Vui lòng kiểm tra server và thử lại!",
+          Alert.AlertType.ERROR);
+      btnPlaceBid.setDisable(false);
+      btnPlaceBid.setText("Đặt giá");
+      return;
+    }
+    wsClient.sendCommand("BID", bidData);
+  }
+
+  @FXML
+  void handleQuickBid(ActionEvent event) {
+    Button btn = (Button) event.getSource();
+    int add = switch (btn.getText()) {
+      case "+0.5M" -> 500_000;
+      case "+1.0M" -> 1_000_000;
+      case "+2.5M" -> 2_500_000;
+      default -> 0;
+    };
+    bidSpinner.getValueFactory().setValue(
+        bidSpinner.getValue() + add);
+  }
+
+  private void loadBidHistory() {
+    if (bidHistoryContainer == null
+        || currentSessionId == null) {
+      return;
+    }
+    bidHistoryContainer.getChildren().clear();
+
+    List<Bid> bids =
+        auctionService.getBidsBySession(currentSessionId);
+    if (lblBidCount != null) {
+      lblBidCount.setText(bids.size() + " luot");
     }
 
-    @FXML
-    void HandleBid(ActionEvent event) {
-        if (SessionManager.getCurrentUser() == null) {
-            showAlert("Vui long dang nhap de dat gia!", Alert.AlertType.WARNING);
-            return;
-        }
-        if (SessionManager.getCurrentUser().getID() == creatorId ) {
-            showAlert("Lỗi: Bạn không thể tự đặt giá cho phiên đấu giá của chính mình!", Alert.AlertType.WARNING);
-            return;
-        }
-        if (currentSessionId == null) {
-            showAlert("Loi: Khong tim thay thong tin phien dau gia!", Alert.AlertType.ERROR);
-            return;
-        }
+    if (bids.isEmpty()) {
+      bidHistoryContainer.getChildren()
+          .add(buildBidEmptyState());
+      return;
+    }
+    for (int i = 0; i < bids.size(); i++) {
+      bidHistoryContainer.getChildren()
+          .add(buildBidRow(bids.get(i), i));
+    }
+  }
 
-        int bidAmount = bidSpinner.getValue();
-        int currentUserId = SessionManager.getCurrentUser().getID();
-        boolean isSuccess = auctionService.placeBid(currentUserId, currentSessionId, bidAmount);
+  private HBox buildBidRow(Bid bid, int rank) {
+    HBox row = new HBox(0);
+    row.setAlignment(Pos.CENTER_LEFT);
+    boolean isTop = rank == 0;
+    row.setStyle(isTop ? """
+            -fx-background-color: #f0f7ff;
+            -fx-background-radius: 10;
+            -fx-border-color: #b3d1ff;
+            -fx-border-radius: 10;
+            -fx-border-width: 1.5;
+            -fx-padding: 10 14;
+            """ : """
+            -fx-background-color: white;
+            -fx-background-radius: 10;
+            -fx-border-color: #f0f4ff;
+            -fx-border-radius: 10;
+            -fx-border-width: 1.5;
+            -fx-padding: 10 14;
+            """);
 
-        if (isSuccess) {
-            currentPriceValue = bidAmount;
-            txtCurrentPrice.setText(String.format("%,d VND", bidAmount));
-            updateBidSpinner(bidAmount);
-            SessionManager.getCurrentUser().withdraw(bidAmount);
-            lblHighestBidder.setText("Nguoi dan dau: "
-                    + SessionManager.getCurrentUser().getUsername());
+    String username = (bid.getBidder() != null)
+        ? bid.getBidder().getUsername() : "An danh";
+    Label name = new Label(username);
+    name.setStyle(isTop
+        ? "-fx-font-size: 13; -fx-text-fill: #1a1a2e;"
+          + " -fx-font-weight: bold;"
+        : "-fx-font-size: 13; -fx-text-fill: #444;");
+    HBox.setHgrow(name, Priority.ALWAYS);
 
-            loadBidHistory();
-            refreshCurrentPrice();
+    Label amount = new Label(
+        String.format("%,.0f d", bid.getAmount()));
+    amount.setPrefWidth(150);
+    amount.setStyle(isTop
+        ? "-fx-font-size: 14; -fx-text-fill: #1a73e8;"
+          + " -fx-font-weight: bold;"
+        : "-fx-font-size: 13; -fx-text-fill: #555;");
 
-            showAlert("Dat gia thanh cong!", Alert.AlertType.INFORMATION);
-        } else {
-            showAlert("Dat gia that bai! Kiem tra lai so du hoac da co nguoi tra gia cao hon.",
-                    Alert.AlertType.ERROR);
-        }
+    String rankText = "#" + (rank + 1);
+    String rankStyle = switch (rank) {
+      case 0 ->
+          "-fx-background-color: #ffd700;"
+          + " -fx-text-fill: #7a5c00;";
+      case 1 ->
+          "-fx-background-color: #e0e0e0;"
+          + " -fx-text-fill: #555;";
+      case 2 ->
+          "-fx-background-color: #ffe0cc;"
+          + " -fx-text-fill: #b85c00;";
+      default ->
+          "-fx-background-color: #f5f5f5;"
+          + " -fx-text-fill: #888;";
+    };
+    Label rankLabel = new Label(rankText);
+    rankLabel.setPrefWidth(60);
+    rankLabel.setAlignment(Pos.CENTER);
+    rankLabel.setStyle(rankStyle
+        + "-fx-font-size: 11; -fx-font-weight: bold;"
+        + "-fx-background-radius: 6; -fx-padding: 3 6;");
+
+    row.getChildren().addAll(name, amount, rankLabel);
+    return row;
+  }
+
+  private Label buildBidEmptyState() {
+    Label empty = new Label(
+        "Chua co ai dat gia trong phien nay");
+    empty.setStyle(
+        "-fx-font-size: 13; -fx-text-fill: #bbb;"
+        + " -fx-padding: 16 0;");
+    return empty;
+  }
+
+  private void startCountdown(AuctionSession session) {
+    this.currentEndTime = session.getEndTime();
+    startCountdown(session.getEndTime());
+  }
+
+  private void startCountdown(LocalDateTime endTime) {
+    if (timeline != null) {
+      timeline.stop();
     }
 
-    @FXML
-    void handleQuickBid(ActionEvent event) {
-        Button btn = (Button) event.getSource();
-        int add = switch (btn.getText()) {
-            case "+0.5M" -> 500_000;
-            case "+1.0M" -> 1_000_000;
-            case "+2.5M" -> 2_500_000;
-            default      -> 0;
-        };
-        bidSpinner.getValueFactory().setValue(bidSpinner.getValue() + add);
-    }
+    timeline = new Timeline(
+        new KeyFrame(Duration.seconds(1), e -> {
+          LocalDateTime now = LocalDateTime.now();
 
-    private void loadBidHistory() {
-        if (bidHistoryContainer == null || currentSessionId == null) return;
-        bidHistoryContainer.getChildren().clear();
-
-        List<Bid> bids = bidDAO.getBidsBySession(currentSessionId);
-        if (lblBidCount != null) lblBidCount.setText(bids.size() + " luot");
-
-        if (bids.isEmpty()) {
-            bidHistoryContainer.getChildren().add(buildBidEmptyState());
-            return;
-        }
-        for (int i = 0; i < bids.size(); i++) {
-            bidHistoryContainer.getChildren().add(buildBidRow(bids.get(i), i));
-        }
-    }
-
-    private HBox buildBidRow(Bid bid, int rank) {
-        HBox row = new HBox(0);
-        row.setAlignment(Pos.CENTER_LEFT);
-        boolean isTop = rank == 0;
-        row.setStyle(isTop ? """
-                -fx-background-color: #f0f7ff;
-                -fx-background-radius: 10;
-                -fx-border-color: #b3d1ff;
-                -fx-border-radius: 10;
-                -fx-border-width: 1.5;
-                -fx-padding: 10 14;
-                """ : """
-                -fx-background-color: white;
-                -fx-background-radius: 10;
-                -fx-border-color: #f0f4ff;
-                -fx-border-radius: 10;
-                -fx-border-width: 1.5;
-                -fx-padding: 10 14;
-                """);
-
-        String username = (bid.getBidder() != null) ? bid.getBidder().getUsername() : "An danh";
-        Label name = new Label(username);
-        name.setStyle(isTop
-                ? "-fx-font-size: 13; -fx-text-fill: #1a1a2e; -fx-font-weight: bold;"
-                : "-fx-font-size: 13; -fx-text-fill: #444;");
-        HBox.setHgrow(name, Priority.ALWAYS);
-
-        Label amount = new Label(String.format("%,.0f d", bid.getAmount()));
-        amount.setPrefWidth(150);
-        amount.setStyle(isTop
-                ? "-fx-font-size: 14; -fx-text-fill: #1a73e8; -fx-font-weight: bold;"
-                : "-fx-font-size: 13; -fx-text-fill: #555;");
-
-        String rankText  = rank < 3 ? "#" + (rank + 1) : "#" + (rank + 1);
-        String rankStyle = switch (rank) {
-            case 0 -> "-fx-background-color: #ffd700; -fx-text-fill: #7a5c00;";
-            case 1 -> "-fx-background-color: #e0e0e0; -fx-text-fill: #555;";
-            case 2 -> "-fx-background-color: #ffe0cc; -fx-text-fill: #b85c00;";
-            default -> "-fx-background-color: #f5f5f5; -fx-text-fill: #888;";
-        };
-        Label rankLabel = new Label(rankText);
-        rankLabel.setPrefWidth(60);
-        rankLabel.setAlignment(Pos.CENTER);
-        rankLabel.setStyle(rankStyle
-                + "-fx-font-size: 11; -fx-font-weight: bold;"
-                + "-fx-background-radius: 6; -fx-padding: 3 6;");
-
-        row.getChildren().addAll(name, amount, rankLabel);
-        return row;
-    }
-
-    private Label buildBidEmptyState() {
-        Label empty = new Label("Chua co ai dat gia trong phien nay");
-        empty.setStyle("-fx-font-size: 13; -fx-text-fill: #bbb; -fx-padding: 16 0;");
-        return empty;
-    }
-
-    // ─── COUNTDOWN ───────────────────────────────────────────────────
-
-    private void startCountdown(AuctionSession session) {
-        if (timeline != null) timeline.stop();
-
-        timeline = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
-            LocalDateTime now   = LocalDateTime.now();
-            LocalDateTime start = session.getStartTime();
-            LocalDateTime end   = session.getEndTime();
-
-            if (now.isBefore(start)) {
-                setStatus("Sap dien ra", "#fbbc04");
-                lblTimeRemaining.setText("Bat dau sau: " + formatDuration(now, start));
-                setBiddingEnabled(false);
-
-
-            } else if (now.isBefore(end)) {
-                setStatus("Dang dau gia", "#34a853");
-                lblTimeRemaining.setText("Con: " + formatDuration(now, end));
-                setBiddingEnabled(true);
-
-            } else {
-                setStatus("Da ket thuc", "#ea4335");
-                lblTimeRemaining.setText("Phien dau gia da khep lai");
-                setBiddingEnabled(false);
-
-                if (session.getHighestBidder() != null) {
-                    lblHighestBidder.setText("Nguoi chien thang: "
-                            + session.getHighestBidder().getUsername());
-                    lblHighestBidder.setStyle("-fx-text-fill: #d81b60; -fx-font-weight: bold;");
-                } else {
-                    lblHighestBidder.setText("Vat pham chua duoc ban.");
-                }
-                timeline.stop();
-            }
+          if (now.isBefore(endTime)) {
+            setStatus("Dang dau gia", "#34a853");
+            lblTimeRemaining.setText(
+                "Con: " + formatDuration(now, endTime));
+            setBiddingEnabled(true);
+          } else {
+            setStatus("Da ket thuc", "#ea4335");
+            lblTimeRemaining.setText(
+                "Phien dau gia da khep lai");
+            setBiddingEnabled(false);
+            timeline.stop();
+          }
         }));
 
-        timeline.setCycleCount(Timeline.INDEFINITE);
-        timeline.play();
+    timeline.setCycleCount(Timeline.INDEFINITE);
+    timeline.play();
+  }
+
+  private void setStatus(String text, String color) {
+    lblStatus.setText(text);
+    lblStatus.setStyle(
+        "-fx-background-color: " + color
+        + "; -fx-text-fill: white;"
+        + " -fx-padding: 6 14;"
+        + " -fx-background-radius: 20;"
+        + "-fx-font-size: 12;"
+        + " -fx-font-weight: bold;");
+  }
+
+  private void setBiddingEnabled(boolean enabled) {
+    if (btnPlaceBid != null) {
+      btnPlaceBid.setDisable(!enabled);
+    }
+    if (hboxQuickBids != null) {
+      hboxQuickBids.setDisable(!enabled);
+    }
+    if (bidSpinner != null) {
+      bidSpinner.setDisable(!enabled);
+    }
+  }
+
+  private String formatDuration(
+      LocalDateTime from, LocalDateTime to) {
+    long days = ChronoUnit.DAYS.between(from, to);
+    from = from.plusDays(days);
+    long hours = ChronoUnit.HOURS.between(from, to);
+    from = from.plusHours(hours);
+    long minutes = ChronoUnit.MINUTES.between(from, to);
+    from = from.plusMinutes(minutes);
+    long seconds = ChronoUnit.SECONDS.between(from, to);
+    return days > 0
+        ? String.format(
+            "%d ngay %02d:%02d:%02d",
+            days, hours, minutes, seconds)
+        : String.format(
+            "%02d:%02d:%02d",
+            hours, minutes, seconds);
+  }
+
+  private void updateBidSpinner(int currentPrice) {
+    bidSpinner.setValueFactory(
+        new SpinnerValueFactory
+            .IntegerSpinnerValueFactory(
+            currentPrice + stepValue,
+            Integer.MAX_VALUE,
+            currentPrice + stepValue, stepValue));
+  }
+
+  @FXML
+  void handleGoBack(ActionEvent event) {
+    if (timeline != null) {
+      timeline.stop();
+    }
+    AuctionWebSocketClient wsClient =
+        MainApp.getWebSocketClient();
+    if (wsClient != null) {
+      wsClient.setOnMessageCallback(null);
+    }
+    try {
+      Parent root = FXMLLoader.load(
+          getClass().getResource("/Home.fxml"));
+      Stage stage =
+          (Stage) ((Node) event.getSource())
+              .getScene().getWindow();
+      stage.setScene(new Scene(root));
+      stage.show();
+    } catch (IOException e) {
+      showAlert(
+          "Khong the quay lai man hinh chinh!",
+          Alert.AlertType.ERROR);
+    }
+  }
+
+  private void showAlert(
+      String content, Alert.AlertType type) {
+    Alert alert = new Alert(type);
+    alert.setHeaderText(null);
+    alert.setContentText(content);
+    alert.showAndWait();
+  }
+
+  private void setupWebSocket() {
+    AuctionWebSocketClient wsClient =
+        MainApp.getWebSocketClient();
+    if (wsClient == null) {
+      logger.error("WebSocket client không khả dụng "
+          + "- không thể thiết lập callback");
+      return;
     }
 
-    private void setStatus(String text, String color) {
-        lblStatus.setText(text);
-        lblStatus.setStyle("-fx-background-color: " + color
-                + "; -fx-text-fill: white; -fx-padding: 6 14; -fx-background-radius: 20;"
-                + "-fx-font-size: 12; -fx-font-weight: bold;");
-    }
-
-    private void setBiddingEnabled(boolean enabled) {
-        if (btnPlaceBid != null) btnPlaceBid.setDisable(!enabled);
-        if (hboxQuickBids != null) hboxQuickBids.setDisable(!enabled);
-        if (bidSpinner != null) bidSpinner.setDisable(!enabled);
-    }
-
-    private String formatDuration(LocalDateTime from, LocalDateTime to) {
-        long days    = ChronoUnit.DAYS.between(from, to);   from = from.plusDays(days);
-        long hours   = ChronoUnit.HOURS.between(from, to);  from = from.plusHours(hours);
-        long minutes = ChronoUnit.MINUTES.between(from, to); from = from.plusMinutes(minutes);
-        long seconds = ChronoUnit.SECONDS.between(from, to);
-        return days > 0
-                ? String.format("%d ngay %02d:%02d:%02d", days, hours, minutes, seconds)
-                : String.format("%02d:%02d:%02d", hours, minutes, seconds);
-    }
-
-    private void updateBidSpinner(int currentPrice) {
-        bidSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(
-                currentPrice + stepValue, Integer.MAX_VALUE,
-                currentPrice + stepValue, stepValue));
-    }
-
-
-    @FXML
-    void HandleGoBack(ActionEvent event) {
-        if (timeline != null) timeline.stop();
-        AuctionWebSocketClient.getInstance().setOnMessageCallback(null);
-        try {
-            Parent root = FXMLLoader.load(getClass().getResource("/Home.fxml"));
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.show();
-        } catch (IOException e) {
-            showAlert("Khong the quay lai man hinh chinh!", Alert.AlertType.ERROR);
+    wsClient.setOnMessageCallback(message -> {
+      try {
+        JsonObject json =
+            JsonParser.parseString(message)
+                .getAsJsonObject();
+        if (!json.has("type")) {
+          return;
         }
-    }
 
+        String type = json.get("type").getAsString();
 
-    private void showAlert(String content, Alert.AlertType type) {
-        Alert alert = new Alert(type);
-        alert.setHeaderText(null);
-        alert.setContentText(content);
-        alert.showAndWait();
-    }
-
-    private void setupWebSocket() {
-        AuctionWebSocketClient wsClient = AuctionWebSocketClient.getInstance();
-
-        // Đăng ký xử lý tin nhắn từ Server
-        wsClient.setOnMessageCallback(message -> {
-            try {
-                JsonObject json = JsonParser.parseString(message).getAsJsonObject();
-                if (!json.has("type")) return;
-
-                String type = json.get("type").getAsString();
-
-                if ("BID_UPDATE".equals(type) || "UPDATE".equals(type)) {
-                    // Có thể kiểm tra thêm sessionId nếu server gửi kèm để chắc chắn
-                    if (json.has("sessionId") && !json.get("sessionId").getAsString().equals(currentSessionId)) {
-                        return;
-                    }
-
-                    // Cập nhật lại giao diện (giá hiện tại và lịch sử đấu giá)
-                    refreshCurrentPrice();
-                    loadBidHistory();
-                }
-                else if ("SESSION_SETTLED".equals(type)) {
-                    // Cập nhật giao diện khi phiên đấu giá kết thúc
-                    setStatus("Đã kết thúc", "#ea4335");
-                    setBiddingEnabled(false);
-                    if (timeline != null) timeline.stop();
-                }
-
-            } catch (Exception e) {
-                logger.error("Lỗi khi xử lý tin nhắn WebSocket: {}", e.getMessage());
+        switch (type) {
+          case "NEW_BID", "BID_UPDATE", "UPDATE" -> {
+            if (json.has("sessionId")
+                && !json.get("sessionId")
+                    .getAsString()
+                    .equals(currentSessionId)) {
+              return;
             }
-        });
 
-        // Báo cho Server biết client này muốn theo dõi phiên đấu giá currentSessionId
-        JsonObject joinData = new JsonObject();
-        joinData.addProperty("sessionId", currentSessionId);
-        wsClient.sendCommand("JOIN", joinData);
-    }
+            refreshCurrentPrice();
+            loadBidHistory();
+
+            if (json.has("endTime")) {
+              LocalDateTime newEnd =
+                  LocalDateTime.parse(
+                      json.get("endTime")
+                          .getAsString());
+              if (newEnd.isAfter(currentEndTime)) {
+                currentEndTime = newEnd;
+                DateTimeFormatter fmt =
+                    DateTimeFormatter.ofPattern(
+                        "dd/MM/yyyy HH:mm");
+                lblEndTime.setText(
+                    "Ket thuc: "
+                    + newEnd.format(fmt));
+                startCountdown(newEnd);
+              }
+            }
+          }
+
+          case "PLACE_BID_RESULT" -> {
+            String status = json.has("status")
+                ? json.get("status").getAsString()
+                : "";
+            String msg = json.has("message")
+                ? json.get("message").getAsString()
+                : "";
+
+            if ("SUCCESS".equals(status)) {
+              showAlert("Dat gia thanh cong!",
+                  Alert.AlertType.INFORMATION);
+            } else {
+              showAlert(
+                  msg.isEmpty()
+                      ? "Dat gia that bai! "
+                      + "Kiem tra lai so du hoac "
+                      + "da co nguoi tra gia cao hon."
+                      : msg,
+                  Alert.AlertType.ERROR);
+            }
+
+            btnPlaceBid.setDisable(false);
+            btnPlaceBid.setText("Đặt giá");
+          }
+
+          case "SESSION_SETTLED" -> {
+            setStatus("Đã kết thúc", "#ea4335");
+            setBiddingEnabled(false);
+            if (timeline != null) {
+              timeline.stop();
+            }
+          }
+
+          default -> { }
+        }
+
+      } catch (Exception e) {
+        logger.error(
+            "Lỗi khi xử lý tin nhắn WebSocket: {}",
+            e.getMessage());
+      }
+    });
+
+    JsonObject joinData = new JsonObject();
+    joinData.addProperty("sessionId", currentSessionId);
+    wsClient.sendCommand("JOIN", joinData);
+  }
 }

@@ -45,7 +45,7 @@ class AuctionServerTest {
         String msg = "{\"type\":\"BID\", \"auctionId\":\"SS001\", \"amount\":150.0}";
         when(webSocket.getAttachment()).thenReturn("bidder1");
         User bidder = mock(User.class);
-        when(bidder.getID()).thenReturn(2);
+        when(bidder.getId()).thenReturn(2);
         when(userService.getUserByUsername("bidder1")).thenReturn(bidder);
         when(auctionService.placeBid(2, "SS001", 150.0)).thenReturn(true);
 

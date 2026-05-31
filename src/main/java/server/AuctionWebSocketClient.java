@@ -1,90 +1,87 @@
 package server;
 
+import com.google.gson.JsonObject;
 import java.net.URI;
 import java.util.function.Consumer;
-
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.google.gson.JsonObject;
-
+/** AuctionWebSocketClient - WebSocket client for connecting to the auction server. */
 public class AuctionWebSocketClient extends WebSocketClient {
-    private static AuctionWebSocketClient instance;
-    private Consumer<String> onMessageCallback;
 
-    private AuctionWebSocketClient(URI serverUri) {
-        super(serverUri);
+  private static final Logger logger =
+      LoggerFactory.getLogger(AuctionWebSocketClient.class);
+
+  private static final String DEFAULT_URI = "ws://localhost:8887";
+
+  private Consumer<String> onMessageCallback;
+
+  public AuctionWebSocketClient(URI serverUri) {
+    super(serverUri);
+  }
+
+  /**
+   * Tao client moi voi URI mac dinh.
+   * Moi client instance nen tao 1 AuctionWebSocketClient rieng
+   * de co ket noi WebSocket doc lap.
+   */
+  public AuctionWebSocketClient() {
+    this(URI.create(DEFAULT_URI));
+  }
+
+  public void setOnMessageCallback(Consumer<String> callback) {
+    this.onMessageCallback = callback;
+  }
+
+  @Override
+  public void onOpen(ServerHandshake handshake) {
+    logger.info("WebSocket connected to server");
+  }
+
+  @Override
+  public void onMessage(String message) {
+    if (onMessageCallback != null) {
+      // Dam bao cap nhat UI tren JavaFX Application Thread
+      javafx.application.Platform.runLater(
+          () -> onMessageCallback.accept(message));
+    }
+  }
+
+  @Override
+  public void onClose(int code, String reason, boolean remote) {
+    logger.info("WebSocket closed: {}", reason);
+  }
+
+  @Override
+  public void onError(Exception ex) {
+    logger.error("WebSocket error: {}", ex.getMessage(), ex);
+  }
+
+  /**
+   * Sends a JSON command to the auction server via WebSocket.
+   *
+   * @param type the command type identifier
+   * @param data the JSON payload for the command
+   */
+  public void sendCommand(String type, JsonObject data) {
+    JsonObject msg = new JsonObject();
+    msg.addProperty("type", type);
+
+    // Gop cac thuoc tinh tu data vao msg
+    if (data != null) {
+      for (String key : data.keySet()) {
+        msg.add(key, data.get(key));
+      }
     }
 
-    public static AuctionWebSocketClient getInstance() {
-        if (instance == null) {
-            try {
-                instance = new AuctionWebSocketClient(new URI("ws://localhost:8887"));
-                instance.connectBlocking();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        return instance;
-    }   
-
-    public void setOnMessageCallback(Consumer<String> callback) {
-        this.onMessageCallback = callback;
+    // Gui chuoi JSON qua WebSocket
+    if (this.isOpen()) {
+      send(msg.toString());
+    } else {
+      logger.error(
+          "WebSocket chưa mở, không thể gửi lệnh: {}", type);
     }
-
-    @Override
-    public void onOpen(ServerHandshake handshake) {
-        System.out.println("WebSocket connected to server");
-    }
-
-    @Override
-    public void onMessage(String message) {
-        if (onMessageCallback != null) {
-            // Đảm bảo cập nhật UI trên JavaFX Application Thread
-            javafx.application.Platform.runLater(() -> onMessageCallback.accept(message));
-        }
-    }
-
-    @Override
-    public void onClose(int code, String reason, boolean remote) {
-        System.out.println("WebSocket closed: " + reason);
-    }
-
-    @Override
-    public void onError(Exception ex) {
-        System.err.println("WebSocket error: " + ex.getMessage());
-    }
-
-    public void sendJson(JsonObject msg) {
-        if (msg != null && isOpen()) {
-            send(msg.toString());
-        }
-    }
-
-    public void login(String username, String password) {
-        JsonObject msg = new JsonObject();
-        msg.addProperty("type", "LOGIN");
-        msg.addProperty("username", username);
-        msg.addProperty("password", password);
-        sendJson(msg);
-    }
-
-    public void joinSession(String sessionId) {
-        JsonObject msg = new JsonObject();
-        msg.addProperty("type", type);
-
-        // Gộp các thuộc tính từ data vào msg
-        if (data != null) {
-            for (String key : data.keySet()) {
-                msg.add(key, data.get(key));
-            }
-        }
-
-        // Gửi chuỗi JSON qua WebSocket
-        if (this.isOpen()) {
-            send(msg.toString());
-        } else {
-            System.err.println("WebSocket chưa mở, không thể gửi lệnh: " + type);
-        }
-    }
+  }
 }

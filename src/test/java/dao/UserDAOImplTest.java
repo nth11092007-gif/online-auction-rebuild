@@ -45,7 +45,7 @@ class UserDAOImplTest {
 
         User user = new User("Real", "user1", "e@mail", "pass", "0123");
         assertTrue(userDAO.register(user));
-        assertEquals(42, user.getID());
+        assertEquals(42, user.getId());
     }
 
     @Test
@@ -55,7 +55,7 @@ class UserDAOImplTest {
 
         User user = new User("Real", "user1", "e@mail", "pass", "0123");
         assertFalse(userDAO.register(user));
-        assertEquals(0, user.getID());
+        assertEquals(0, user.getId());
     }
 
     // ==================== LOGIN ====================

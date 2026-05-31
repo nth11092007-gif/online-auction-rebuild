@@ -38,7 +38,7 @@ public class TestUserDAO {
         System.out.println("\n[Test 3]: Nạp thêm tiền cho Admin");
         // Giả sử nạp thêm 500k vào ví, tiền cọc giữ nguyên
         try {
-            boolean napTien = userDAO.updateBalance(admin.getID(), admin.getBalance() + 500000, admin.getFrozenBalance());
+            boolean napTien = userDAO.updateBalance(admin.getId(), admin.getBalance() + 500000, admin.getFrozenBalance());
             if (napTien) {
                 System.out.println("-> Cập nhật số dư THÀNH CÔNG!");
             } else {

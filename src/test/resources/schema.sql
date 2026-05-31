@@ -9,7 +9,8 @@ CREATE TABLE IF NOT EXISTS users (
     role VARCHAR(20),
     balance DOUBLE DEFAULT 0,
     frozen_balance DOUBLE DEFAULT 0,
-    status VARCHAR(20) DEFAULT 'ACTIVE'
+    status VARCHAR(20) DEFAULT 'ACTIVE',
+    is_banned BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE IF NOT EXISTS items (
@@ -52,13 +53,3 @@ CREATE TABLE IF NOT EXISTS bids (
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
-CREATE TABLE IF NOT EXISTS proxy_bids (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    session_id VARCHAR(50),
-    user_id INT,
-    max_amount DOUBLE NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    active TINYINT(1) DEFAULT 1,
-    FOREIGN KEY (session_id) REFERENCES auction_sessions(session_id),
-    FOREIGN KEY (user_id) REFERENCES users(id)
-);

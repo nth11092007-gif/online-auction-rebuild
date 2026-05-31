@@ -43,7 +43,7 @@
 
                     <Region HBox.hgrow="ALWAYS" />
 
-                    <Button onAction="#GoToCreateSession"
+                    <Button onAction="#goToCreateSession"
                             style="-fx-background-color: #1a73e8;
                                    -fx-text-fill: white;
                                    -fx-font-size: 13;
@@ -53,7 +53,7 @@
                                    -fx-cursor: hand;"
                             text="＋  Tạo phiên" />
 
-                    <Button onAction="#GoToProfile"
+                    <Button onAction="#goToProfile"
                             style="-fx-background-color: #f0f4ff;
                                    -fx-text-fill: #2d6cdf;
                                    -fx-font-size: 13;

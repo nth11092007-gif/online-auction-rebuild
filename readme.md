@@ -51,8 +51,6 @@ Phạm vi:
  ┃ ┃ ┃ ┣ 📜BidDAOImpl.java
  ┃ ┃ ┃ ┣ 📜ItemDAO.java
  ┃ ┃ ┃ ┣ 📜ItemDAOImpl.java
- ┃ ┃ ┃ ┣ 📜ProxyBidDAO.java
- ┃ ┃ ┃ ┣ 📜ProxyBidDAOImpl.java
  ┃ ┃ ┃ ┣ 📜UserDAO.java
  ┃ ┃ ┃ ┗ 📜UserDAOImpl.java
  ┃ ┃ ┣ 📂database
@@ -83,7 +81,6 @@ Phạm vi:
  ┃ ┃ ┃ ┣ 📜Electronics.java
  ┃ ┃ ┃ ┣ 📜Item.java
  ┃ ┃ ┃ ┣ 📜ItemsAttributes.java
- ┃ ┃ ┃ ┣ 📜ProxyBid.java
  ┃ ┃ ┃ ┣ 📜Seller.java
  ┃ ┃ ┃ ┣ 📜Transaction.java
  ┃ ┃ ┃ ┣ 📜User.java
@@ -95,7 +92,6 @@ Phạm vi:
  ┃ ┃ ┃ ┃ ┣ 📜GetUserCommand.java
  ┃ ┃ ┃ ┃ ┣ 📜JoinSessionCommand.java
  ┃ ┃ ┃ ┃ ┣ 📜PlaceBidCommand.java
- ┃ ┃ ┃ ┃ ┣ 📜PlaceProxyBidCommand.java
  ┃ ┃ ┃ ┃ ┗ 📜SettleSessionCommand.java
  ┃ ┃ ┃ ┣ 📜AuctionFeedServer.java
  ┃ ┃ ┃ ┣ 📜AuctionServer.java
@@ -107,7 +103,6 @@ Phạm vi:
  ┃ ┃ ┃ ┗ 📜WebSocketObserver.java
  ┃ ┃ ┣ 📂service
  ┃ ┃ ┃ ┣ 📜AuctionService.java
- ┃ ┃ ┃ ┣ 📜ProxyBiddingService.java
  ┃ ┃ ┃ ┣ 📜SettlementService.java
  ┃ ┃ ┃ ┗ 📜UserService.java
  ┃ ┃ ┣ 📂test

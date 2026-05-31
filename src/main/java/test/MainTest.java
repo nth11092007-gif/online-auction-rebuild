@@ -1,16 +1,19 @@
 package test;
 
-import dao.*;
-import factory.*;
-import model.*;
-
+import dao.UserDAO;
+import dao.UserDAOImpl;
 import java.io.File;
 import java.time.LocalDate;
+import model.User;
 
+/**
+ * MainTest - simple test harness for DAO operations.
+ */
 public class MainTest {
-    public static void main(String[] args) {
-        UserDAO testUserDAO = new UserDAOImpl();
-        User user = testUserDAO.getUserByUsername("buyer_an");
-        System.out.print(user.getUsername());
-    }
+  /** Entry point for manual DAO testing. */
+  public static void main(String[] args) {
+    UserDAO testUserDao = new UserDAOImpl();
+    User user = testUserDao.getUserByUsername("buyer_an");
+    System.out.print(user.getUsername());
+  }
 }

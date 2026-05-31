@@ -17,7 +17,7 @@ class ItemsAttributesTest {
                 .brand("Samsung")
                 .warranty(12)
                 .mileage(10000)
-                .vehicleID("ABC-123")
+                .vehicleId("ABC-123")
                 .build();
 
         assertEquals(owner.getUsername(), attr.getOwnerName());
@@ -28,7 +28,7 @@ class ItemsAttributesTest {
         assertEquals("Samsung", attr.getBrand());
         assertEquals(12, attr.getWarranty());
         assertEquals(10000, attr.getMileage());
-        assertEquals("ABC-123", attr.getVehicleID());
+        assertEquals("ABC-123", attr.getVehicleId());
     }
 
     @Test

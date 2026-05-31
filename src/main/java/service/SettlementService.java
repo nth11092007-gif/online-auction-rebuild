@@ -1,13 +1,5 @@
 package service;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-
-import javax.sql.DataSource;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import dao.AuctionSessionDAO;
 import dao.AuctionSessionDAOImpl;
 import dao.BidDAO;
@@ -16,95 +8,149 @@ import dao.ItemDAO;
 import dao.ItemDAOImpl;
 import dao.UserDAO;
 import dao.UserDAOImpl;
+import java.sql.Connection;
+import java.sql.SQLException;
+import javax.sql.DataSource;
 import model.AuctionSession;
 import model.Bid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import utils.DBConnection;
 
+/** SettlementService - handles auction settlement, payment transfer, and item ownership updates. */
 public class SettlementService {
-    private final DataSource dataSource;
-    private static final Logger logger = LoggerFactory.getLogger(SettlementService.class);
-    private final AuctionSessionDAO sessionDAO;
-    private final BidDAO bidDAO;
-    private final UserDAO userDAO;
-    private final ItemDAO itemDAO;
 
-    public SettlementService() {
-        this(DBConnection.getDataSource(), new AuctionSessionDAOImpl(),
-                new BidDAOImpl(), new UserDAOImpl(), new ItemDAOImpl());
-    }
-    public SettlementService(DataSource dataSource, AuctionSessionDAO sessionDAO,
-                             BidDAO bidDAO, UserDAO userDAO, ItemDAO itemDAO) {
-        this.dataSource = dataSource;
-        this.sessionDAO = sessionDAO;
-        this.bidDAO = bidDAO;
-        this.userDAO = userDAO;
-        this.itemDAO = itemDAO;
-    }
-    public SettlementService(AuctionSessionDAO sessionDAO,
-                             BidDAO bidDAO, UserDAO userDAO, ItemDAO itemDAO) {
-        this.dataSource = DBConnection.getDataSource();
-        this.sessionDAO = sessionDAO;
-        this.bidDAO = bidDAO;
-        this.userDAO = userDAO;
-        this.itemDAO = itemDAO;
-    }
+  private static final Logger logger =
+      LoggerFactory.getLogger(SettlementService.class);
 
-    /**
-     * Hàm xử lý kết thúc phiên đấu giá
-     */
-    public boolean settleAuction(String sessionId) {
-        Connection conn = null;
+  private final DataSource dataSource;
+  private final AuctionSessionDAO sessionDao;
+  private final BidDAO bidDao;
+  private final UserDAO userDao;
+  private final ItemDAO itemDao;
+
+  /** Constructs a SettlementService with default DAO implementations. */
+  public SettlementService() {
+    this(DBConnection.getDataSource(),
+        new AuctionSessionDAOImpl(),
+        new BidDAOImpl(), new UserDAOImpl(),
+        new ItemDAOImpl());
+  }
+
+  /**
+   * Constructs a SettlementService with explicit DataSource and DAO dependencies.
+   *
+   * @param dataSource the database connection pool
+   * @param sessionDao the auction session data access object
+   * @param bidDao the bid data access object
+   * @param userDao the user data access object
+   * @param itemDao the item data access object
+   */
+  public SettlementService(DataSource dataSource,
+      AuctionSessionDAO sessionDao, BidDAO bidDao,
+      UserDAO userDao, ItemDAO itemDao) {
+    this.dataSource = dataSource;
+    this.sessionDao = sessionDao;
+    this.bidDao = bidDao;
+    this.userDao = userDao;
+    this.itemDao = itemDao;
+  }
+
+  /**
+   * Constructs a SettlementService with DAO dependencies and default DataSource.
+   *
+   * @param sessionDao the auction session data access object
+   * @param bidDao the bid data access object
+   * @param userDao the user data access object
+   * @param itemDao the item data access object
+   */
+  public SettlementService(AuctionSessionDAO sessionDao,
+      BidDAO bidDao, UserDAO userDao,
+      ItemDAO itemDao) {
+    this.dataSource = DBConnection.getDataSource();
+    this.sessionDao = sessionDao;
+    this.bidDao = bidDao;
+    this.userDao = userDao;
+    this.itemDao = itemDao;
+  }
+
+  /**
+   * Hàm xử lý kết thúc phiên đấu giá.
+   */
+  public boolean settleAuction(String sessionId) {
+    Connection conn = null;
+    try {
+      conn = dataSource.getConnection();
+      conn.setAutoCommit(false);
+
+      AuctionSession session =
+          sessionDao.getSessionById(conn, sessionId);
+      if (session == null || !session.settle()) {
+        logger.warn(
+            "Session {} not found or not OPEN",
+            sessionId);
+        return false;
+      }
+
+      Bid winningBid =
+          bidDao.getHighestBid(conn, sessionId);
+
+      if (winningBid != null) {
+        int buyerId = winningBid.getBidder().getId();
+        int sellerId = session.getSeller().getId();
+        double finalPrice = winningBid.getAmount();
+
+        userDao.deductFrozenMoneyAtomic(
+            conn, buyerId, finalPrice);
+        userDao.addMoneyAtomic(
+            conn, sellerId, finalPrice);
+        itemDao.updateItemOwner(
+            conn, session.getItem().getItemId(),
+            buyerId);
+
+        logger.info(
+            "Auction settled! Session {}, price {},"
+            + " buyer ID: {}",
+            sessionId, finalPrice, buyerId);
+      } else {
+        logger.info(
+            "Session {} ended. No bids placed.",
+            sessionId);
+      }
+
+      sessionDao.updateSessionStatusAtomic(
+          conn, sessionId,
+          AuctionSession.Status.SETTLED);
+      session.setStatus(AuctionSession.Status.SETTLED);
+      conn.commit();
+      return true;
+
+    } catch (Exception e) {
+      if (conn != null) {
         try {
-            conn = dataSource.getConnection();
-            conn.setAutoCommit(false);
-
-            AuctionSession session = sessionDAO.getSessionById(conn, sessionId);
-            if (session == null || !session.settle()) {
-                logger.warn("Phiên đấu giá {} không tồn tại hoặc không ở trạng thái OPEN", sessionId);
-                return false;
-            }
-
-            Bid winningBid = bidDAO.getHighestBid(conn, sessionId);
-
-            if (winningBid != null) {
-                int buyerId = winningBid.getBidder().getID();
-                int sellerId = session.getSeller().getID();
-                double finalPrice = winningBid.getAmount();
-
-                userDAO.deductFrozenMoneyAtomic(conn, buyerId, finalPrice);
-                userDAO.addMoneyAtomic(conn, sellerId, finalPrice);
-                itemDAO.updateItemOwner(conn, session.getItem().getItemID(), buyerId);
-
-                logger.info("Đấu giá thành công! Phiên {}, giá {}, người mua ID: {}", sessionId, finalPrice, buyerId);
-            } else {
-                logger.info("Phiên đấu giá {} kết thúc. Không có ai đặt giá.", sessionId);
-            }
-
-            sessionDAO.updateSessionStatusAtomic(conn, sessionId, AuctionSession.Status.CLOSED);
-            session.setStatus(AuctionSession.Status.CLOSED);
-            conn.commit();
-            return true;
-
-        } catch (Exception e) {
-            if (conn != null) {
-                try {
-                    conn.rollback();
-                    logger.warn("Đã rollback transaction cho session {}", sessionId);
-                } catch (SQLException ex) {
-                    logger.error("Lỗi khi rollback transaction: {}", ex.getMessage(), ex);
-                }
-            }
-            logger.error("Lỗi hệ thống khi chốt phiên {}: {}", sessionId, e.getMessage(), e);
-            return false;
-        } finally {
-            if (conn != null) {
-                try {
-                    conn.setAutoCommit(true);
-                    conn.close();
-                } catch (SQLException e) {
-                    logger.error("Lỗi khi đóng kết nối: {}", e.getMessage(), e);
-                }
-            }
+          conn.rollback();
+          logger.warn(
+              "Rolled back transaction for session {}",
+              sessionId);
+        } catch (SQLException ex) {
+          logger.error("Rollback error: {}",
+              ex.getMessage(), ex);
         }
+      }
+      logger.error(
+          "Error settling session {}: {}",
+          sessionId, e.getMessage(), e);
+      return false;
+    } finally {
+      if (conn != null) {
+        try {
+          conn.setAutoCommit(true);
+          conn.close();
+        } catch (SQLException e) {
+          logger.error("Close error: {}",
+              e.getMessage(), e);
+        }
+      }
     }
+  }
 }

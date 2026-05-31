@@ -56,7 +56,7 @@ public class AuctionSystemTest {
         Item artItem = new TypeArts().createItems(artAttr);
         itemDAO.addItem(artItem);
         // Giả sử sau khi thêm vào DB, ID phải được tạo (khác null hoặc > 0)
-        assertNotNull(artItem.getItemID(), "❌ Lỗi: ItemID của bức tranh chưa được tạo.");
+        assertNotNull(artItem.getItemId(), "❌ Lỗi: ItemID của bức tranh chưa được tạo.");
 
 
         // ==========================================
@@ -68,11 +68,11 @@ public class AuctionSystemTest {
                 artItem.getStartingPrice() // Giá khởi điểm 3000
         );
         
-        boolean isSessionCreated = sessionDAO.createSession(session, artItem.getItemID());
+        boolean isSessionCreated = sessionDAO.createSession(session, artItem.getItemId());
         assertTrue(isSessionCreated, "Lỗi: Không thể tạo phiên đấu giá trong DB.");
         
         // Lấy đúng ID vừa được IDGenerator tự động sinh ra trong Constructor
-        String actualSessionId = session.getSessionID();
+        String actualSessionId = session.getSessionId();
         assertNotNull(actualSessionId, "Lỗi: SessionID chưa được sinh ra.");
 
 

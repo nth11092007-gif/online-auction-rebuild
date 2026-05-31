@@ -108,17 +108,18 @@ CREATE TABLE `users` (
   `phone_number` varchar(20) DEFAULT NULL,
   `role` varchar(20) DEFAULT NULL,
   `balance` double DEFAULT 0,
-  `frozen_balance` double DEFAULT 0
+  `frozen_balance` double DEFAULT 0,
+  `is_banned` tinyint(1) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `username`, `password`, `real_name`, `email`, `phone_number`, `role`, `balance`, `frozen_balance`) VALUES
-(1, 'admin01', '123456', 'Quản Trị Viên', 'admin@auction.com', '0912345678', 'ADMIN', 0, 0),
-(2, 'seller_minh', '123456', 'Nguyễn Bình Minh', 'minh.seller@gmail.com', '0988776655', 'USER', 1000, 0),
-(3, 'buyer_an', '123456', 'Trần Văn An', 'an.buyer@gmail.com', '0900112233', 'USER', 5000, 500);
+INSERT INTO `users` (`id`, `username`, `password`, `real_name`, `email`, `phone_number`, `role`, `balance`, `frozen_balance`, `is_banned`) VALUES
+(1, 'admin01', '123456', 'Quản Trị Viên', 'admin@auction.com', '0912345678', 'ADMIN', 0, 0, 0),
+(2, 'seller_minh', '123456', 'Nguyễn Bình Minh', 'minh.seller@gmail.com', '0988776655', 'USER', 1000, 0, 0),
+(3, 'buyer_an', '123456', 'Trần Văn An', 'an.buyer@gmail.com', '0900112233', 'USER', 5000, 500, 0);
 
 --
 -- Indexes for dumped tables
@@ -156,15 +157,6 @@ ALTER TABLE `users`
 --
 -- AUTO_INCREMENT for dumped tables
 --
-CREATE TABLE IF NOT EXISTS proxy_bids (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    session_id VARCHAR(50) NOT NULL,
-    max_amount DECIMAL(15,2) NOT NULL,
-    active BOOLEAN DEFAULT TRUE,
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (session_id) REFERENCES auction_sessions(session_id)
-);
 --
 -- AUTO_INCREMENT for table `bids`
 --

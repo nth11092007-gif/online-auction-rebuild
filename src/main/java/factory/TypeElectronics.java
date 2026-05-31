@@ -4,9 +4,14 @@ import model.Electronics;
 import model.Item;
 import model.ItemsAttributes;
 
-public class TypeElectronics implements ItemsFactory{
-    @Override
-    public Item createItems(ItemsAttributes request) {
-        return new Electronics(0,request.getItemName() , request.getOwnerName(), request.getStartingPrice(), request.getDescription(), request.getWarranty(), request.getBrand());
-    }
+/** TypeElectronics - factory implementation that creates Electronics items. */
+public class TypeElectronics implements ItemsFactory {
+
+  @Override
+  public Item createItems(ItemsAttributes request) {
+    return new Electronics(0, request.getItemName(),
+        request.getOwnerName(), request.getStartingPrice(),
+        request.getDescription(), request.getWarranty(),
+        request.getBrand());
+  }
 }

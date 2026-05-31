@@ -1,10 +1,8 @@
 package Controller;
 
-import java.io.IOException;
-
 import Exception.PasswordStrengthCheck;
 import dao.UserDAO;
-import dao.UserDAOImpl;
+import java.io.IOException;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -17,143 +15,172 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import model.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import service.ServiceFactory;
+import utils.SessionManager;
 
+/** RegisterController - handles user registration with password strength validation. */
 public class RegisterController {
-    UserDAO register = new UserDAOImpl();
-    @FXML
-    private Button btnRegister;
 
-    @FXML
-    private TextField txtEmail;
+  private static final Logger logger =
+      LoggerFactory.getLogger(RegisterController.class);
+  UserDAO register =
+      ServiceFactory.getInstance().getUserDao();
 
-    @FXML
-    private PasswordField txtPassword;
+  @FXML
+  private Button btnRegister;
+  @FXML
+  private TextField txtEmail;
+  @FXML
+  private PasswordField txtPassword;
+  @FXML
+  private TextField txtPhoneNumber;
+  @FXML
+  private TextField txtRealName;
+  @FXML
+  private TextField txtUser;
 
-    @FXML
-    private TextField txtPhoneNumber;
-
-    @FXML
-    private TextField txtRealName;
-
-    @FXML
-    private TextField txtUser;
-
-    public static String checkPasswordStrength(String password) {
-        if (password == null || password.trim().isEmpty()) {
-            return "Trống";
-        }
-        int score = 0;
-        //Kiểm tra độ dài (ít nhất 8 ký tự)
-        if (password.length() >= 8) {
-            score++;
-        }
-        //Kiểm tra có chứa ít nhất một chữ cái viết hoa (A-Z)
-        if (password.matches(".*[A-Z].*")) {
-            score++;
-        }
-        //Kiểm tra có chứa ít nhất một chữ cái viết thường (a-z)
-        if (password.matches(".*[a-z].*")) {
-            score++;
-        }
-        //Kiểm tra có chứa ít nhất một chữ số (0-9)
-        if (password.matches(".*\\d.*")) {
-            score++;
-        }
-        //Kiểm tra có chứa ít nhất một ký tự đặc biệt
-        if (password.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?].*")) {
-            score++;
-        }
-        // Đánh giá độ khó dựa trên tổng điểm (tối đa 5 điểm)
-        switch (score) {
-            case 0:
-            case 1:
-            case 2:
-                return "Yếu"; // Chỉ đạt 1-2 tiêu chí (thường là quá ngắn hoặc chỉ có chữ/số)
-            case 3:
-                return "Trung bình"; // Đạt 3 tiêu chí
-            case 4:
-                return "Mạnh"; // Đạt 4 tiêu chí
-            case 5:
-                return "Rất mạnh"; // Đạt đủ 5 tiêu chí
-            default:
-                return "Không xác định";
-        }
+  /**
+   * Evaluates the strength of a password based on length,
+   * uppercase, lowercase, digits, and special characters.
+   *
+   * @param password the password string to evaluate
+   * @return a strength label in Vietnamese
+   */
+  public static String checkPasswordStrength(
+      String password) {
+    if (password == null
+        || password.trim().isEmpty()) {
+      return "Trống";
     }
-
-    private void showAlert(String content, Alert.AlertType type) {
-        Alert alert = new Alert(type);
-        alert.setTitle("Thông báo");
-        alert.setContentText(content);
-        alert.showAndWait();
+    int score = 0;
+    if (password.length() >= 8) {
+      score++;
     }
-
-    private void switchToHome(ActionEvent event) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Home.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            Scene scene = new Scene(root);
-            stage.setScene(scene);
-            stage.show();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    if (password.matches(".*[A-Z].*")) {
+      score++;
     }
-    @FXML
-    void onhandleRegister(ActionEvent event) {
-        try {
-            String username = txtUser.getText().trim();
-            String password = txtPassword.getText().trim();
-            String realname = txtRealName.getText().trim();
-            String email = txtEmail.getText().trim();
-            String phone = txtPhoneNumber.getText().trim();
-
-            if (username.isEmpty() || password.isEmpty() || realname.isEmpty() || email.isEmpty() || phone.isEmpty()) {
-                showAlert("Vui lòng điền đầy đủ thông tin", Alert.AlertType.ERROR);
-                return;
-            }
-
-            //HÀM KIỂM TRA MẬT KHẨU
-            String strength = checkPasswordStrength(password);
-            // Nếu mật khẩu Yếu hoặc Trống, chủ động ném ra ngoại lệ
-            if (strength.equals("Trống") || strength.equals("Yếu")) {
-                throw new PasswordStrengthCheck();
-            }
-
-            //Tiến hành đăng ký
-            User newUser = new User(realname, username, email, password, phone);
-            boolean succes = register.register(newUser);
-
-            //Thông báo kết quả
-            if (succes) {
-                showAlert("Đăng ký thành công", Alert.AlertType.INFORMATION);
-                switchToHome(event);
-            } else {
-                showAlert("Tài khoản đã tồn tại", Alert.AlertType.ERROR);
-            }
-
-        } catch (PasswordStrengthCheck p) {
-            showAlert(p.getMessage() + " (Độ mạnh hiện tại: Yếu)", Alert.AlertType.WARNING);
-        }
+    if (password.matches(".*[a-z].*")) {
+      score++;
     }
-    @FXML
-    void handleBackToLogin(ActionEvent event) {
-        try {
-            Parent root = FXMLLoader.load(getClass().getResource("/Login.fxml"));
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.show();
-        } catch (IOException e) {
-            e.printStackTrace();
-            showAlert("Lỗi", "Không thể quay lại màn hình đăng nhập.");
-        }
+    if (password.matches(".*\\d.*")) {
+      score++;
     }
+    if (password.matches(
+        ".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?].*")) {
+      score++;
+    }
+    switch (score) {
+      case 0:
+      case 1:
+      case 2:
+        return "Yếu";
+      case 3:
+        return "Trung bình";
+      case 4:
+        return "Mạnh";
+      case 5:
+        return "Rất mạnh";
+      default:
+        return "Không xác định";
+    }
+  }
 
-    private void showAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+  private void showAlert(
+      String content, Alert.AlertType type) {
+    Alert alert = new Alert(type);
+    alert.setTitle("Thông báo");
+    alert.setContentText(content);
+    alert.showAndWait();
+  }
+
+  private void showAlert(
+      String title, String message) {
+    Alert alert = new Alert(Alert.AlertType.ERROR);
+    alert.setTitle(title);
+    alert.setHeaderText(null);
+    alert.setContentText(message);
+    alert.showAndWait();
+  }
+
+  private void switchToHome(ActionEvent event) {
+    try {
+      FXMLLoader loader = new FXMLLoader(
+          getClass().getResource("/Home.fxml"));
+      Parent root = loader.load();
+      Stage stage =
+          (Stage) ((Node) event.getSource())
+              .getScene().getWindow();
+      Scene scene = new Scene(root);
+      stage.setScene(scene);
+      stage.show();
+    } catch (IOException e) {
+      logger.error("Lỗi: {}", e.getMessage(), e);
     }
+  }
+
+  @FXML
+  void onhandleRegister(ActionEvent event) {
+    try {
+      String username = txtUser.getText().trim();
+      String password = txtPassword.getText().trim();
+      String realname = txtRealName.getText().trim();
+      String email = txtEmail.getText().trim();
+      String phone = txtPhoneNumber.getText().trim();
+
+      if (username.isEmpty() || password.isEmpty()
+          || realname.isEmpty() || email.isEmpty()
+          || phone.isEmpty()) {
+        showAlert("Vui lòng điền đầy đủ thông tin",
+            Alert.AlertType.ERROR);
+        return;
+      }
+
+      String strength =
+          checkPasswordStrength(password);
+      if (strength.equals("Trống")
+          || strength.equals("Yếu")) {
+        throw new PasswordStrengthCheck();
+      }
+
+      User newUser = new User(
+          realname, username, email, password, phone);
+      boolean succes = register.register(newUser);
+
+      if (succes) {
+        SessionManager.setCurrentUser(newUser);
+        showAlert("Đăng ký thành công",
+            Alert.AlertType.INFORMATION);
+        switchToHome(event);
+      } else {
+        showAlert("Tài khoản đã tồn tại",
+            Alert.AlertType.ERROR);
+      }
+
+    } catch (PasswordStrengthCheck p) {
+      showAlert(
+          p.getMessage()
+          + " (Độ mạnh hiện tại: Yếu)",
+          Alert.AlertType.WARNING);
+    }
+  }
+
+  @FXML
+  void handleBackToLogin(ActionEvent event) {
+    try {
+      Parent root = FXMLLoader.load(
+          getClass().getResource("/Login.fxml"));
+      Stage stage =
+          (Stage) ((Node) event.getSource())
+              .getScene().getWindow();
+      stage.setScene(new Scene(root));
+      stage.show();
+    } catch (IOException e) {
+      logger.error("Lỗi: {}", e.getMessage(), e);
+      showAlert("Lỗi",
+          "Không thể quay lại màn hình đăng nhập.");
+    }
+  }
+
 }

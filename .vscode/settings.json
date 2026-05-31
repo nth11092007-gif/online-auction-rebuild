@@ -2,7 +2,7 @@
     "xml.fileAssociations": [
         {
             "pattern": "**/source/**.ptx",
-            "systemId": "c:\\Users\\Admin\\.vscode\\extensions\\oscarlevin.pretext-tools-0.36.1\\assets\\schema\\pretext.rng"
+            "systemId": "c:\\Users\\Admin\\.vscode\\extensions\\oscarlevin.pretext-tools-0.38.0\\assets\\schema\\pretext.rng"
         }
     ],
     "java.configuration.updateBuildConfiguration": "disabled"

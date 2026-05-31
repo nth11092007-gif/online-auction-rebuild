@@ -37,7 +37,7 @@ class SettlementServiceTest {
         settlementService = new SettlementService(dataSource, sessionDAO, bidDAO, userDAO, itemDAO);
 
         sellerMock = mock(Seller.class);
-        when(sellerMock.getID()).thenReturn(1);
+        when(sellerMock.getId()).thenReturn(1);
         genericItemMock = mock(Item.class);
 
         openSession = new AuctionSession(sellerMock, genericItemMock, 100.0, 10.0, LocalDateTime.now());
@@ -57,7 +57,7 @@ class SettlementServiceTest {
         when(dataSource.getConnection()).thenReturn(connection);
 
         Item successItem = mock(Item.class);
-        when(successItem.getItemID()).thenReturn(10);
+        when(successItem.getItemId()).thenReturn(10);
         openSession = new AuctionSession(sellerMock, successItem, 100.0, 10.0, LocalDateTime.now());
         openSession.startSession(1);
 
