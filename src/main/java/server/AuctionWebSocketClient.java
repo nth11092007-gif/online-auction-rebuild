@@ -14,7 +14,7 @@ public class AuctionWebSocketClient extends WebSocketClient {
   private static final Logger logger =
       LoggerFactory.getLogger(AuctionWebSocketClient.class);
 
-  private static final String DEFAULT_URI = "ws://localhost:8887";
+  private static final String DEFAULT_URI = "ws://0.tcp.ap.ngrok.io:17148";
 
   private Consumer<String> onMessageCallback;
 

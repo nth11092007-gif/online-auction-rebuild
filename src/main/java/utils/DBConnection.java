@@ -22,7 +22,7 @@ public class DBConnection {
       // + "&serverTimezone=UTC"
       // + "&connectionTimeZone=UTC"
       // + "&forceConnectionTimeZoneToSession=true";
-      String jdbcUrl = "jdbc:mysql://localhost:3307/quan_ly_dau_gia"
+      String jdbcUrl = "jdbc:mysql://0.tcp.ap.ngrok.io:27977/quan_ly_dau_gia"
           + "?useSSL=false"
           + "&serverTimezone=UTC"
           + "&connectionTimeZone=UTC"
