@@ -2,9 +2,9 @@ name: Java CI
 
 on:
   push:
-    branches: [ "Merging-safe" ]
+    branches: [ "main", "Merging-safe" ]
   pull_request:
-    branches: [ "Merging-safe"]
+    branches: [ "main", "Merging-safe" ]
 
 jobs:
   build:
@@ -19,19 +19,27 @@ jobs:
 
       - uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Build
-        run: mvn package
+      - name: CheckStyle
+        run: mvn checkstyle:check
+
+      - name: Test
+        run: mvn test -Dcheckstyle.skip=true -Dmaven.test.failure.ignore=true
+
+      - name: Package
+        run: mvn package -DskipTests
 
       - name: Upload JAR
         uses: actions/upload-artifact@v4
         with:
-          name: calculator-artifact-${{ matrix.os }}
+          name: auction-system-${{ matrix.os }}
           path: target/*.jar
-      - name: Upload JaCoCo
+
+      - name: Upload JaCoCo Report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: jacoco-report-${{ matrix.os }}

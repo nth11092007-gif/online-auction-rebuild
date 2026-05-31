@@ -1,24 +1,27 @@
 package service;
 
-import dao.AuctionSessionDAO;
-import dao.AuctionSessionDAOImpl;
-import dao.BidDAO;
-import dao.BidDAOImpl;
-import dao.UserDAO;
-import dao.UserDAOImpl;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+
 import javax.sql.DataSource;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import dao.AuctionSessionDAO;
+import dao.AuctionSessionDAOImpl;
+import dao.BidDAO;
+import dao.BidDAOImpl;
+import dao.UserDAO;
+import dao.UserDAOImpl;
 import model.AuctionSession;
 import model.AuctionSession.Status;
 import model.Bid;
 import model.Bidder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import utils.DBConnection;
 
 /** AuctionService - manages auction sessions, bidding, and anti-sniping logic. */
