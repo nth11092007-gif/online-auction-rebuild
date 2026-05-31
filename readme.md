@@ -222,5 +222,5 @@ Phạm vi:
 - Xử lý lỗi cơ bản: Thông báo khi đặt bid không hợp lệ, số dư không đủ, phiên đã kết thúc.
 
 ### 7. Link video demo và báo cáo
-- Link video: <!-- chèn link video vào đây-->
+- Link video: https://drive.google.com/file/d/1k3EjsiEjLnl_ttPlDir16CqU-3-aBw1L/view?usp=sharing
 - Link báo cáo: https://drive.google.com/file/d/11-sM-k4tqYGrjABb6sAuuS32uRY-ZVSy/view?usp=sharing
