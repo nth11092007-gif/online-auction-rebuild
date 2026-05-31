@@ -193,7 +193,7 @@ Phạm vi:
 
 1. Đảm bảo đã có Java, JDK từ phiên bản 17 trở lên.
 2. Thiết lập XAMPP phù hợp với hệ điều hành: https://www.apachefriends.org/
-3. Khi cài xong XAMPP, bật Apache và MySQL lên. Đảm bảo Apache hiện xanh với ports 80, 443 và MySQL hiện xanh với port 3307.
+3. Khi cài xong XAMPP, bật Apache và MySQL lên. Đảm bảo Apache hiện xanh với ports 80, 443 và MySQL hiện xanh với port 3306.
 4. Chạy java -jar AuctionSystem-1.0-SNAPSHOT-server.jar.
 5. Chạy java -jar AuctionSystem-1.0-SNAPSHOT-client.jar.
 
