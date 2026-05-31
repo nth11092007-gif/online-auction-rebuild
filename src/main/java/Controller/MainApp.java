@@ -22,7 +22,7 @@ public class MainApp extends Application {
   public void start(Stage stage) throws Exception {
     primaryStage = stage;
     webSocketClient = new AuctionWebSocketClient();
-    webSocketClient.connectBlocking();
+    webSocketClient.connectWithRetry(5, 2000);
     showLogin();
   }
 

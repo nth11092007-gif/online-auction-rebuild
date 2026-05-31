@@ -21,7 +21,7 @@
         <VBox spacing="10.0">
             <children>
 
-                <Label fx:id="lblItemID" text="ID" textFill="#6b7280">
+                <Label fx:id="lblItemId" text="ID" textFill="#6b7280">
                     <font>
                         <Font size="14.0" />
                     </font>

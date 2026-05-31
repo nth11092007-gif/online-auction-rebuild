@@ -35,6 +35,43 @@ public class AuctionWebSocketClient extends WebSocketClient {
     this.onMessageCallback = callback;
   }
 
+  /**
+   * Thu ket noi den server voi so lan thu lai.
+   * Moi lan that bai se doi truoc khi thu lai.
+   *
+   * @param maxRetries so lan thu toi da
+   * @param delayMs    thoi gian doi giua cac lan thu (ms)
+   * @return true neu ket noi thanh cong
+   */
+  public boolean connectWithRetry(int maxRetries, long delayMs) {
+    for (int i = 0; i < maxRetries; i++) {
+      try {
+        logger.info("Dang ket noi WebSocket (lan {}/{})...",
+            i + 1, maxRetries);
+        connectBlocking();
+        if (isOpen()) {
+          logger.info("WebSocket da ket noi thanh cong.");
+          return true;
+        }
+      } catch (Exception e) {
+        logger.warn("Ket noi WebSocket that bai (lan {}): {}",
+            i + 1, e.getMessage());
+      }
+      if (i < maxRetries - 1) {
+        try {
+          Thread.sleep(delayMs);
+        } catch (InterruptedException ie) {
+          Thread.currentThread().interrupt();
+          logger.warn("Bi gian doan trong khi doi ket noi lai.");
+          return false;
+        }
+      }
+    }
+    logger.error(
+        "Khong the ket noi WebSocket sau {} lan thu.", maxRetries);
+    return false;
+  }
+
   @Override
   public void onOpen(ServerHandshake handshake) {
     logger.info("WebSocket connected to server");
