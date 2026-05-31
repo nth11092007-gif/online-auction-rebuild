@@ -109,7 +109,7 @@ public class HomeController {
         VBox card = loader.load();
 
         ItemCardController controller = loader.getController();
-        controller.setItemData(session.getItem());
+        controller.setAuctionData(session);
 
         card.setOnMouseClicked(event -> {
           goToAuctionDetail(event, session);
