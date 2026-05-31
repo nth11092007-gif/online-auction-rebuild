@@ -207,7 +207,7 @@ Phạm vi:
 
 - Cập nhật giá theo thời gian thực: Sử dụng Observer để tự động cập nhật giá và thời gian kết thúc phiên trên tất cả client khi có bid mới.
 
-- Quản lý lịch sử đấu giá: Xem các bid đã đặt, phiên đã tham gia/thắng.
+- Quản lý lịch sử đấu giá: Xem các bid đã đặt trong 1 phiên.
 
 - Quản lý số dư: Trừ tiền khi đặt bid, cập nhật khi thắng đấu giá.
 
