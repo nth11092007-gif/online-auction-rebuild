@@ -17,7 +17,7 @@ Phạm vi:
 - **Ngôn ngữ**: Java (JDK 17+)
 - **Giao diện**: JavaFX (OpenJFX 17)
 - **Giao tiếp mạng**: Java Socket, JSON (Gson)
-- **Cơ sở dữ liệu**: MySQL (có script khởi tạo trong thư mục `tests\resources`)
+- **Cơ sở dữ liệu**: MySQL (có script khởi tạo)
 - **Build tool**: Sử dụng Maven
 - **Môi trường chạy**:
   - JDK 17 có tích hợp JavaFX (hoặc đã cấu hình JavaFX SDK riêng)
@@ -28,6 +28,7 @@ Phạm vi:
 <!--sẽ thêm vào sau -->
 
 ### 3. Cấu trúc thư mục chính
+```
 📦src
  ┣ 📂main
  ┃ ┣ 📂java
@@ -36,6 +37,7 @@ Phạm vi:
  ┃ ┃ ┣ 📂Controller
  ┃ ┃ ┃ ┣ 📜AuctionDetailController.java
  ┃ ┃ ┃ ┣ 📜CreateAuctionController.java
+ ┃ ┃ ┃ ┣ 📜HomeAdminController.java
  ┃ ┃ ┃ ┣ 📜HomeController.java
  ┃ ┃ ┃ ┣ 📜ItemCardController.java
  ┃ ┃ ┃ ┣ 📜Launcher.java
@@ -91,23 +93,26 @@ Phạm vi:
  ┃ ┃ ┃ ┃ ┣ 📜GetSessionsCommand.java
  ┃ ┃ ┃ ┃ ┣ 📜GetUserCommand.java
  ┃ ┃ ┃ ┃ ┣ 📜JoinSessionCommand.java
+ ┃ ┃ ┃ ┃ ┣ 📜LoginCommand.java
  ┃ ┃ ┃ ┃ ┣ 📜PlaceBidCommand.java
  ┃ ┃ ┃ ┃ ┗ 📜SettleSessionCommand.java
  ┃ ┃ ┃ ┣ 📜AuctionFeedServer.java
  ┃ ┃ ┃ ┣ 📜AuctionServer.java
  ┃ ┃ ┃ ┣ 📜AuctionServerLauncher.java
- ┃ ┃ ┃ ┣ 📜AuctionTestClient.java
  ┃ ┃ ┃ ┣ 📜AuctionWebSocketClient.java
- ┃ ┃ ┃ ┣ 📜Main.java
  ┃ ┃ ┃ ┣ 📜Observer.java
+ ┃ ┃ ┃ ┣ 📜ServerApp.java
  ┃ ┃ ┃ ┗ 📜WebSocketObserver.java
  ┃ ┃ ┣ 📂service
+ ┃ ┃ ┃ ┣ 📜AuctionEventPublisher.java
  ┃ ┃ ┃ ┣ 📜AuctionService.java
+ ┃ ┃ ┃ ┣ 📜ServiceFactory.java
  ┃ ┃ ┃ ┣ 📜SettlementService.java
  ┃ ┃ ┃ ┗ 📜UserService.java
  ┃ ┃ ┣ 📂test
  ┃ ┃ ┃ ┗ 📜MainTest.java
  ┃ ┃ ┣ 📂utils
+ ┃ ┃ ┃ ┣ 📜AppConfig.java
  ┃ ┃ ┃ ┣ 📜DBConnection.java
  ┃ ┃ ┃ ┣ 📜IDGenerator.java
  ┃ ┃ ┃ ┗ 📜SessionManager.java
@@ -116,12 +121,16 @@ Phạm vi:
  ┃ ┃ ┣ 📂Images
  ┃ ┃ ┃ ┣ 📜background.jpg
  ┃ ┃ ┃ ┣ 📜BaseItem.png
- ┃ ┃ ┃ ┗ 📜logo.png
+ ┃ ┃ ┃ ┣ 📜logo.png
+ ┃ ┃ ┃ ┗ 📜newBackground.png
  ┃ ┃ ┣ 📜ArtDetail.fxml
  ┃ ┃ ┣ 📜AuctionDetail.fxml
+ ┃ ┃ ┣ 📜AuctionDetailSeller.fxml
+ ┃ ┃ ┣ 📜config.properties
  ┃ ┃ ┣ 📜CreateAuction.fxml
  ┃ ┃ ┣ 📜ElectronicDetail.fxml
  ┃ ┃ ┣ 📜Home.fxml
+ ┃ ┃ ┣ 📜HomeAdmin.fxml
  ┃ ┃ ┣ 📜ItemCard.fxml
  ┃ ┃ ┣ 📜Login.fxml
  ┃ ┃ ┣ 📜Profile.fxml
@@ -140,13 +149,8 @@ Phạm vi:
  ┃ ┃ ┣ 📂service
  ┃ ┃ ┃ ┣ 📜AuctionServiceTest.java
  ┃ ┃ ┃ ┗ 📜SettlementServiceTest.java
- ┃ ┃ ┣ 📂utils
+ ┃ ┃ ┗ 📂utils
  ┃ ┃ ┃ ┗ 📜IDGeneratorTest.java
- ┃ ┃ ┣ 📜AuctionManagerTest.java
- ┃ ┃ ┣ 📜AuctionServiceIntegrationTest.java
- ┃ ┃ ┣ 📜AuctionSystemTest.java
- ┃ ┃ ┣ 📜TestUserDAO.java
- ┃ ┃ ┗ 📜TransactionTest.java
  ┃ ┣ 📂resources
  ┃ ┃ ┣ 📜quan_ly_dau_gia.sql
  ┃ ┃ ┗ 📜schema.sql
@@ -178,18 +182,20 @@ Phạm vi:
  ┃ ┣ 📜.gitignore
  ┃ ┣ 📜mvnw
  ┃ ┣ 📜mvnw.cmd
- ┃ ┗ 📜pom.xml
-
+ ┃ ┣ 📜pom.xml
+ ┃ ┣ java -jar AuctionSystem-1.0-SNAPSHOT-server.jar
+ ┃ ┗ java -jar AuctionSystem-1.0-SNAPSHOT-client.jar
+```
 ### 4. Vị trí các file jar
-<!-- thêm sau -->
+- File SERVER.jar, file CLIENT.jar đều ở folder lớn, cùng với pom.xml.
 
 ### 5. Hướng dẫn chạy Server/Client cụ thể.
 
 1. Đảm bảo đã có Java, JDK từ phiên bản 17 trở lên.
 2. Thiết lập XAMPP phù hợp với hệ điều hành: https://www.apachefriends.org/
-3. Khi cài xong XAMPP, bật Apache và MySQL lên. Đảm bảo Apache hiện xanh với ports 80, 443 và MySQL hiện xanh với port 3306.
-4. Chạy AuctionServerLauncher.
-5. Chạy Launcher.
+3. Khi cài xong XAMPP, bật Apache và MySQL lên. Đảm bảo Apache hiện xanh với ports 80, 443 và MySQL hiện xanh với port 3307.
+4. Chạy java -jar AuctionSystem-1.0-SNAPSHOT-server.jar.
+5. Chạy java -jar AuctionSystem-1.0-SNAPSHOT-client.jar.
 
 ### 6. Danh sách tính năng đã hoàn thành
 
@@ -216,5 +222,5 @@ Phạm vi:
 - Xử lý lỗi cơ bản: Thông báo khi đặt bid không hợp lệ, số dư không đủ, phiên đã kết thúc.
 
 ### 7. Link video demo và báo cáo
-Link video: <!-- chèn link video vào đây-->
-Link báo cáo <!-- chèn link báo cáo vào đây-->
+- Link video: <!-- chèn link video vào đây-->
+- Link báo cáo: https://drive.google.com/file/d/11-sM-k4tqYGrjABb6sAuuS32uRY-ZVSy/view?usp=sharing
