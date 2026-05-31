@@ -30,8 +30,6 @@ public class HomeController {
 
   @FXML
   private FlowPane productContainer;
-  @FXML
-  private TextField txtSearch;
 
   @FXML
   void filterAll(ActionEvent event) {
