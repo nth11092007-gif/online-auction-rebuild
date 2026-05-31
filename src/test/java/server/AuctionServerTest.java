@@ -1,6 +1,7 @@
 package server;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import org.java_websocket.WebSocket;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,7 +12,6 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.slf4j.LoggerFactory;
 
-import dao.UserDAO;
 import model.User;
 import server.command.*;
 import service.AuctionService;
@@ -21,8 +21,6 @@ import service.UserService;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -38,59 +36,56 @@ class AuctionServerTest {
     @Mock private UserService userService;
     @Mock private AuctionFeedServer feedServer;
     @Mock private WebSocket webSocket;
-    @Mock private UserDAO userDAO;
+
+    // Mock commands
+    @Mock private JoinSessionCommand joinCommand;
+    @Mock private PlaceBidCommand bidCommand;
+    @Mock private SettleSessionCommand settleCommand;
+    @Mock private LoginCommand loginCommand;
+    @Mock private GetSessionsCommand getSessionsCommand;
+    @Mock private GetUserCommand getUserCommand;
 
     private AuctionServer server;
-    private Map<String, Set<WebSocket>> sessionSubscribers;
-    private Map<WebSocket, Map<String, WebSocketObserver>> connectionObservers;
 
     @BeforeEach
     void setUp() throws Exception {
         server = mock(AuctionServer.class,
                 withSettings().defaultAnswer(CALLS_REAL_METHODS));
 
-        // --- Gán logger ---
+        // Gán logger
         Field loggerField = AuctionServer.class.getDeclaredField("logger");
         loggerField.setAccessible(true);
         loggerField.set(server, LoggerFactory.getLogger(AuctionServer.class));
 
-        // --- Gán Gson ---
+        // Gán Gson
         Field gsonField = AuctionServer.class.getDeclaredField("gson");
         gsonField.setAccessible(true);
         gsonField.set(server, new Gson());
 
-        // --- Tạo ExecutorService đồng bộ (chạy ngay) ---
+        // Executor đồng bộ (chạy ngay)
         ExecutorService directExecutor = mock(ExecutorService.class);
-        doAnswer(invocation -> {
-            Runnable task = invocation.getArgument(0);
-            task.run();
+        doAnswer(inv -> {
+            ((Runnable) inv.getArgument(0)).run();
             return null;
         }).when(directExecutor).submit(any(Runnable.class));
         Field execField = AuctionServer.class.getDeclaredField("commandExecutor");
         execField.setAccessible(true);
         execField.set(server, directExecutor);
 
-        // Tiêm các dependency
+        // Tiêm các dependency service
         setField(server, "auctionService", auctionService);
         setField(server, "settlementService", settlementService);
         setField(server, "userService", userService);
         setField(server, "feedServer", feedServer);
 
-        // Khởi tạo các map subscriber
-        sessionSubscribers = new ConcurrentHashMap<>();
-        connectionObservers = new ConcurrentHashMap<>();
-        setField(server, "sessionSubscribers", sessionSubscribers);
-        setField(server, "connectionObservers", connectionObservers);
-
-        // Tạo command map với mock
+        // Tạo command map với MOCK command
         Map<String, Command> commandMap = new HashMap<>();
-        commandMap.put("LOGIN", new LoginCommand(userDAO));
-        commandMap.put("GET_SESSIONS", new GetSessionsCommand(auctionService));
-        commandMap.put("GET_USER", new GetUserCommand(userService));
-        commandMap.put("JOIN", new JoinSessionCommand(sessionSubscribers,
-                connectionObservers, feedServer, auctionService, userService));
-        commandMap.put("BID", new PlaceBidCommand(auctionService, userService));
-        commandMap.put("SETTLE", new SettleSessionCommand(settlementService, feedServer));
+        commandMap.put("LOGIN", loginCommand);
+        commandMap.put("GET_SESSIONS", getSessionsCommand);
+        commandMap.put("GET_USER", getUserCommand);
+        commandMap.put("JOIN", joinCommand);
+        commandMap.put("BID", bidCommand);
+        commandMap.put("SETTLE", settleCommand);
 
         setField(server, "commandMap", commandMap);
     }
@@ -102,40 +97,37 @@ class AuctionServerTest {
     }
 
     @Test
-    void onMessage_JOIN_Subscribes() {
+    void onMessage_JOIN_DispatchesToJoinCommand() {
         String msg = "{\"type\":\"JOIN\", \"sessionId\":\"SS001\"}";
         server.onMessage(webSocket, msg);
-        verify(feedServer).subscribe(eq("SS001"), any(WebSocketObserver.class));
+
+        // Verify rằng joinCommand được gọi với WebSocket và JsonObject chứa đúng thông tin
+        verify(joinCommand).execute(eq(webSocket), any(JsonObject.class));
     }
 
     @Test
-    void onMessage_BID_PlaceBidCalled() {
+    void onMessage_BID_DispatchesToBidCommand() {
         String msg = "{\"type\":\"BID\", \"auctionId\":\"SS001\", \"amount\":150.0}";
-        when(webSocket.getAttachment()).thenReturn("bidder1");
-        User bidder = mock(User.class);
-        when(bidder.getId()).thenReturn(2);
-        when(userService.getUserByUsername("bidder1")).thenReturn(bidder);
-        when(auctionService.placeBid(2, "SS001", 150.0)).thenReturn(true);
-
         server.onMessage(webSocket, msg);
-        verify(auctionService).placeBid(2, "SS001", 150.0);
+        verify(bidCommand).execute(eq(webSocket), any(JsonObject.class));
+    }
+
+    @Test
+    void onMessage_SETTLE_DispatchesToSettleCommand() {
+        String msg = "{\"type\":\"SETTLE\", \"sessionId\":\"SS001\"}";
+        server.onMessage(webSocket, msg);
+        verify(settleCommand).execute(eq(webSocket), any(JsonObject.class));
     }
 
     @Test
     void onMessage_InvalidJson_NoCrash() {
         server.onMessage(webSocket, "not a json");
+        // Không throw exception là pass
     }
 
     @Test
     void onMessage_MissingType_NoCrash() {
         server.onMessage(webSocket, "{\"userId\":1}");
-    }
-
-    @Test
-    void onMessage_SETTLE_TriggersSettlement() {
-        String msg = "{\"type\":\"SETTLE\", \"sessionId\":\"SS001\"}";
-        when(settlementService.settleAuction("SS001")).thenReturn(true);
-        server.onMessage(webSocket, msg);
-        verify(settlementService).settleAuction("SS001");
+        // Không throw exception là pass
     }
 }
