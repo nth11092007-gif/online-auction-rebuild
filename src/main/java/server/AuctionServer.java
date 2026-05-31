@@ -61,9 +61,11 @@ public class AuctionServer extends WebSocketServer {
    * @param port the port number to listen on
    */
   public AuctionServer(int port) {
-    this(port, new AuctionService(), new SettlementService(),
-        new UserService(new UserDAOImpl()),
-        AuctionFeedServer.getInstance());
+      this(port,
+              service.ServiceFactory.getInstance().getAuctionService(),
+              service.ServiceFactory.getInstance().getSettlementService(),
+              service.ServiceFactory.getInstance().getUserService(),
+              AuctionFeedServer.getInstance());
   }
 
   /**

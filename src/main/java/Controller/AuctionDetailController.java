@@ -10,6 +10,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -102,7 +103,10 @@ public class AuctionDetailController {
     if (session == null || session.getItem() == null) {
       return;
     }
-
+    AuctionSession freshSession = auctionService.getSessionById(session.getSessionId());
+    if (freshSession != null) {
+        session = freshSession; // Ghi đè tham số 'session' bằng dữ liệu mới nhất từ DB
+    }
     this.currentItem = session.getItem();
     this.currentSessionId = session.getSessionId();
     this.stepValue = (int) session.getIncrementStep();
@@ -438,100 +442,71 @@ public class AuctionDetailController {
   }
 
   private void setupWebSocket() {
-    AuctionWebSocketClient wsClient =
-        MainApp.getWebSocketClient();
-    if (wsClient == null) {
-      logger.error("WebSocket client không khả dụng "
-          + "- không thể thiết lập callback");
-      return;
-    }
-
-    wsClient.setOnMessageCallback(message -> {
-      try {
-        JsonObject json =
-            JsonParser.parseString(message)
-                .getAsJsonObject();
-        if (!json.has("type")) {
+      AuctionWebSocketClient wsClient = MainApp.getWebSocketClient();
+      if (wsClient == null) {
+          logger.error("WebSocket client không khả dụng - không thể thiết lập callback");
           return;
-        }
-
-        String type = json.get("type").getAsString();
-
-        switch (type) {
-          case "NEW_BID", "BID_UPDATE", "UPDATE" -> {
-            if (json.has("sessionId")
-                && !json.get("sessionId")
-                    .getAsString()
-                    .equals(currentSessionId)) {
-              return;
-            }
-
-            refreshCurrentPrice();
-            loadBidHistory();
-
-            if (json.has("endTime")) {
-              LocalDateTime newEnd =
-                  LocalDateTime.parse(
-                      json.get("endTime")
-                          .getAsString());
-              if (newEnd.isAfter(currentEndTime)) {
-                currentEndTime = newEnd;
-                DateTimeFormatter fmt =
-                    DateTimeFormatter.ofPattern(
-                        "dd/MM/yyyy HH:mm");
-                lblEndTime.setText(
-                    "Ket thuc: "
-                    + newEnd.format(fmt));
-                startCountdown(newEnd);
-              }
-            }
-          }
-
-          case "PLACE_BID_RESULT" -> {
-            String status = json.has("status")
-                ? json.get("status").getAsString()
-                : "";
-            String msg = json.has("message")
-                ? json.get("message").getAsString()
-                : "";
-
-            if ("SUCCESS".equals(status)) {
-              showAlert("Dat gia thanh cong!",
-                  Alert.AlertType.INFORMATION);
-            } else {
-              showAlert(
-                  msg.isEmpty()
-                      ? "Dat gia that bai! "
-                      + "Kiem tra lai so du hoac "
-                      + "da co nguoi tra gia cao hon."
-                      : msg,
-                  Alert.AlertType.ERROR);
-            }
-
-            btnPlaceBid.setDisable(false);
-            btnPlaceBid.setText("Đặt giá");
-          }
-
-          case "SESSION_SETTLED" -> {
-            setStatus("Đã kết thúc", "#ea4335");
-            setBiddingEnabled(false);
-            if (timeline != null) {
-              timeline.stop();
-            }
-          }
-
-          default -> { }
-        }
-
-      } catch (Exception e) {
-        logger.error(
-            "Lỗi khi xử lý tin nhắn WebSocket: {}",
-            e.getMessage());
       }
-    });
 
-    JsonObject joinData = new JsonObject();
-    joinData.addProperty("sessionId", currentSessionId);
-    wsClient.sendCommand("JOIN", joinData);
+      wsClient.setOnMessageCallback(message -> {
+          // BẮT BUỘC BỌC TRONG Platform.runLater ĐỂ CẬP NHẬT UI TRÊN JAVAFX THREAD
+          Platform.runLater(() -> {
+              try {
+                  JsonObject json = JsonParser.parseString(message).getAsJsonObject();
+                  if (!json.has("type")) return;
+
+                  String type = json.get("type").getAsString();
+
+                  switch (type) {
+                      case "NEW_BID", "BID_UPDATE", "UPDATE" -> {
+                          // Nếu đang xem phiên này thì mới cập nhật UI chi tiết
+                          if (json.has("sessionId") && !json.get("sessionId").getAsString().equals(currentSessionId)) {
+                              return;
+                          }
+
+                          // Cập nhật lại giá và bảng lịch sử
+                          refreshCurrentPrice();
+                          loadBidHistory();
+
+                          // Cập nhật đếm ngược chống snipe (nếu có)
+                          if (json.has("endTime")) {
+                              LocalDateTime newEnd = LocalDateTime.parse(json.get("endTime").getAsString());
+                              if (newEnd.isAfter(currentEndTime)) {
+                                  currentEndTime = newEnd;
+                                  DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+                                  lblEndTime.setText("Ket thuc: " + newEnd.format(fmt));
+                                  startCountdown(newEnd);
+                              }
+                          }
+                      }
+
+                      case "PLACE_BID_RESULT" -> {
+                          String status = json.has("status") ? json.get("status").getAsString() : "";
+                          String msg = json.has("message") ? json.get("message").getAsString() : "";
+
+                          if ("SUCCESS".equals(status)) {
+                              showAlert("Dat gia thanh cong!", Alert.AlertType.INFORMATION);
+                          } else {
+                              showAlert(msg.isEmpty() ? "Dat gia that bai!" : msg, Alert.AlertType.ERROR);
+                          }
+                          btnPlaceBid.setDisable(false);
+                          btnPlaceBid.setText("Đặt giá");
+                      }
+
+                      case "SESSION_SETTLED" -> {
+                          setStatus("Đã kết thúc", "#ea4335");
+                          setBiddingEnabled(false);
+                          if (timeline != null) timeline.stop();
+                      }
+                  }
+              } catch (Exception e) {
+                  logger.error("Lỗi khi xử lý tin nhắn WebSocket: {}", e.getMessage());
+              }
+          });
+      });
+
+      JsonObject joinData = new JsonObject();
+      joinData.addProperty("sessionId", currentSessionId);
+      wsClient.sendCommand("JOIN", joinData);
   }
 }
