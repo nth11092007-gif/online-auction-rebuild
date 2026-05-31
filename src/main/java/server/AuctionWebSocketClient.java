@@ -7,14 +7,13 @@ import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import utils.AppConfig;
 
 /** AuctionWebSocketClient - WebSocket client for connecting to the auction server. */
 public class AuctionWebSocketClient extends WebSocketClient {
 
   private static final Logger logger =
       LoggerFactory.getLogger(AuctionWebSocketClient.class);
-
-  private static final String DEFAULT_URI = "ws://localhost:8887";
 
   private Consumer<String> onMessageCallback;
 
@@ -28,7 +27,7 @@ public class AuctionWebSocketClient extends WebSocketClient {
    * de co ket noi WebSocket doc lap.
    */
   public AuctionWebSocketClient() {
-    this(URI.create(DEFAULT_URI));
+    this(URI.create(AppConfig.getWsUri()));
   }
 
   public void setOnMessageCallback(Consumer<String> callback) {
