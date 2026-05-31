@@ -205,7 +205,7 @@ Phạm vi:
 
 - Tạo phiên đấu giá: Người dùng có thể tạo phiên với tên sản phẩm, giá khởi điểm, thời gian kết thúc.
 
-- Xem danh sách phiên đấu giá: Hiển thị tất cả phiên đang hoạt động (có thể lọc theo trạng thái).
+- Xem danh sách phiên đấu giá: Hiển thị tất cả phiên đang hoạt động.
 
 - Tham gia phiên đấu giá: Xem chi tiết phiên, giá hiện tại, thời gian còn lại.
 
@@ -220,6 +220,8 @@ Phạm vi:
 - Giao diện đồ họa JavaFX: Các màn hình đăng nhập, đăng ký, trang chủ, chi tiết phiên, lịch sử đều có giao diện trực quan.
 
 - Xử lý lỗi cơ bản: Thông báo khi đặt bid không hợp lệ, số dư không đủ, phiên đã kết thúc.
+
+- Tính năng nâng cao: Anti-sniping, hệ thống tiền nâng cao (gồm chức năng đóng băng tiền), lịch sử đấu giá của từng phiên.
 
 ### 7. Link video demo và báo cáo
 - Link video: https://drive.google.com/file/d/1k3EjsiEjLnl_ttPlDir16CqU-3-aBw1L/view?usp=sharing
