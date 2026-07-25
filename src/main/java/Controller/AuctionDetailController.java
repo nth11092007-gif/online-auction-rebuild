@@ -38,7 +38,10 @@ import org.slf4j.LoggerFactory;
 import server.AuctionWebSocketClient;
 import service.AuctionService;
 import service.ServiceFactory;
+import utils.AlertUtils;
+import utils.NavigationManager;
 import utils.SessionManager;
+
 
 /** AuctionDetailController - controls the auction detail view with bidding and countdown. */
 public class AuctionDetailController {
@@ -418,28 +421,14 @@ public class AuctionDetailController {
     if (wsClient != null) {
       wsClient.setOnMessageCallback(null);
     }
-    try {
-      Parent root = FXMLLoader.load(
-          getClass().getResource("/Home.fxml"));
-      Stage stage =
-          (Stage) ((Node) event.getSource())
-              .getScene().getWindow();
-      stage.setScene(new Scene(root));
-      stage.show();
-    } catch (IOException e) {
-      showAlert(
-          "Không thể quay lại màn hình chính!",
-          Alert.AlertType.ERROR);
-    }
+    NavigationManager.navigateTo(event, "/Home.fxml");
   }
 
   private void showAlert(
       String content, Alert.AlertType type) {
-    Alert alert = new Alert(type);
-    alert.setHeaderText(null);
-    alert.setContentText(content);
-    alert.showAndWait();
+    AlertUtils.showAlert("Thông báo", content, type);
   }
+
 
   private void setupWebSocket() {
       AuctionWebSocketClient wsClient = MainApp.getWebSocketClient();

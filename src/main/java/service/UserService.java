@@ -30,4 +30,9 @@ public class UserService {
   public User getUserByUsername(String username) {
     return userDao.getUserByUsername(username);
   }
+
+  public UserDAO getUserDao() {
+    return userDao;
+  }
 }
+

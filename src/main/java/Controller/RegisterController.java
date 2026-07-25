@@ -2,22 +2,17 @@ package Controller;
 
 import Exception.PasswordStrengthCheck;
 import dao.UserDAO;
-import java.io.IOException;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import javafx.stage.Stage;
 import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import service.ServiceFactory;
+import utils.AlertUtils;
+import utils.NavigationManager;
 import utils.SessionManager;
 
 /** RegisterController - handles user registration with password strength validation. */
@@ -25,7 +20,7 @@ public class RegisterController {
 
   private static final Logger logger =
       LoggerFactory.getLogger(RegisterController.class);
-  UserDAO register =
+  private final UserDAO register =
       ServiceFactory.getInstance().getUserDao();
 
   @FXML
@@ -48,10 +43,8 @@ public class RegisterController {
    * @param password the password string to evaluate
    * @return a strength label in Vietnamese
    */
-  public static String checkPasswordStrength(
-      String password) {
-    if (password == null
-        || password.trim().isEmpty()) {
+  public static String checkPasswordStrength(String password) {
+    if (password == null || password.trim().isEmpty()) {
       return "Trống";
     }
     int score = 0;
@@ -67,57 +60,16 @@ public class RegisterController {
     if (password.matches(".*\\d.*")) {
       score++;
     }
-    if (password.matches(
-        ".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?].*")) {
+    if (password.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?].*")) {
       score++;
     }
-    switch (score) {
-      case 0:
-      case 1:
-      case 2:
-        return "Yếu";
-      case 3:
-        return "Trung bình";
-      case 4:
-        return "Mạnh";
-      case 5:
-        return "Rất mạnh";
-      default:
-        return "Không xác định";
-    }
-  }
-
-  private void showAlert(
-      String content, Alert.AlertType type) {
-    Alert alert = new Alert(type);
-    alert.setTitle("Thông báo");
-    alert.setContentText(content);
-    alert.showAndWait();
-  }
-
-  private void showAlert(
-      String title, String message) {
-    Alert alert = new Alert(Alert.AlertType.ERROR);
-    alert.setTitle(title);
-    alert.setHeaderText(null);
-    alert.setContentText(message);
-    alert.showAndWait();
-  }
-
-  private void switchToHome(ActionEvent event) {
-    try {
-      FXMLLoader loader = new FXMLLoader(
-          getClass().getResource("/Home.fxml"));
-      Parent root = loader.load();
-      Stage stage =
-          (Stage) ((Node) event.getSource())
-              .getScene().getWindow();
-      Scene scene = new Scene(root);
-      stage.setScene(scene);
-      stage.show();
-    } catch (IOException e) {
-      logger.error("Lỗi: {}", e.getMessage(), e);
-    }
+    return switch (score) {
+      case 0, 1, 2 -> "Yếu";
+      case 3 -> "Trung bình";
+      case 4 -> "Mạnh";
+      case 5 -> "Rất mạnh";
+      default -> "Không xác định";
+    };
   }
 
   @FXML
@@ -132,55 +84,33 @@ public class RegisterController {
       if (username.isEmpty() || password.isEmpty()
           || realname.isEmpty() || email.isEmpty()
           || phone.isEmpty()) {
-        showAlert("Vui lòng điền đầy đủ thông tin",
-            Alert.AlertType.ERROR);
+        AlertUtils.showError("Vui lòng điền đầy đủ thông tin");
         return;
       }
 
-      String strength =
-          checkPasswordStrength(password);
-      if (strength.equals("Trống")
-          || strength.equals("Yếu")) {
+      String strength = checkPasswordStrength(password);
+      if ("Trống".equals(strength) || "Yếu".equals(strength)) {
         throw new PasswordStrengthCheck();
       }
 
-      User newUser = new User(
-          realname, username, email, password, phone);
-      boolean succes = register.register(newUser);
+      User newUser = new User(realname, username, email, password, phone);
+      boolean success = register.register(newUser);
 
-      if (succes) {
+      if (success) {
         SessionManager.setCurrentUser(newUser);
-        showAlert("Đăng ký thành công",
-            Alert.AlertType.INFORMATION);
-        switchToHome(event);
+        AlertUtils.showInfo("Đăng ký thành công");
+        NavigationManager.navigateTo(event, "/Home.fxml");
       } else {
-        showAlert("Tài khoản đã tồn tại",
-            Alert.AlertType.ERROR);
+        AlertUtils.showError("Tài khoản đã tồn tại");
       }
 
     } catch (PasswordStrengthCheck p) {
-      showAlert(
-          p.getMessage()
-          + " (Độ mạnh hiện tại: Yếu)",
-          Alert.AlertType.WARNING);
+      AlertUtils.showWarning(p.getMessage() + " (Độ mạnh hiện tại: Yếu)");
     }
   }
 
   @FXML
   void handleBackToLogin(ActionEvent event) {
-    try {
-      Parent root = FXMLLoader.load(
-          getClass().getResource("/Login.fxml"));
-      Stage stage =
-          (Stage) ((Node) event.getSource())
-              .getScene().getWindow();
-      stage.setScene(new Scene(root));
-      stage.show();
-    } catch (IOException e) {
-      logger.error("Lỗi: {}", e.getMessage(), e);
-      showAlert("Lỗi",
-          "Không thể quay lại màn hình đăng nhập.");
-    }
+    NavigationManager.navigateTo(event, "/Login.fxml");
   }
-
 }

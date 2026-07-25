@@ -1,17 +1,12 @@
 package Controller;
 
 import dao.UserDAO;
-import java.io.IOException;
 import java.util.List;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
@@ -21,11 +16,12 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.stage.Stage;
 import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import service.ServiceFactory;
+import utils.AlertUtils;
+import utils.NavigationManager;
 import utils.SessionManager;
 
 /** HomeAdminController - admin dashboard for managing users and banning/unbanning accounts. */
@@ -71,18 +67,12 @@ public class HomeAdminController {
   }
 
   private void setupColumns() {
-    colId.setCellValueFactory(
-        new PropertyValueFactory<>("id"));
-    colUsername.setCellValueFactory(
-        new PropertyValueFactory<>("username"));
-    colRealName.setCellValueFactory(
-        new PropertyValueFactory<>("realName"));
-    colEmail.setCellValueFactory(
-        new PropertyValueFactory<>("email"));
-    colBalance.setCellValueFactory(
-        new PropertyValueFactory<>("balance"));
-    colRole.setCellValueFactory(
-        new PropertyValueFactory<>("role"));
+    colId.setCellValueFactory(new PropertyValueFactory<>("id"));
+    colUsername.setCellValueFactory(new PropertyValueFactory<>("username"));
+    colRealName.setCellValueFactory(new PropertyValueFactory<>("realName"));
+    colEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
+    colBalance.setCellValueFactory(new PropertyValueFactory<>("balance"));
+    colRole.setCellValueFactory(new PropertyValueFactory<>("role"));
 
     colBalance.setCellFactory(col -> new TableCell<>() {
       @Override
@@ -102,16 +92,14 @@ public class HomeAdminController {
     );
     colStatus.setCellFactory(col -> new TableCell<>() {
       @Override
-      protected void updateItem(
-          Boolean banned, boolean empty) {
+      protected void updateItem(Boolean banned, boolean empty) {
         super.updateItem(banned, empty);
         if (empty || banned == null) {
           setGraphic(null);
           return;
         }
 
-        Label badge = new Label(
-            banned ? "Đã khóa" : "Hoạt động");
+        Label badge = new Label(banned ? "Đã khóa" : "Hoạt động");
         badge.setStyle(banned
             ? """
               -fx-background-color: #fff0f0;
@@ -140,8 +128,7 @@ public class HomeAdminController {
 
       {
         btnToggle.setOnAction(e -> {
-          User user =
-              getTableView().getItems().get(getIndex());
+          User user = getTableView().getItems().get(getIndex());
           handleToggleBan(user);
         });
       }
@@ -149,13 +136,11 @@ public class HomeAdminController {
       @Override
       protected void updateItem(Void item, boolean empty) {
         super.updateItem(item, empty);
-        if (empty || getTableRow() == null
-            || getTableRow().getItem() == null) {
+        if (empty || getTableRow() == null || getTableRow().getItem() == null) {
           setGraphic(null);
           return;
         }
-        User user =
-            getTableView().getItems().get(getIndex());
+        User user = getTableView().getItems().get(getIndex());
         if (user.isBanned()) {
           btnToggle.setText("Gỡ ban");
           btnToggle.setStyle("""
@@ -214,41 +199,30 @@ public class HomeAdminController {
     List<User> users = userDao.getAllUsers();
     allUsers = FXCollections.observableArrayList(users);
     userTable.setItems(allUsers);
-    lblTotalUsers.setText(
-        allUsers.size() + " người dùng");
+    lblTotalUsers.setText(allUsers.size() + " người dùng");
   }
 
   private void handleToggleBan(User user) {
     boolean willBan = !user.isBanned();
 
     Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-    confirm.setTitle(
-        willBan ? "Xác nhận khóa" : "Xác nhận gỡ khóa");
+    confirm.setTitle(willBan ? "Xác nhận khóa" : "Xác nhận gỡ khóa");
     confirm.setHeaderText(null);
     confirm.setContentText(willBan
-        ? "Bạn có chắc muốn KHÓA người dùng: "
-            + user.getUsername() + "?"
-        : "Bạn có chắc muốn GỠ KHÓA người dùng: "
-            + user.getUsername() + "?");
+        ? "Bạn có chắc muốn KHÓA người dùng: " + user.getUsername() + "?"
+        : "Bạn có chắc muốn GỠ KHÓA người dùng: " + user.getUsername() + "?");
 
-    if (confirm.showAndWait().orElse(ButtonType.CANCEL)
-        != ButtonType.OK) {
+    if (confirm.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) {
       return;
     }
 
-    boolean success =
-        userDao.setBanned(user.getId(), willBan);
+    boolean success = userDao.setBanned(user.getId(), willBan);
     if (success) {
       user.setBanned(willBan);
       userTable.refresh();
-      showAlert(
-          willBan ? "Đã khóa người dùng thành công!"
-              : "Đã gỡ khóa người dùng thành công!",
-          Alert.AlertType.INFORMATION);
+      AlertUtils.showInfo(willBan ? "Đã khóa người dùng thành công!" : "Đã gỡ khóa người dùng thành công!");
     } else {
-      showAlert(
-          "Thất bại! Vui lòng thử lại.",
-          Alert.AlertType.ERROR);
+      AlertUtils.showError("Thất bại! Vui lòng thử lại.");
     }
   }
 
@@ -259,29 +233,9 @@ public class HomeAdminController {
     confirm.setHeaderText(null);
     confirm.setContentText("Bạn có chắc muốn đăng xuất?");
 
-    if (confirm.showAndWait().orElse(ButtonType.CANCEL)
-        == ButtonType.OK) {
-      try {
-        SessionManager.logout();
-        Parent root = FXMLLoader.load(
-            getClass().getResource("/Login.fxml"));
-        Stage stage = (Stage) ((Node) event.getSource())
-            .getScene().getWindow();
-        stage.setScene(new Scene(root));
-        stage.show();
-      } catch (IOException e) {
-        showAlert(
-            "Lỗi chuyển màn hình!", Alert.AlertType.ERROR);
-      }
+    if (confirm.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
+      SessionManager.logout();
+      NavigationManager.navigateTo(event, "/Login.fxml");
     }
-  }
-
-  private void showAlert(
-      String content, Alert.AlertType type) {
-    Alert alert = new Alert(type);
-    alert.setTitle("Thông báo");
-    alert.setHeaderText(null);
-    alert.setContentText(content);
-    alert.showAndWait();
   }
 }

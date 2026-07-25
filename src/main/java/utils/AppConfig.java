@@ -40,5 +40,26 @@ public class AppConfig {
         "ws.uri", "ws://localhost:8887");
   }
 
+  /** Returns the Database JDBC URL. */
+  public static String getDbUrl() {
+    return props.getProperty(
+        "db.url",
+        "jdbc:mysql://localhost:3306/quan_ly_dau_gia"
+            + "?useSSL=false&serverTimezone=UTC"
+            + "&connectionTimeZone=UTC"
+            + "&forceConnectionTimeZoneToSession=true");
+  }
+
+  /** Returns the Database Username. */
+  public static String getDbUser() {
+    return props.getProperty("db.username", "root");
+  }
+
+  /** Returns the Database Password. */
+  public static String getDbPassword() {
+    return props.getProperty("db.password", "");
+  }
+
   private AppConfig() { }
+
 }

@@ -17,16 +17,12 @@ public class DBConnection {
 
   static {
     try {
-      // Cấu hình HikariCP
+      // Cấu hình HikariCP từ AppConfig
       HikariConfig config = new HikariConfig();
-      String jdbcUrl = "jdbc:mysql://localhost:3306/quan_ly_dau_gia"
-          + "?useSSL=false"
-          + "&serverTimezone=UTC"
-          + "&connectionTimeZone=UTC"
-          + "&forceConnectionTimeZoneToSession=true";
-      config.setJdbcUrl(jdbcUrl);
-      config.setUsername("root");
-      config.setPassword("");
+      config.setJdbcUrl(AppConfig.getDbUrl());
+      config.setUsername(AppConfig.getDbUser());
+      config.setPassword(AppConfig.getDbPassword());
+
 
       // Tối ưu pool
       config.setMaximumPoolSize(20);

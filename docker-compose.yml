@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: auction_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ""
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: quan_ly_dau_gia
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./src/main/java/database/quan_ly_dau_gia.sql:/docker-entrypoint-initdb.d/quan_ly_dau_gia.sql:ro
+    command: --default-authentication-plugin=mysql_native_password
+
+volumes:
+  mysql_data:

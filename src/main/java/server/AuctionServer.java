@@ -3,7 +3,6 @@ package server;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import dao.UserDAOImpl;
 import dto.Message;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
@@ -94,7 +93,8 @@ public class AuctionServer extends WebSocketServer {
   private void initCommands() {
     commandMap.clear();
     commandMap.put("LOGIN",
-        new LoginCommand(new UserDAOImpl()));
+        new LoginCommand(userService.getUserDao()));
+
     commandMap.put("GET_SESSIONS",
         new GetSessionsCommand(auctionService));
     commandMap.put("GET_USER",

@@ -5,19 +5,15 @@ import java.util.List;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
 import model.AuctionSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import service.AuctionService;
 import service.ServiceFactory;
+import utils.NavigationManager;
 
 /** HomeController - displays and filters auction sessions on the bidder home screen. */
 public class HomeController {
@@ -38,66 +34,39 @@ public class HomeController {
 
   @FXML
   void filterArts(ActionEvent event) {
-    List<AuctionSession> allSessions =
-        auctionService.getAllSessions();
-    List<AuctionSession> filteredSessions =
-        allSessions.stream()
-            .filter(session ->
-                session.getItem() instanceof model.Arts)
-            .toList();
+    List<AuctionSession> allSessions = auctionService.getAllSessions();
+    List<AuctionSession> filteredSessions = allSessions.stream()
+        .filter(session -> session.getItem() instanceof model.Arts)
+        .toList();
     loadSessions(filteredSessions);
   }
 
   @FXML
   void filterElectronics(ActionEvent event) {
-    List<AuctionSession> allSessions =
-        auctionService.getAllSessions();
-    List<AuctionSession> filteredSessions =
-        allSessions.stream()
-            .filter(session ->
-                session.getItem() instanceof model.Electronics)
-            .toList();
+    List<AuctionSession> allSessions = auctionService.getAllSessions();
+    List<AuctionSession> filteredSessions = allSessions.stream()
+        .filter(session -> session.getItem() instanceof model.Electronics)
+        .toList();
     loadSessions(filteredSessions);
   }
 
   @FXML
   void filterVehicles(ActionEvent event) {
-    List<AuctionSession> allSessions =
-        auctionService.getAllSessions();
-    List<AuctionSession> filteredSessions =
-        allSessions.stream()
-            .filter(session ->
-                session.getItem() instanceof model.Vehicles)
-            .toList();
+    List<AuctionSession> allSessions = auctionService.getAllSessions();
+    List<AuctionSession> filteredSessions = allSessions.stream()
+        .filter(session -> session.getItem() instanceof model.Vehicles)
+        .toList();
     loadSessions(filteredSessions);
   }
 
   @FXML
   void goToCreateSession(ActionEvent event) {
-    try {
-      Parent root = FXMLLoader.load(
-          getClass().getResource("/CreateAuction.fxml"));
-      Stage stage =
-          (Stage) ((Node) event.getSource()).getScene().getWindow();
-      stage.setScene(new Scene(root));
-      stage.show();
-    } catch (IOException e) {
-      logger.error("Lỗi: {}", e.getMessage(), e);
-    }
+    NavigationManager.navigateTo(event, "/CreateAuction.fxml");
   }
 
   @FXML
   void goToProfile(ActionEvent event) {
-    try {
-      Parent root = FXMLLoader.load(
-          getClass().getResource("/Profile.fxml"));
-      Stage stage =
-          (Stage) ((Node) event.getSource()).getScene().getWindow();
-      stage.setScene(new Scene(root));
-      stage.show();
-    } catch (IOException e) {
-      logger.error("Lỗi: {}", e.getMessage(), e);
-    }
+    NavigationManager.navigateTo(event, "/Profile.fxml");
   }
 
   private void loadSessions(List<AuctionSession> sessions) {
@@ -111,14 +80,12 @@ public class HomeController {
         ItemCardController controller = loader.getController();
         controller.setAuctionData(session);
 
-        card.setOnMouseClicked(event -> {
-          goToAuctionDetail(event, session);
-        });
+        card.setOnMouseClicked(event -> goToAuctionDetail(event, session));
 
         productContainer.getChildren().add(card);
       }
     } catch (IOException e) {
-      logger.error("Lỗi: {}", e.getMessage(), e);
+      logger.error("Lỗi khi tải thẻ phiên đấu giá: {}", e.getMessage(), e);
     }
   }
 
@@ -127,25 +94,10 @@ public class HomeController {
     loadSessions(auctionService.getAllSessions());
   }
 
-  private void goToAuctionDetail(
-      MouseEvent event, AuctionSession session) {
-    try {
-      FXMLLoader loader = new FXMLLoader(
-          getClass().getResource("/AuctionDetail.fxml"));
-      Parent root = loader.load();
-
-      AuctionDetailController detailController =
-          loader.getController();
-      detailController.setAuctionData(session);
-
-      Stage stage =
-          (Stage) ((Node) event.getSource()).getScene().getWindow();
-      stage.setScene(new Scene(root));
-      stage.show();
-
-    } catch (IOException e) {
-      logger.error("Lỗi: {}", e.getMessage(), e);
-      logger.info("Không thể load file AuctionDetail.fxml");
-    }
+  private void goToAuctionDetail(MouseEvent event, AuctionSession session) {
+    NavigationManager.<AuctionDetailController>navigateTo(
+        event,
+        "/AuctionDetail.fxml",
+        controller -> controller.setAuctionData(session));
   }
 }
