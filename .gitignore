@@ -10,11 +10,16 @@ buildNumber.properties
 .mvn/timing.properties
 .mvn/wrapper/maven-wrapper.jar
 
-# Bỏ qua file cấu hình của IntelliJ IDEA
+# Bỏ qua file cấu hình của IDE
 .idea/
 *.iml
 *.iws
 *.ipr
+.vscode/
+
+# Bỏ qua file thực thi và log
+*.jar
+*.log
 
 # Bỏ qua file rác của hệ điều hành (Mac/Windows)
 .DS_Store
