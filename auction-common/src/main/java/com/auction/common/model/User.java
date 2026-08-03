@@ -40,7 +40,8 @@ public class User implements Bidder, Seller {
   }
 
   /** Default constructor. */
-  public User() {}
+  public User() {
+  }
 
   /**
    * Constructs a new user with basic registration info.

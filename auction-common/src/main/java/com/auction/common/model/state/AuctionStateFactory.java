@@ -7,6 +7,10 @@ import com.auction.common.model.AuctionSession;
  */
 public class AuctionStateFactory {
 
+  private AuctionStateFactory() {
+    // Hide implicit public constructor
+  }
+
   /**
    * Creates the appropriate AuctionState for the given status.
    *

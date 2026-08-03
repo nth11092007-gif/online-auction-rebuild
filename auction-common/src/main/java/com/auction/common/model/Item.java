@@ -13,19 +13,19 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class Item {
 
-  protected int itemId;
+  private int itemId;
 
-  protected String itemName;
+  private String itemName;
 
-  protected String ownerName;
+  private String ownerName;
 
-  protected double startingPrice;
+  private double startingPrice;
 
-  protected String description;
+  private String description;
 
-  protected BufferedImage avatar;
+  private BufferedImage avatar;
 
-  private static final Logger logger =
+  private static final Logger LOGGER =
       LoggerFactory.getLogger(Item.class);
 
   /**
@@ -48,12 +48,12 @@ public abstract class Item {
       InputStream inputStream =
           getClass().getResourceAsStream("/Images/BaseItem.png");
       if (inputStream == null) {
-        logger.error(
+        LOGGER.error(
             "Không tìm thấy ảnh tại "
             + "ường dẫn chỉ định!");
       } else {
         BufferedImage image = ImageIO.read(inputStream);
-        logger.info("Đọc ảnh thành công!");
+        LOGGER.info("Đọc ảnh thành công!");
         this.avatar = image;
       }
     } catch (IOException e) {
@@ -79,12 +79,12 @@ public abstract class Item {
       InputStream inputStream =
           getClass().getResourceAsStream(filePath);
       if (inputStream == null) {
-        logger.error(
+        LOGGER.error(
             "Không tìm thấy ảnh tại "
             + "ường dẫn chỉ định!");
       } else {
         BufferedImage image = ImageIO.read(inputStream);
-        logger.info("Đọc ảnh thành công!");
+        LOGGER.info("Đọc ảnh thành công!");
         this.avatar = image;
       }
     } catch (IOException e) {

@@ -7,7 +7,7 @@ import java.time.LocalDate;
  * Uses the Builder Pattern to create item attribute objects flexibly
  * and allow easy extension for new item types or attributes.
  */
-public class ItemsAttributes {
+public final class ItemsAttributes {
 
   // Common attributes (Immutable)
   private final User owner;
