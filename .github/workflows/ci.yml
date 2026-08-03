@@ -33,7 +33,7 @@ jobs:
 
       - name: Initialize Database Schema
         run: |
-          mysql -h 127.0.0.1 -u root quan_ly_dau_gia < src/main/java/database/quan_ly_dau_gia.sql
+          mysql -h 127.0.0.1 -u root quan_ly_dau_gia < auction-server/src/main/java/com/auction/server/database/quan_ly_dau_gia.sql
 
       - name: CheckStyle
         run: mvn checkstyle:check
@@ -49,12 +49,15 @@ jobs:
         with:
           name: auction-system-jars
           path: |
-            target/*-server.jar
-            target/*-client.jar
+            auction-server/target/*.jar
+            auction-client/target/*.jar
 
       - name: Upload JaCoCo Coverage Report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: jacoco-report
-          path: target/site/jacoco/
+          path: |
+            auction-common/target/site/jacoco/
+            auction-server/target/site/jacoco/
+            auction-client/target/site/jacoco/
