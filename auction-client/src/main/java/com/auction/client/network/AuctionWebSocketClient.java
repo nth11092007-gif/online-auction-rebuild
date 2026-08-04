@@ -13,11 +13,13 @@ import com.google.gson.JsonParser;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/** AuctionWebSocketClient - WebSocket client for connecting to the auction server. */
+/**
+ * AuctionWebSocketClient - WebSocket client for connecting to the auction
+ * server.
+ */
 public class AuctionWebSocketClient extends WebSocketClient {
 
-  private static final Logger LOGGER =
-      LoggerFactory.getLogger(AuctionWebSocketClient.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(AuctionWebSocketClient.class);
 
   private static final String DEFAULT_URI = "ws://localhost:8887";
 
@@ -88,7 +90,7 @@ public class AuctionWebSocketClient extends WebSocketClient {
 
   @Override
   public void onOpen(ServerHandshake handshake) {
-    logger.info("WebSocket đã kết nối đến máy chủ");
+    LOGGER.info("WebSocket đã kết nối đến máy chủ");
   }
 
   @Override
@@ -114,12 +116,12 @@ public class AuctionWebSocketClient extends WebSocketClient {
 
   @Override
   public void onClose(int code, String reason, boolean remote) {
-    logger.info("WebSocket đã đóng: {}", reason);
+    LOGGER.info("WebSocket đã đóng: {}", reason);
   }
 
   @Override
   public void onError(Exception ex) {
-    logger.error("WebSocket lỗi: {}", ex.getMessage(), ex);
+    LOGGER.error("WebSocket lỗi: {}", ex.getMessage(), ex);
   }
 
   /**
@@ -143,9 +145,8 @@ public class AuctionWebSocketClient extends WebSocketClient {
     if (this.isOpen()) {
       send(msg.toString());
     } else {
-      logger.error(
+      LOGGER.error(
           "WebSocket chưa mở, không thể gửi lệnh: {}", type);
     }
   }
 }
-
