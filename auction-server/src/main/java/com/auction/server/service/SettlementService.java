@@ -20,7 +20,7 @@ import com.auction.server.utils.DBConnection;
 /** SettlementService - handles auction settlement, payment transfer, and item ownership updates. */
 public class SettlementService {
 
-  private static final Logger logger =
+  private static final Logger LOGGER =
       LoggerFactory.getLogger(SettlementService.class);
 
   private final DataSource dataSource;
@@ -86,7 +86,7 @@ public class SettlementService {
       AuctionSession session =
           sessionDao.getSessionById(conn, sessionId);
       if (session == null || !session.settle()) {
-        logger.warn(
+        LOGGER.warn(
             "Session {} not found or not OPEN",
             sessionId);
         return false;
@@ -108,12 +108,12 @@ public class SettlementService {
             conn, session.getItem().getItemId(),
             buyerId);
 
-        logger.info(
+        LOGGER.info(
             "Auction settled! Session {}, price {},"
             + " buyer ID: {}",
             sessionId, finalPrice, buyerId);
       } else {
-        logger.info(
+        LOGGER.info(
             "Session {} ended. No bids placed.",
             sessionId);
       }
@@ -129,15 +129,15 @@ public class SettlementService {
       if (conn != null) {
         try {
           conn.rollback();
-          logger.warn(
+          LOGGER.warn(
               "Rolled back transaction for session {}",
               sessionId);
         } catch (SQLException ex) {
-          logger.error("Rollback error: {}",
+          LOGGER.error("Rollback error: {}",
               ex.getMessage(), ex);
         }
       }
-      logger.error(
+      LOGGER.error(
           "Error settling session {}: {}",
           sessionId, e.getMessage(), e);
       return false;
@@ -147,7 +147,7 @@ public class SettlementService {
           conn.setAutoCommit(true);
           conn.close();
         } catch (SQLException e) {
-          logger.error("Close error: {}",
+          LOGGER.error("Close error: {}",
               e.getMessage(), e);
         }
       }

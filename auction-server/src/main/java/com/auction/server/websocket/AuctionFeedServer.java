@@ -6,7 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /** AuctionFeedServer - singleton pub/sub hub for auction event notifications. */
-public class AuctionFeedServer {
+public final class AuctionFeedServer {
 
   private AuctionFeedServer() {
   }

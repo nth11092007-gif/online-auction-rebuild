@@ -20,7 +20,7 @@ import com.auction.server.utils.DBConnection;
  */
 public class BidDAOImpl implements BidDAO {
 
-  private static final Logger logger =
+  private static final Logger LOGGER =
       LoggerFactory.getLogger(BidDAOImpl.class);
   private final UserDAO userDao;
   private final DataSource dataSource;
@@ -60,7 +60,7 @@ public class BidDAOImpl implements BidDAO {
     try (Connection conn = dataSource.getConnection()) {
       return getHighestBid(conn, sessionId);
     } catch (SQLException e) {
-      logger.error(
+      LOGGER.error(
           "Lỗi khi lấy giá cao nhất cho session {}: {}",
           sessionId, e.getMessage(), e);
       return null;
@@ -89,7 +89,7 @@ public class BidDAOImpl implements BidDAO {
     try (Connection conn = dataSource.getConnection()) {
       return addBid(conn, sessionId, bid);
     } catch (SQLException e) {
-      logger.error(
+      LOGGER.error(
           "Lỗi khi thêm lượt đặt giá cho session {}: {}",
           sessionId, e.getMessage(), e);
       return false;
@@ -144,7 +144,7 @@ public class BidDAOImpl implements BidDAO {
     try (Connection conn = dataSource.getConnection()) {
       return getBidsBySession(conn, sessionId);
     } catch (SQLException e) {
-      logger.error(
+      LOGGER.error(
           "Lỗi khi lấy lịch sử đặt giá cho session {}: {}",
           sessionId, e.getMessage(), e);
       return new ArrayList<>();

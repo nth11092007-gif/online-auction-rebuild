@@ -27,7 +27,7 @@ import com.auction.server.utils.DBConnection;
 /** AuctionService - manages auction sessions, bidding, and anti-sniping logic. */
 public class AuctionService {
 
-  private static final Logger logger =
+  private static final Logger LOGGER =
       LoggerFactory.getLogger(AuctionService.class);
 
   private static final int SNIPING_THRESHOLD_MS =
@@ -119,7 +119,7 @@ public class AuctionService {
           sessionDao.getSessionForPlaceBid(
               conn, sessionId);
       if (session == null) {
-        logger.warn("Session {} not found", sessionId);
+        LOGGER.warn("Session {} not found", sessionId);
         return false;
       }
 
@@ -127,7 +127,7 @@ public class AuctionService {
       boolean isDeducted = userDao.freezeMoneyAtomic(
           conn, currentUserId, bidAmount);
       if (!isDeducted) {
-        logger.warn(
+        LOGGER.warn(
             "Cannot freeze {} from user {}",
             bidAmount, currentUserId);
         conn.rollback();
@@ -137,7 +137,7 @@ public class AuctionService {
       // 2. Check session status and conditions
       if (session.getStatus() != Status.OPEN
           || !session.joinable()) {
-        logger.warn(
+        LOGGER.warn(
             "Session {} not OPEN or not joinable",
             sessionId);
         conn.rollback();
@@ -168,7 +168,7 @@ public class AuctionService {
             conn, sessionId,
             Timestamp.valueOf(newEndTime));
 
-        logger.info(
+        LOGGER.info(
             "Anti-sniping: Extended session {} to {}",
             sessionId, newEndTime);
       }
@@ -203,12 +203,12 @@ public class AuctionService {
         eventPublisher.notifyObservers(sessionId, msg);
       }
 
-      logger.info(
+      LOGGER.info(
           "Bid placed: user {}, session {}, amount {}",
           currentUserId, sessionId, bidAmount);
       return true;
     } catch (SQLException e) {
-      logger.error(
+      LOGGER.error(
           "Error placing bid: user {}, session {},"
           + " amount {}: {}",
           currentUserId, sessionId, bidAmount,
@@ -217,7 +217,7 @@ public class AuctionService {
         try {
           conn.rollback();
         } catch (SQLException rollbackEx) {
-          logger.error("Rollback error: {}",
+          LOGGER.error("Rollback error: {}",
               rollbackEx.getMessage(), rollbackEx);
         }
       }
@@ -227,7 +227,7 @@ public class AuctionService {
           conn.close();
         }
       } catch (SQLException e) {
-        logger.error("Close error: {}",
+        LOGGER.error("Close error: {}",
             e.getMessage(), e);
       }
     }

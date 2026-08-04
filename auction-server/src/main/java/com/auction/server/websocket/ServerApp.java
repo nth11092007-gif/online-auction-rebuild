@@ -9,10 +9,13 @@ import org.slf4j.LoggerFactory;
  * Chay ServerApp -> server start tren port 8887 -> nhap "stop" de tat.
  * Dung ngrok de expose: ngrok tcp 8887
  */
-public class ServerApp {
+public final class ServerApp {
 
-  private static final Logger logger =
-      LoggerFactory.getLogger(ServerApp.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
+
+  private ServerApp() {
+    // Hide implicit public constructor
+  }
 
   private static final int DEFAULT_PORT = 8887;
 
@@ -40,7 +43,7 @@ public class ServerApp {
         try {
           server.stop(1000);
         } catch (InterruptedException e) {
-          logger.error(
+          LOGGER.error(
               "Lỗi khi dừng server: {}", e.getMessage(), e);
           Thread.currentThread().interrupt();
         }

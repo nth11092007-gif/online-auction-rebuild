@@ -10,10 +10,19 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
 /** DBConnection - manages the HikariCP database connection pool. */
-public class DBConnection {
-  private static final Logger logger =
+public final class DBConnection {
+  private static final Logger LOGGER =
       LoggerFactory.getLogger(DBConnection.class);
   private static HikariDataSource dataSource;
+
+  private static final int MAX_POOL_SIZE = 20;
+  private static final int CONNECTION_TIMEOUT = 10000;
+  private static final int IDLE_TIMEOUT = 300000;
+  private static final int MAX_LIFETIME = 1800000;
+
+  private DBConnection() {
+    // Hide utility class constructor
+  }
 
   static {
     try {
@@ -25,20 +34,20 @@ public class DBConnection {
 
 
       // Tối ưu pool
-      config.setMaximumPoolSize(20);
-      config.setMinimumIdle(20);
-      config.setConnectionTimeout(10000);
-      config.setIdleTimeout(300000);
-      config.setMaxLifetime(1800000);
+      config.setMaximumPoolSize(MAX_POOL_SIZE);
+      config.setMinimumIdle(MAX_POOL_SIZE);
+      config.setConnectionTimeout(CONNECTION_TIMEOUT);
+      config.setIdleTimeout(IDLE_TIMEOUT);
+      config.setMaxLifetime(MAX_LIFETIME);
       config.setPoolName("HikariPool-DauGia");
       // Bỏ connectionTestQuery — MySQL Connector/J 8.x
       // dùng isValid() tự động, nhẹ hơn "SELECT 1"
       config.setDriverClassName("com.mysql.cj.jdbc.Driver");
 
       dataSource = new HikariDataSource(config);
-      logger.info("✅ HikariCP DataSource khởi tạo thành công!");
+      LOGGER.info("✅ HikariCP DataSource khởi tạo thành công!");
     } catch (Exception e) {
-      logger.error(
+      LOGGER.error(
           "❌ Lỗi khởi tạo HikariCP: {}", e.getMessage(), e);
       throw new ExceptionInInitializerError(e);
     }
@@ -66,7 +75,7 @@ public class DBConnection {
   public static void closePool() {
     if (dataSource != null && !dataSource.isClosed()) {
       dataSource.close();
-      logger.info("🔌 HikariCP connection pool đã đóng.");
+      LOGGER.info("🔌 HikariCP connection pool đã đóng.");
     }
   }
 }

@@ -21,7 +21,7 @@ import com.auction.server.utils.DBConnection;
  */
 public class UserDAOImpl implements UserDAO {
 
-  private static final Logger logger =
+  private static final Logger LOGGER =
       LoggerFactory.getLogger(UserDAOImpl.class);
   private final DataSource dataSource;
 
@@ -64,7 +64,7 @@ public class UserDAOImpl implements UserDAO {
         return true;
       }
     } catch (SQLException e) {
-      logger.error(
+      LOGGER.error(
           "Lỗi khi đăng ký user {}: {}",
           user.getUsername(), e.getMessage(), e);
     }
@@ -88,7 +88,7 @@ public class UserDAOImpl implements UserDAO {
         }
       }
     } catch (SQLException e) {
-      logger.error(
+      LOGGER.error(
           "Lỗi khi login user {}: {}",
           username, e.getMessage(), e);
     }
@@ -108,7 +108,7 @@ public class UserDAOImpl implements UserDAO {
         userList.add(extractUserFromResultSet(rs));
       }
     } catch (SQLException e) {
-      logger.error(
+      LOGGER.error(
           "Lỗi khi lấy danh sách users: {}",
           e.getMessage(), e);
     }
@@ -131,7 +131,7 @@ public class UserDAOImpl implements UserDAO {
         }
       }
     } catch (SQLException e) {
-      logger.error(
+      LOGGER.error(
           "Lỗi khi tìm kiếm users với keyword {}: {}",
           keyword, e.getMessage(), e);
     }
@@ -153,7 +153,7 @@ public class UserDAOImpl implements UserDAO {
         }
       }
     } catch (SQLException e) {
-      logger.error(
+      LOGGER.error(
           "Lỗi khi đếm users theo status {}: {}",
           status, e.getMessage(), e);
     }
@@ -215,7 +215,7 @@ public class UserDAOImpl implements UserDAO {
     try (Connection conn = dataSource.getConnection()) {
       return getUserById(conn, id);
     } catch (SQLException e) {
-      logger.error(
+      LOGGER.error(
           "Lỗi khi lấy user theo ID {}: {}",
           id, e.getMessage(), e);
       return null;
@@ -237,7 +237,7 @@ public class UserDAOImpl implements UserDAO {
         }
       }
     } catch (SQLException e) {
-      logger.error(
+      LOGGER.error(
           "Lỗi khi lấy user theo username {}: {}",
           username, e.getMessage(), e);
     }
@@ -304,7 +304,7 @@ public class UserDAOImpl implements UserDAO {
     try (Connection conn = dataSource.getConnection()) {
       return updateStatus(conn, userId, status);
     } catch (SQLException e) {
-      logger.error(
+      LOGGER.error(
           "Lỗi khi cập nhật status user {}: {}",
           userId, e.getMessage(), e);
       return false;
@@ -336,7 +336,7 @@ public class UserDAOImpl implements UserDAO {
       return updateBalance(
           conn, userId, newBalance, newFrozenBalance);
     } catch (SQLException e) {
-      logger.error(
+      LOGGER.error(
           "Lỗi khi cập nhật balance user {}: {}",
           userId, e.getMessage(), e);
       return false;
@@ -372,7 +372,7 @@ public class UserDAOImpl implements UserDAO {
     try (Connection conn = dataSource.getConnection()) {
       return freezeMoneyAtomic(conn, userId, amount);
     } catch (SQLException e) {
-      logger.error(
+      LOGGER.error(
           "Lỗi freezeMoneyAtomic user {} amount {}: {}",
           userId, amount, e.getMessage(), e);
       return false;
@@ -402,7 +402,7 @@ public class UserDAOImpl implements UserDAO {
     try (Connection conn = dataSource.getConnection()) {
       return refundMoneyAtomic(conn, userId, amount);
     } catch (SQLException e) {
-      logger.error(
+      LOGGER.error(
           "Lỗi refundMoneyAtomic user {} amount {}: {}",
           userId, amount, e.getMessage(), e);
       return false;
@@ -432,7 +432,7 @@ public class UserDAOImpl implements UserDAO {
       return deductFrozenMoneyAtomic(
           conn, userId, amount);
     } catch (SQLException e) {
-      logger.error(
+      LOGGER.error(
           "Lỗi deductFrozenMoneyAtomic"
           + " user {} amount {}: {}",
           userId, amount, e.getMessage(), e);
@@ -460,7 +460,7 @@ public class UserDAOImpl implements UserDAO {
     try (Connection conn = dataSource.getConnection()) {
       return addMoneyAtomic(conn, userId, amount);
     } catch (SQLException e) {
-      logger.error(
+      LOGGER.error(
           "Lỗi addMoneyAtomic user {} amount {}: {}",
           userId, amount, e.getMessage(), e);
       return false;
@@ -500,7 +500,7 @@ public class UserDAOImpl implements UserDAO {
       ps.setInt(2, userId);
       return ps.executeUpdate() > 0;
     } catch (SQLException e) {
-      logger.error(
+      LOGGER.error(
           "Loi setBanned user {}: {}",
           userId, e.getMessage());
       return false;

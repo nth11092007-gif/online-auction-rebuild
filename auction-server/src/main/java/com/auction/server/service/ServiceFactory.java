@@ -13,7 +13,7 @@ import com.auction.server.dao.UserDAOImpl;
  * Singleton cung cấp các service instances chung cho toàn bộ ứng dụng.
  * Controllers nên dùng class này thay vì tự new DAO/Service.
  */
-public class ServiceFactory {
+public final class ServiceFactory {
 
   private static class Holder {
     private static final ServiceFactory INSTANCE =

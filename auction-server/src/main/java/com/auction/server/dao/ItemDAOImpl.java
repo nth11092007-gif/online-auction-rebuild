@@ -32,7 +32,7 @@ import com.auction.server.utils.DBConnection;
  */
 public class ItemDAOImpl implements ItemDAO {
 
-  private static final Logger logger =
+  private static final Logger LOGGER =
       LoggerFactory.getLogger(ItemDAOImpl.class);
   private final DataSource dataSource;
 
@@ -71,10 +71,10 @@ public class ItemDAOImpl implements ItemDAO {
         try {
           ImageIO.write(avatar, "png", baos);
         } catch (IOException e) {
-          logger.error(
+          LOGGER.error(
               "Lỗi khi chuyển ảnh thành bytes: {}",
               e.getMessage(), e);
-          logger.error(
+          LOGGER.error(
               "Lỗi khi đọc file ảnh: {}",
               e.getMessage(), e);
         }
@@ -138,7 +138,7 @@ public class ItemDAOImpl implements ItemDAO {
     try (Connection conn = dataSource.getConnection()) {
       addItem(conn, item);
     } catch (SQLException e) {
-      logger.error(
+      LOGGER.error(
           "❌ Lỗi khi thêm item: {}",
           e.getMessage(), e);
     }
@@ -169,7 +169,7 @@ public class ItemDAOImpl implements ItemDAO {
     try (Connection conn = DBConnection.getConnection()) {
       return getItemById(conn, id);
     } catch (SQLException e) {
-      logger.error(
+      LOGGER.error(
           "Lỗi khi lấy item theo ID {}: {}",
           id, e.getMessage(), e);
       return null;
@@ -205,7 +205,7 @@ public class ItemDAOImpl implements ItemDAO {
     try (Connection conn = DBConnection.getConnection()) {
       return getAllItems(conn);
     } catch (SQLException e) {
-      logger.error(
+      LOGGER.error(
           "Lỗi khi lấy tất cả items: {}",
           e.getMessage(), e);
       return new ArrayList<>();
@@ -225,7 +225,7 @@ public class ItemDAOImpl implements ItemDAO {
       }
       return itemList;
     } catch (SQLException e) {
-      logger.error("Loi khi lay tat ca cac item!");
+      LOGGER.error("Loi khi lay tat ca cac item!");
       return new ArrayList<>();
     }
   }
@@ -256,7 +256,7 @@ public class ItemDAOImpl implements ItemDAO {
     try (Connection conn = dataSource.getConnection()) {
       return updateItemOwner(conn, itemId, newOwnerId);
     } catch (SQLException e) {
-      logger.error(
+      LOGGER.error(
           "Lỗi khi cập nhật chủ sở hữu cho item {}: {}",
           itemId, e.getMessage(), e);
       return false;
@@ -301,7 +301,7 @@ public class ItemDAOImpl implements ItemDAO {
           BufferedImage bi = ImageIO.read(is);
           item.setAvatar(bi);
         } catch (IOException e) {
-          logger.error(
+          LOGGER.error(
               "Lỗi chuyển đổi ảnh từ database: "
               + e.getMessage());
         }

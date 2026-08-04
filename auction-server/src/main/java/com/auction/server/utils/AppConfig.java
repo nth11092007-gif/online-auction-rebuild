@@ -10,9 +10,9 @@ import org.slf4j.LoggerFactory;
  * AppConfig - reads application configuration from config.properties
  * on the classpath. Falls back to defaults if the file is missing.
  */
-public class AppConfig {
+public final class AppConfig {
 
-  private static final Logger logger =
+  private static final Logger LOGGER =
       LoggerFactory.getLogger(AppConfig.class);
 
   private static final Properties props = new Properties();
@@ -22,14 +22,14 @@ public class AppConfig {
         .getResourceAsStream("config.properties")) {
       if (is != null) {
         props.load(is);
-        logger.info("Đã tải config.properties");
+        LOGGER.info("Đã tải config.properties");
       } else {
-        logger.warn(
+        LOGGER.warn(
             "Không tìm thấy config.properties,"
                 + " dùng giá trị mặc định");
       }
     } catch (IOException e) {
-      logger.error("Lỗi đọc config.properties: {}",
+      LOGGER.error("Lỗi đọc config.properties: {}",
           e.getMessage(), e);
     }
   }

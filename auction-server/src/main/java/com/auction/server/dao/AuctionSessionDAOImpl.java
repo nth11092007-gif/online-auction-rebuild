@@ -27,7 +27,7 @@ import com.auction.server.utils.DBConnection;
 public class AuctionSessionDAOImpl
     implements AuctionSessionDAO {
 
-  private static final Logger logger =
+  private static final Logger LOGGER =
       LoggerFactory.getLogger(
           AuctionSessionDAOImpl.class);
   private final UserDAO userDao;
@@ -117,7 +117,7 @@ public class AuctionSessionDAOImpl
         dataSource.getConnection()) {
       return createSession(conn, session, itemId);
     } catch (SQLException e) {
-      logger.error(
+      LOGGER.error(
           "❌ Lỗi khi tạo phiên đấu giá: {}",
           e.getMessage(), e);
     }
@@ -188,7 +188,7 @@ public class AuctionSessionDAOImpl
         }
       }
     } catch (SQLException e) {
-      logger.error(
+      LOGGER.error(
           "Lỗi khi lấy phiên đấu giá theo ID"
           + " {}: {}",
           sessionId, e.getMessage(), e);
@@ -203,7 +203,7 @@ public class AuctionSessionDAOImpl
         dataSource.getConnection()) {
       return getSessionByIdReadOnly(conn, sessionId);
     } catch (SQLException e) {
-      logger.error(
+      LOGGER.error(
           "Lỗi kết nối khi lấy session {}: {}",
           sessionId, e.getMessage(), e);
     }
@@ -268,7 +268,7 @@ public class AuctionSessionDAOImpl
         }
       }
     } catch (SQLException e) {
-      logger.error(
+      LOGGER.error(
           "Lỗi khi lấy phiên đấu giá theo ID"
           + " {}: {}",
           sessionId, e.getMessage(), e);
@@ -389,7 +389,7 @@ public class AuctionSessionDAOImpl
         dataSource.getConnection()) {
       return getAllSessions(conn);
     } catch (SQLException e) {
-      logger.error(
+      LOGGER.error(
           "Lỗi khi lấy danh sách tất cả phiên: {}",
           e.getMessage(), e);
     }
@@ -424,7 +424,7 @@ public class AuctionSessionDAOImpl
       return updateSessionStatusAtomic(
           conn, sessionId, status);
     } catch (SQLException e) {
-      logger.error(
+      LOGGER.error(
           "Lỗi cập nhật trạng thái phiên {}: {}",
           sessionId, e.getMessage(), e);
     }
@@ -458,7 +458,7 @@ public class AuctionSessionDAOImpl
       pstmt.setString(2, sessionId);
       return pstmt.executeUpdate() > 0;
     } catch (SQLException e) {
-      logger.error(
+      LOGGER.error(
           "Lỗi cập nhật giá hiện tại phiên {}: {}",
           sessionId, e.getMessage(), e);
     }
@@ -505,7 +505,7 @@ public class AuctionSessionDAOImpl
       return getSessionsStartBefore(
           conn, time, status);
     } catch (SQLException e) {
-      logger.error(
+      LOGGER.error(
           "Lỗi lấy phiên startBefore: {}",
           e.getMessage(), e);
     }
@@ -547,7 +547,7 @@ public class AuctionSessionDAOImpl
       return getSessionsEndBefore(
           conn, time, status);
     } catch (SQLException e) {
-      logger.error(
+      LOGGER.error(
           "Lỗi lấy phiên endBefore: {}",
           e.getMessage(), e);
     }
@@ -570,7 +570,7 @@ public class AuctionSessionDAOImpl
         }
       }
     } catch (SQLException e) {
-      logger.error(
+      LOGGER.error(
           "Lỗi khi lấy phiên đấu giá có khoá"
           + " theo ID {}: {}",
           sessionId, e.getMessage(), e);
@@ -597,7 +597,7 @@ public class AuctionSessionDAOImpl
       return new ArrayList<>(
           getSessionsByIds(conn, ids).values());
     } catch (SQLException e) {
-      logger.error(
+      LOGGER.error(
           "Lỗi lấy phiên theo trạng thái {}: {}",
           status, e.getMessage(), e);
     }
