@@ -14,6 +14,8 @@ import com.auction.common.utils.IDGenerator;
  */
 public class AuctionSession {
 
+  private static final double DEFAULT_BID_INCREMENT_RATE = 0.1;
+
   private Seller seller;
 
   private Item item;
@@ -109,7 +111,7 @@ public class AuctionSession {
    */
   public AuctionSession(Seller seller, Item item,
       double startingPrice) {
-    this(seller, item, startingPrice, 0.1, LocalDateTime.now());
+    this(seller, item, startingPrice, DEFAULT_BID_INCREMENT_RATE, LocalDateTime.now());
   }
 
   public void setCurrentPrice(double price) {

@@ -5,7 +5,7 @@ import com.auction.common.model.AuctionSession;
 /**
  * Factory for creating AuctionState instances from a given status.
  */
-public class AuctionStateFactory {
+public final class AuctionStateFactory {
 
   private AuctionStateFactory() {
     // Hide implicit public constructor

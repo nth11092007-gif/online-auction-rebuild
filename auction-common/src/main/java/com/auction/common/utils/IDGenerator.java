@@ -3,7 +3,7 @@ package com.auction.common.utils;
 import java.util.UUID;
 
 /** IDGenerator - generates unique identifiers for auction sessions and entities. */
-public class IDGenerator {
+public final class IDGenerator {
   private IDGenerator() {
     // Hide implicit public constructor
   }
