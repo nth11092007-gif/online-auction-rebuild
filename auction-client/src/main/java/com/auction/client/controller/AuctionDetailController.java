@@ -419,7 +419,9 @@ public class AuctionDetailController {
           Platform.runLater(() -> {
               try {
                   JsonObject json = JsonParser.parseString(message).getAsJsonObject();
-                  if (!json.has("type")) { return; }
+                  if (!json.has("type")) {
+                      return;
+                  }
 
                   String type = json.get("type").getAsString();
 
@@ -463,15 +465,21 @@ public class AuctionDetailController {
                       case "SESSION_SETTLED" -> {
                           setStatus("Đã kết thúc", "#ea4335");
                           setBiddingEnabled(false);
-                          if (timeline != null) { timeline.stop(); }
+                          if (timeline != null) {
+                              timeline.stop();
+                          }
                       }
 
                       case "JOIN_FAILURE" -> {
-                          String joinMsg = json.has("message") ? json.get("message").getAsString() : "Không thể tham gia phiên";
+                          String joinMsg = json.has("message")
+                                  ? json.get("message").getAsString()
+                                  : "Không thể tham gia phiên";
                           showAlert(joinMsg, Alert.AlertType.WARNING);
                           setBiddingEnabled(false);
                       }
-                      default -> { break; }
+                      default -> {
+                          break;
+                      }
                   }
               } catch (Exception e) {
                   LOGGER.error("Lỗi khi xử lý tin nhắn WebSocket: {}", e.getMessage());

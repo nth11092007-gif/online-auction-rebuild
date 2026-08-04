@@ -197,7 +197,7 @@ public class CreateAuctionController {
     }
 
     if (selectedImageFile != null) {
-      // Do nothing for now
+      LOGGER.info("Selected image file: {}", selectedImageFile.getName());
     }
 
     LocalDateTime startTime = LocalDateTime.now();
