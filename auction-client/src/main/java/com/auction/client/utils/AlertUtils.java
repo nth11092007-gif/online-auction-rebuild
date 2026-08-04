@@ -5,7 +5,7 @@ import javafx.scene.control.Alert;
 /**
  * Utility class for displaying standardized JavaFX Alert dialogs.
  */
-public class AlertUtils {
+public final class AlertUtils {
 
   private AlertUtils() { }
 

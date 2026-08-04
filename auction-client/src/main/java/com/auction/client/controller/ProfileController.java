@@ -22,11 +22,12 @@ import com.auction.client.utils.SessionManager;
  * and logout functionality.</p>
  */
 public class ProfileController {
-  private final com.auction.server.dao.UserDAO userDao = com.auction.server.service.ServiceFactory.getInstance().getUserDao();
+  private final com.auction.server.dao.UserDAO userDao =
+      com.auction.server.service.ServiceFactory.getInstance().getUserDao();
 
-  private static final Logger logger =
+  private static final Logger LOGGER =
       LoggerFactory.getLogger(ProfileController.class);
-    protected static User currentUser;
+  private static User currentUser;
 
   @FXML
   private Label lblBalance;
@@ -143,7 +144,7 @@ public class ProfileController {
         NavigationManager.navigateTo(event, "/Login.fxml");
 
       } catch (Exception e) {
-        logger.error("Lỗi đăng xuất: {}", e.getMessage(), e);
+        LOGGER.error("Lỗi đăng xuất: {}", e.getMessage(), e);
         AlertUtils.showError("Đã xảy ra lỗi khi đăng xuất. Vui lòng thử lại!");
       }
     }

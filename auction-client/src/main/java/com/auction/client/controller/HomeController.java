@@ -16,7 +16,7 @@ import com.auction.client.utils.NavigationManager;
 /** HomeController - displays and filters auction sessions on the bidder home screen. */
 public class HomeController {
 
-  private static final Logger logger =
+  private static final Logger LOGGER =
       LoggerFactory.getLogger(HomeController.class);
 
   
@@ -81,7 +81,7 @@ public class HomeController {
         productContainer.getChildren().add(card);
       }
     } catch (IOException e) {
-      logger.error("Lỗi khi tải thẻ phiên đấu giá: {}", e.getMessage(), e);
+      LOGGER.error("Lỗi khi tải thẻ phiên đấu giá: {}", e.getMessage(), e);
     }
   }
 

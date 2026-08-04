@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 /** ItemCardController - controls the item card display in the auction listing view. */
 public class ItemCardController {
 
-  private static final Logger logger =
+  private static final Logger LOGGER =
       LoggerFactory.getLogger(ItemCardController.class);
   private AuctionSession currentSession;
 
@@ -59,7 +59,7 @@ public class ItemCardController {
       if (image != null) {
         imgItem.setImage(image);
       } else {
-        logger.error(
+        LOGGER.error(
             "Không chuyển đổi được ảnh từ database.");
       }
     }
@@ -73,13 +73,13 @@ public class ItemCardController {
    */
   public void setAuctionData(AuctionSession session) {
     if (session == null) {
-      logger.error(
+      LOGGER.error(
           "setAuctionData nhận session null — bỏ qua.");
       return;
     }
 
     this.currentSession = session;
-    logger.info("setAuctionData OK, sessionId = {}",
+    LOGGER.info("setAuctionData OK, sessionId = {}",
         session.getSessionId());
 
     try {
@@ -101,7 +101,7 @@ public class ItemCardController {
                 ? session.getSeller().getUsername()
                 : "Không xác định"));
         lblDescribe.setText("");
-        logger.info("Cảnh báo: session {} không có item "
+        LOGGER.info("Cảnh báo: session {} không có item "
             + "— có thể Gson chưa map đúng field.",
             session.getSessionId());
         BufferedImage bufferedImage =
@@ -111,7 +111,7 @@ public class ItemCardController {
         imgItem.setImage(fxImage);
       }
     } catch (Exception e) {
-      logger.error(
+      LOGGER.error(
           "Lỗi trong setAuctionData (session={}): {}",
           session.getSessionId(), e.getMessage(), e);
     }
@@ -120,11 +120,11 @@ public class ItemCardController {
   @FXML
   private void handleJoinAuction() {
     if (currentSession != null) {
-      logger.info("Joining auction: {}",
+      LOGGER.info("Joining auction: {}",
           currentSession.getSessionId());
       MainApp.showAuctionDetail(currentSession);
     } else {
-      logger.error("currentSession is null");
+      LOGGER.error("currentSession is null");
     }
   }
 }

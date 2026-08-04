@@ -39,8 +39,14 @@ import com.auction.client.utils.SessionManager;
 /** AuctionDetailController - controls the auction detail view with bidding and countdown. */
 public class AuctionDetailController {
 
+  private static final double QUICK_BID_1 = 500_000.0;
+  private static final double QUICK_BID_2 = 1_000_000.0;
+  private static final double QUICK_BID_3 = 2_500_000.0;
+  private static final int AMOUNT_PREF_WIDTH = 150;
+  private static final int RANK_PREF_WIDTH = 60;
+
   @FXML
-  private VBox Container;
+  private VBox container;
   @FXML
   private VBox bidHistoryContainer;
   @FXML
@@ -82,7 +88,7 @@ public class AuctionDetailController {
   private int creatorId = -1;
   private LocalDateTime currentEndTime;
 
-    private final Logger logger =
+    private static final Logger LOGGER =
       LoggerFactory.getLogger(AuctionDetailController.class);
 
   @FXML
@@ -195,9 +201,9 @@ public class AuctionDetailController {
   void handleQuickBid(ActionEvent event) {
     Button btn = (Button) event.getSource();
     double add = switch (btn.getText()) {
-      case "+0.5M" -> 500_000.0;
-      case "+1.0M" -> 1_000_000.0;
-      case "+2.5M" -> 2_500_000.0;
+      case "+0.5M" -> QUICK_BID_1;
+      case "+1.0M" -> QUICK_BID_2;
+      case "+2.5M" -> QUICK_BID_3;
       default -> 0.0;
     };
     bidSpinner.getValueFactory().setValue(
@@ -259,7 +265,7 @@ public class AuctionDetailController {
 
     Label amount = new Label(
         String.format("%,.0f d", bid.getAmount()));
-    amount.setPrefWidth(150);
+    amount.setPrefWidth(AMOUNT_PREF_WIDTH);
     amount.setStyle(isTop
         ? "-fx-font-size: 14; -fx-text-fill: #1a73e8;"
           + " -fx-font-weight: bold;"
@@ -281,7 +287,7 @@ public class AuctionDetailController {
           + " -fx-text-fill: #888;";
     };
     Label rankLabel = new Label(rankText);
-    rankLabel.setPrefWidth(60);
+    rankLabel.setPrefWidth(RANK_PREF_WIDTH);
     rankLabel.setAlignment(Pos.CENTER);
     rankLabel.setStyle(rankStyle
         + "-fx-font-size: 11; -fx-font-weight: bold;"
@@ -404,7 +410,7 @@ public class AuctionDetailController {
   private void setupWebSocket() {
       AuctionWebSocketClient wsClient = MainApp.getWebSocketClient();
       if (wsClient == null) {
-          logger.error("WebSocket client không khả dụng - không thể thiết lập callback");
+          LOGGER.error("WebSocket client không khả dụng - không thể thiết lập callback");
           return;
       }
 
@@ -413,14 +419,15 @@ public class AuctionDetailController {
           Platform.runLater(() -> {
               try {
                   JsonObject json = JsonParser.parseString(message).getAsJsonObject();
-                  if (!json.has("type")) return;
+                  if (!json.has("type")) { return; }
 
                   String type = json.get("type").getAsString();
 
                   switch (type) {
                       case "NEW_BID", "BID_UPDATE", "UPDATE" -> {
                           // Nếu đang xem phiên này thì mới cập nhật UI chi tiết
-                          if (json.has("sessionId") && !json.get("sessionId").getAsString().equals(currentSessionId)) {
+                          if (json.has("sessionId")
+                              && !json.get("sessionId").getAsString().equals(currentSessionId)) {
                               return;
                           }
 
@@ -456,7 +463,7 @@ public class AuctionDetailController {
                       case "SESSION_SETTLED" -> {
                           setStatus("Đã kết thúc", "#ea4335");
                           setBiddingEnabled(false);
-                          if (timeline != null) timeline.stop();
+                          if (timeline != null) { timeline.stop(); }
                       }
 
                       case "JOIN_FAILURE" -> {
@@ -464,9 +471,10 @@ public class AuctionDetailController {
                           showAlert(joinMsg, Alert.AlertType.WARNING);
                           setBiddingEnabled(false);
                       }
+                      default -> { break; }
                   }
               } catch (Exception e) {
-                  logger.error("Lỗi khi xử lý tin nhắn WebSocket: {}", e.getMessage());
+                  LOGGER.error("Lỗi khi xử lý tin nhắn WebSocket: {}", e.getMessage());
               }
           });
       });

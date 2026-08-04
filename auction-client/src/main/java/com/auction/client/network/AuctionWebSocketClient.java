@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /** AuctionWebSocketClient - WebSocket client for connecting to the auction server. */
 public class AuctionWebSocketClient extends WebSocketClient {
 
-  private static final Logger logger =
+  private static final Logger LOGGER =
       LoggerFactory.getLogger(AuctionWebSocketClient.class);
 
   private static final String DEFAULT_URI = "ws://localhost:8887";
@@ -60,15 +60,15 @@ public class AuctionWebSocketClient extends WebSocketClient {
   public boolean connectWithRetry(int maxRetries, long delayMs) {
     for (int i = 0; i < maxRetries; i++) {
       try {
-        logger.info("Đang kết nối WebSocket (lần {}/{})...",
+        LOGGER.info("Đang kết nối WebSocket (lần {}/{})...",
             i + 1, maxRetries);
         connectBlocking();
         if (isOpen()) {
-          logger.info("WebSocket đã kết nối thành công.");
+          LOGGER.info("WebSocket đã kết nối thành công.");
           return true;
         }
       } catch (Exception e) {
-        logger.warn("Kết nối WebSocket thất bại (lần {}): {}",
+        LOGGER.warn("Kết nối WebSocket thất bại (lần {}): {}",
             i + 1, e.getMessage());
       }
       if (i < maxRetries - 1) {
@@ -76,12 +76,12 @@ public class AuctionWebSocketClient extends WebSocketClient {
           Thread.sleep(delayMs);
         } catch (InterruptedException ie) {
           Thread.currentThread().interrupt();
-          logger.warn("Bị gián đoạn trong khi đợi kết nối lại.");
+          LOGGER.warn("Bị gián đoạn trong khi đợi kết nối lại.");
           return false;
         }
       }
     }
-    logger.error(
+    LOGGER.error(
         "Không thể kết nối WebSocket sau {} lần thử.", maxRetries);
     return false;
   }
@@ -104,7 +104,7 @@ public class AuctionWebSocketClient extends WebSocketClient {
           onMessageCallback.accept(message);
         }
       } catch (Exception e) {
-        logger.error("Lỗi parse JSON: {}", e.getMessage());
+        LOGGER.error("Lỗi parse JSON: {}", e.getMessage());
         if (onMessageCallback != null) {
           onMessageCallback.accept(message);
         }

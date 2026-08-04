@@ -32,8 +32,9 @@ import com.auction.client.utils.SessionManager;
 
 /** CreateAuctionController - handles creation of new auction sessions with item details. */
 public class CreateAuctionController {
-  private final com.auction.server.dao.AuctionSessionDAO auctionSessionDao = com.auction.server.service.ServiceFactory.getInstance().getSessionDao();
-  private static final Logger logger =
+  private final com.auction.server.dao.AuctionSessionDAO auctionSessionDao =
+      com.auction.server.service.ServiceFactory.getInstance().getSessionDao();
+  private static final Logger LOGGER =
       LoggerFactory.getLogger(CreateAuctionController.class);
   private static final String ITEM_TYPE_VEHICLES = "Vehicles";
   private static final String ITEM_TYPE_ARTS = "Arts";
@@ -42,7 +43,7 @@ public class CreateAuctionController {
       private File selectedImageFile;
 
   @FXML
-  private VBox Container;
+  private VBox container;
   @FXML
   private Button btnClearForm;
   @FXML
@@ -121,7 +122,7 @@ public class CreateAuctionController {
     } catch (NumberFormatException e) {
       AlertUtils.showError("Lỗi định dạng", "Giá tiền, bước giá và số ngày phải là con số hợp lệ.");
     } catch (Exception e) {
-      logger.error("Lỗi khi tạo phiên đấu giá: {}", e.getMessage(), e);
+      LOGGER.error("Lỗi khi tạo phiên đấu giá: {}", e.getMessage(), e);
       AlertUtils.showError("Lỗi hệ thống", "Đã xảy ra lỗi: " + e.getMessage());
     }
   }
@@ -196,7 +197,7 @@ public class CreateAuctionController {
     }
 
     if (selectedImageFile != null) {
-      // itemDao.setAvatar(generatedItemId, selectedImageFile);
+      // Do nothing for now
     }
 
     LocalDateTime startTime = LocalDateTime.now();
@@ -213,12 +214,12 @@ public class CreateAuctionController {
   }
 
   private String lookupText(String fxId) {
-    TextField field = (TextField) Container.lookup(fxId);
+    TextField field = (TextField) container.lookup(fxId);
     return (field != null) ? field.getText() : "";
   }
 
   private int lookupInt(String fxId) {
-    TextField field = (TextField) Container.lookup(fxId);
+    TextField field = (TextField) container.lookup(fxId);
     if (field == null || field.getText().isEmpty()) {
       return 0;
     }
@@ -226,7 +227,7 @@ public class CreateAuctionController {
   }
 
   private LocalDate lookupDate(String fxId) {
-    TextField field = (TextField) Container.lookup(fxId);
+    TextField field = (TextField) container.lookup(fxId);
     if (field == null || field.getText().isEmpty()) {
       return LocalDate.now();
     }
@@ -239,7 +240,7 @@ public class CreateAuctionController {
   }
 
   private void loadDynamicAttributes(String itemType) {
-    Container.getChildren().clear();
+    container.getChildren().clear();
 
     if (itemType == null) {
       return;
@@ -253,10 +254,10 @@ public class CreateAuctionController {
         default -> null;
       };
       if (nodeToAdd != null) {
-        Container.getChildren().add(nodeToAdd);
+        container.getChildren().add(nodeToAdd);
       }
     } catch (IOException e) {
-      logger.error("Lỗi tải thuộc tính động: {}", e.getMessage(), e);
+      LOGGER.error("Lỗi tải thuộc tính động: {}", e.getMessage(), e);
     }
   }
 

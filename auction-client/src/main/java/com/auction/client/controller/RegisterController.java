@@ -20,7 +20,7 @@ import com.google.gson.Gson;
 /** RegisterController - handles user registration with password strength validation. */
 public class RegisterController {
 
-  private static final Logger logger =
+  private static final Logger LOGGER =
       LoggerFactory.getLogger(RegisterController.class);
       
   private final Gson gson = new Gson();
@@ -129,7 +129,7 @@ public class RegisterController {
     } catch (PasswordStrengthCheck p) {
       AlertUtils.showWarning(p.getMessage() + " (Độ mạnh hiện tại: Yếu)");
     } catch (Exception e) {
-      logger.error("Lỗi đăng ký", e);
+      LOGGER.error("Lỗi đăng ký", e);
       AlertUtils.showError("Đã có lỗi xảy ra");
     }
   }

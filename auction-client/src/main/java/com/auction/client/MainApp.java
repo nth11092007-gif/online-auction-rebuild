@@ -14,8 +14,10 @@ import com.auction.client.network.AuctionWebSocketClient;
 /** MainApp - JavaFX application entry point and screen navigation manager. */
 public class MainApp extends Application {
 
-  private static final Logger logger =
+  private static final Logger LOGGER =
       LoggerFactory.getLogger(MainApp.class);
+  private static final int MAX_RETRY_COUNT = 5;
+  private static final int RETRY_DELAY_MS = 2000;
   private static Stage primaryStage;
   private static AuctionWebSocketClient webSocketClient;
 
@@ -23,7 +25,7 @@ public class MainApp extends Application {
   public void start(Stage stage) throws Exception {
     primaryStage = stage;
     webSocketClient = new AuctionWebSocketClient();
-    webSocketClient.connectWithRetry(5, 2000);
+    webSocketClient.connectWithRetry(MAX_RETRY_COUNT, RETRY_DELAY_MS);
     showLogin();
   }
 
@@ -40,7 +42,7 @@ public class MainApp extends Application {
       primaryStage.setScene(new Scene(root));
       primaryStage.show();
     } catch (Exception e) {
-      logger.error("Lỗi: {}", e.getMessage(), e);
+      LOGGER.error("Lỗi: {}", e.getMessage(), e);
     }
   }
 
@@ -53,7 +55,7 @@ public class MainApp extends Application {
       primaryStage.setScene(new Scene(root));
       primaryStage.show();
     } catch (Exception e) {
-      logger.error("Lỗi: {}", e.getMessage(), e);
+      LOGGER.error("Lỗi: {}", e.getMessage(), e);
     }
   }
 
@@ -68,7 +70,7 @@ public class MainApp extends Application {
    */
   public static void showAuctionDetail(AuctionSession session) {
     if (primaryStage == null) {
-      logger.error("primaryStage chưa được khởi tạo!");
+      LOGGER.error("primaryStage chưa được khởi tạo!");
       return;
     }
     try {
@@ -80,7 +82,7 @@ public class MainApp extends Application {
       primaryStage.setScene(new Scene(root));
       primaryStage.show();
     } catch (Exception e) {
-      logger.error("Lỗi: {}", e.getMessage(), e);
+      LOGGER.error("Lỗi: {}", e.getMessage(), e);
     }
   }
 

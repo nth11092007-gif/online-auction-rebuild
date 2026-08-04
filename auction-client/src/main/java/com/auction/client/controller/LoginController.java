@@ -18,7 +18,7 @@ import com.google.gson.Gson;
 /** LoginController - handles user login and WebSocket authentication synchronization. */
 public class LoginController {
 
-  private static final Logger logger =
+  private static final Logger LOGGER =
       LoggerFactory.getLogger(LoginController.class);
 
   @FXML
@@ -51,7 +51,7 @@ public class LoginController {
         if ("SUCCESS".equals(status)) {
           User user = gson.fromJson(json.get("user"), User.class);
           SessionManager.setCurrentUser(user);
-          logger.info("Đăng nhập thành công qua WS: {}", user.getUsername());
+          LOGGER.info("Đăng nhập thành công qua WS: {}", user.getUsername());
           
           if (user.getRole() == User.Role.USER) {
             NavigationManager.navigateTo(event, "/Home.fxml");
@@ -73,7 +73,7 @@ public class LoginController {
       wsClient.sendCommand("LOGIN", loginData);
       
     } catch (Exception e) {
-      logger.error("Lỗi gửi yêu cầu đăng nhập", e);
+      LOGGER.error("Lỗi gửi yêu cầu đăng nhập", e);
       AlertUtils.showError("Lỗi hệ thống", "Không thể gửi yêu cầu: " + e.getMessage());
     }
   }

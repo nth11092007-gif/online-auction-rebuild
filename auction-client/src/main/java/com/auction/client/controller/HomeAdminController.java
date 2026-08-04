@@ -22,7 +22,8 @@ import com.auction.client.utils.SessionManager;
 
 /** HomeAdminController - admin dashboard for managing users and banning/unbanning accounts. */
 public class HomeAdminController {
-  private final com.auction.server.dao.UserDAO userDao = com.auction.server.service.ServiceFactory.getInstance().getUserDao();
+  private final com.auction.server.dao.UserDAO userDao =
+      com.auction.server.service.ServiceFactory.getInstance().getUserDao();
 
 
   @FXML

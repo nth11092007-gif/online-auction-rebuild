@@ -14,9 +14,9 @@ import org.slf4j.LoggerFactory;
 /**
  * Utility class to handle UI navigation and scene switching in JavaFX.
  */
-public class NavigationManager {
+public final class NavigationManager {
 
-  private static final Logger logger =
+  private static final Logger LOGGER =
       LoggerFactory.getLogger(NavigationManager.class);
 
   private NavigationManager() { }
@@ -57,7 +57,7 @@ public class NavigationManager {
       stage.setScene(new Scene(root));
       stage.show();
     } catch (IOException e) {
-      logger.error("Không thể mở màn hình: {}", fxmlPath, e);
+      LOGGER.error("Không thể mở màn hình: {}", fxmlPath, e);
       AlertUtils.showError("Lỗi hệ thống", "Không thể chuyển đến màn hình: " + fxmlPath);
     }
   }
