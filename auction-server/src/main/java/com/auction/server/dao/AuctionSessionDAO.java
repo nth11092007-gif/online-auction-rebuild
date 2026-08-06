@@ -68,6 +68,9 @@ public interface AuctionSessionDAO {
   AuctionSession getSessionForPlaceBid(
       Connection conn, String sessionId) throws SQLException;
 
+  AuctionSession getSessionForPlaceBid(
+      String sessionId);
+
   // =========================================================================
   // 3. CẬP NHẬT TRẠNG THÁI PHIÊN
   // (Ví dụ: Chuyển từ OPEN sang CLOSED)
@@ -82,9 +85,15 @@ public interface AuctionSessionDAO {
   boolean updateCurrentPrice(
       Connection conn, String sessionId, double newPrice);
 
+  boolean updateCurrentPrice(
+      String sessionId, double newPrice);
+
   // Thêm hàm này để lưu thời gian mới vào DB
   // khi Anti-sniping kích hoạt
   boolean updateEndTime(
       Connection conn, String sessionId,
       Timestamp newEndTime) throws SQLException;
+
+  boolean updateEndTime(
+      String sessionId, Timestamp newEndTime);
 }

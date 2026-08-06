@@ -446,6 +446,16 @@ public class AuctionSessionDAOImpl
   }
 
   @Override
+  public boolean updateEndTime(String sessionId, Timestamp newEndTime) {
+    try (Connection conn = dataSource.getConnection()) {
+      return updateEndTime(conn, sessionId, newEndTime);
+    } catch (SQLException e) {
+      LOGGER.error("Lỗi cập nhật end_time {}: {}", sessionId, e.getMessage(), e);
+      return false;
+    }
+  }
+
+  @Override
   public boolean updateCurrentPrice(
       Connection conn, String sessionId,
       double newPrice) {
@@ -463,6 +473,16 @@ public class AuctionSessionDAOImpl
           sessionId, e.getMessage(), e);
     }
     return false;
+  }
+
+  @Override
+  public boolean updateCurrentPrice(String sessionId, double newPrice) {
+    try (Connection conn = dataSource.getConnection()) {
+      return updateCurrentPrice(conn, sessionId, newPrice);
+    } catch (SQLException e) {
+      LOGGER.error("Lỗi cập nhật giá hiện tại {}: {}", sessionId, e.getMessage(), e);
+      return false;
+    }
   }
 
   // =========================================================================
@@ -671,5 +691,15 @@ public class AuctionSessionDAOImpl
       }
     }
     return null;
+  }
+
+  @Override
+  public AuctionSession getSessionForPlaceBid(String sessionId) {
+    try (Connection conn = dataSource.getConnection()) {
+      return getSessionForPlaceBid(conn, sessionId);
+    } catch (SQLException e) {
+      LOGGER.error("Lỗi lấy session place bid {}: {}", sessionId, e.getMessage(), e);
+      return null;
+    }
   }
 }
